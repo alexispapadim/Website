@@ -415,7 +415,7 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
   .hc{position:fixed;inset:0;z-index:98;pointer-events:none;overflow:hidden}
   .hc-disc{position:absolute;border-radius:50%;background:radial-gradient(circle at 50% 50%,#f4eee5,#ece4d8 60%);transform:scale(0);will-change:transform,opacity}
   .hc-ring{position:absolute;border-radius:50%;border:1px solid #b8914f;transform:scale(0);will-change:transform,opacity}
-  .hc-ap{position:absolute;display:flex;align-items:flex-end;font-family:'Cormorant Garamond','GFS Didot',Georgia,serif;line-height:.8;color:#20251a;will-change:transform,opacity;white-space:nowrap}
+  .hc-ap{position:absolute;display:flex;align-items:flex-end;font-family:'Cormorant Garamond','GFS Didot',Georgia,serif;line-height:.8;color:#20251a;white-space:nowrap;-webkit-font-smoothing:antialiased;backface-visibility:hidden}
   .hc-ap span{font-size:.7em;margin-left:-.36em;transform:translateY(.24em)}
   /* frosted menu bar once you scroll, so it stays readable over photos and text */
   header::before{content:"";position:absolute;inset:0;z-index:-1;opacity:0;pointer-events:none;
@@ -640,32 +640,33 @@ async function homecoming(link){
   Object.assign(ring.style,{width:rad*2+'px',height:rad*2+'px',left:(cx-rad)+'px',top:(cy-rad)+'px'});
   const fly=document.createElement('span'); fly.className='hc-ap'; fly.innerHTML='A<span>P</span>';
   wrapEl.append(disc,ring,fly); document.body.append(wrapEl);
-  // start the flying monogram exactly on top of the menu-bar logo
-  const logoTxt=link.firstChild&&link.firstChild.nodeType===3?link:link;
+  // The flying monogram is drawn at its final (large) size and scaled DOWN to start, so the text is
+  // rendered sharp at every moment instead of being a small bitmap stretched up.
   const fs0=parseFloat(getComputedStyle(link).fontSize)||26;
-  fly.style.fontSize=fs0+'px'; fly.style.left=from.left+'px'; fly.style.top=from.top+'px';
-  const f0=fly.getBoundingClientRect();
+  const target=document.querySelector('#mono .ap')||document.querySelector('#mono');
+  const tfs=parseFloat(getComputedStyle(target).fontSize)||120;
+  const k=tfs/fs0;
+  fly.style.fontSize=tfs+'px'; fly.style.left=from.left+'px'; fly.style.top=from.top+'px';
   fly.style.transformOrigin='0 0';
+  const nat=fly.getBoundingClientRect(), w0=nat.width/k, h0=nat.height/k;   // size at menu-bar scale
   const E1='cubic-bezier(.7,0,.2,1)', E2='cubic-bezier(.16,1,.3,1)';
+  const S0=`translate3d(0,0,0) scale(${(1/k).toFixed(5)})`;
+  const MID=`translate3d(${(innerWidth/2-from.left-w0*1.8).toFixed(1)}px,${(innerHeight*.42-from.top-h0*1.8).toFixed(1)}px,0) scale(${(3.6/k).toFixed(5)})`;
+  fly.style.transform=S0;
   link.style.visibility='hidden';
   disc.animate([{transform:'scale(0)'},{transform:'scale(1)'}],{duration:820,easing:E1,fill:'forwards'});
   ring.animate([{transform:'scale(0)',opacity:1},{transform:'scale(1.02)',opacity:.0}],{duration:1000,delay:60,easing:E1,fill:'forwards'});
   // phase 1: lift and grow towards the centre
-  const mid=fly.animate([{transform:'translate3d(0,0,0) scale(1)'},
-    {transform:`translate3d(${innerWidth/2-f0.left-f0.width*1.8}px,${innerHeight*.42-f0.top-f0.height*1.8}px,0) scale(3.6)`}],
-    {duration:820,easing:E1,fill:'forwards'});
+  const mid=fly.animate([{transform:S0},{transform:MID}],{duration:820,easing:E1,fill:'forwards'});
   await mid.finished;
   // behind the cream: back to the top, restart the opening monogram
   scrollTo(0,0); sy=0; tick();
   document.body.classList.remove('loaded'); void document.body.offsetWidth;
   await wait(40);
-  const target=document.querySelector('#mono .ap')||document.querySelector('#mono');
-  const t=target.getBoundingClientRect(), tfs=parseFloat(getComputedStyle(target).fontSize)||120;
-  const k=tfs/fs0;
-  const cur=fly.getBoundingClientRect();
-  // phase 2: land on the opening monogram
-  const land=fly.animate([{transform:mid.effect.getKeyframes()[1].transform},
-    {transform:`translate3d(${t.left-f0.left}px,${t.top+t.height-f0.top-f0.height*k}px,0) scale(${k})`}],
+  const t=target.getBoundingClientRect();
+  // phase 2: land on the opening monogram (scale 1 = exactly its size)
+  const land=fly.animate([{transform:MID},
+    {transform:`translate3d(${(t.left-from.left).toFixed(1)}px,${(t.bottom-nat.height-from.top).toFixed(1)}px,0) scale(1)`}],
     {duration:760,easing:E2,fill:'forwards'});
   setTimeout(()=>document.body.classList.add('loaded'),260);    // olive branch regrows, letters rise
   await wait(380);
