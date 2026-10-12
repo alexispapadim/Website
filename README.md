@@ -11,7 +11,10 @@ The QR code on his business card brings people here to send an enquiry.
 | `app.js` | Animations, the legal pages, and the form |
 | `i18n.js` | All the site text in English and Greek |
 | `gallery.js` | The list of food photos for the gallery |
-| `alexis.jpg` | His headshot |
+| `food-1.jpg` … `food-4.jpg` | The gallery photos |
+| `alexis.jpg` | His portrait (used for Google and as a fallback) |
+| `alexis-cut.webp` | His portrait cut out of the background (for the chef scene) |
+| `alexis-bg.jpg` | The studio backdrop behind him in the chef scene |
 | `robots.txt`, `sitemap.xml` | Tell search engines what to index |
 | `og.JPG`, `apple-touch-icon.PNG` | The image shown when the link is shared, and the phone home-screen icon |
 | `worker.js` | The enquiry backend (`/api/enquiry`), plus the pre-rendered Greek page at `/el/` |
@@ -121,7 +124,7 @@ The settings now come from `wrangler.jsonc`.
    - It shows as a two-column grid on phones and three columns on desktop.
    - Tapping a photo opens it full screen; swipe or use the arrows to browse.
 
-His headshot is `alexis.jpg`, shown in "The chef" section.
+His portrait is shown in the chef scene using `alexis-cut.webp` (him, cut out) and `alexis-bg.jpg` (the backdrop). To change the portrait, send a new photo to be cut out again.
 
 ---
 

@@ -259,28 +259,48 @@ function switchLang(l){
 }
 $$('.lang button').forEach(b=>b.addEventListener('click',()=>switchLang(b.dataset.lang)));
 
-/* ===================== chef portrait (scroll-linked) ===================== */
-const P={el:$('.portrait')};
-if(P.el){
-  P.frame=P.el.querySelector('.portrait-frame'); P.img=P.el.querySelector('img'); P.cap=P.el.querySelector('figcaption');
-  P.line=document.createElement('div'); P.line.className='portrait-line'; P.el.prepend(P.line);
-  P.glow=document.createElement('div'); P.glow.className='portrait-glow'; P.el.prepend(P.glow);
+/* ===================== chef scene (pinned, layered) =====================
+   Layers inside the box: outline word · gold line · arch with studio backdrop · filled word · cut-out of Alexis.
+   As you scroll: the scene rises in, he lifts up and breaks out over the top of the arch while the arch
+   settles back, his name glides through the scene behind him, then the caption draws in.            */
+const C={sec:$('#chef'), box:$('#cbox')};
+if(C.box){
+  C.arch=C.box.querySelector('.c-arch'); C.archImg=C.arch.querySelector('img');
+  C.cut=C.box.querySelector('.c-cut img'); C.line=C.box.querySelector('.c-line');
+  C.front=C.box.querySelector('.c-word-front');
+  C.words=[...C.box.querySelectorAll('.c-word span')];
+  C.cap=$('.c-cap'); C.rule=$('.c-rule');
 }
-function renderPortrait(y){
-  if(!P.el||!M.port) return;
-  // 0 = frame just entering at the bottom, 1 = frame just left at the top
-  const t=clamp((y+M.vh-M.port.top)/(M.vh+M.port.h));
-  const e=easeOutQ(seg(t,.02,.48));                 // entrance
-  const d=t-.5;                                      // drift around the centre
-  put('pF',P.frame,'transform',`translate3d(0,${((1-e)*70).toFixed(1)}px,0) scale(${(.86+.14*e).toFixed(4)})`);
-  put('pFo',P.frame,'opacity',(seg(t,0,.22)).toFixed(3));
-  put('pI',P.img,'transform',`translate3d(0,${(d*-46).toFixed(1)}px,0) scale(${(1.26-.16*e).toFixed(4)})`);
-  put('pL',P.line,'transform',`translate3d(${(4+10*e).toFixed(1)}px,${(4+10*e+d*28).toFixed(1)}px,0)`);
-  put('pLo',P.line,'opacity',(.75*seg(t,.12,.42)).toFixed(3));
-  put('pG',P.glow,'transform',`translate3d(0,${(d*-90).toFixed(1)}px,0) scale(${(.8+.3*e).toFixed(3)})`);
-  put('pGo',P.glow,'opacity',(e*(1-seg(t,.7,1))).toFixed(3));
-  if(P.cap){ const c=easeOutQ(seg(t,.3,.5));
-    put('pC',P.cap,'transform',`translate3d(0,${((1-c)*14).toFixed(1)}px,0)`); put('pCo',P.cap,'opacity',c.toFixed(3)); }
+function renderChef(y){
+  if(!C.box||!M.chef) return;
+  const bh=M.bh||600;
+  const enter=easeOutQ(clamp((y+M.vh-M.chef.top)/M.vh));      // section rising into view
+  const p=pin(M.chef,y);                                        // progress while pinned
+  const lift=easeIO(seg(p,.04,.62));                            // he rises out of the arch
+  const grow=easeOutQ(seg(p,0,.32)), settle=easeIO(seg(p,.42,.86));
+  // whole scene entrance
+  put('cbT',C.box,'transform',`translate3d(0,${((1-enter)*70).toFixed(1)}px,0)`);
+  put('cbO',C.box,'opacity',seg(enter,.15,.7).toFixed(3));
+  // arch: grows in, then quietly recedes as he steps forward
+  const as=(.9+.1*grow-.06*settle).toFixed(4);
+  put('caT',C.arch,'transform',`scale(${as})`);
+  put('cfT',C.front,'transform',`scale(${as})`);
+  put('caI',C.archImg,'transform',`translate3d(0,${((p-.5)*-bh*.06).toFixed(1)}px,0) scale(1.08)`);
+  // Alexis: starts low inside the arch, lifts and breaks out over the top
+  const ty=((1-lift)*bh*.24+(1-enter)*bh*.06).toFixed(1), sc=(.94+.1*lift).toFixed(4);
+  put('ccT',C.cut,'transform',`translate3d(0,${ty}px,0) scale(${sc})`);
+  // his name glides through the scene, behind him
+  const wx=((.5-p)*bh*1.5).toFixed(1), wo=(seg(p,.1,.3)*(1-.5*seg(p,.92,1))).toFixed(3);
+  C.words.forEach((s,i)=>{ put('cwT'+i,s,'transform',`translate3d(calc(-50% + ${wx}px),-50%,0)`); put('cwO'+i,s,'opacity',wo); });
+  // gold outline drifts out from behind the arch
+  const lo=seg(p,.3,.58), le=easeOutQ(lo);
+  put('clT',C.line,'transform',`translate3d(${(le*bh*.028).toFixed(1)}px,${(le*bh*.028).toFixed(1)}px,0) scale(${as})`);
+  put('clO',C.line,'opacity',(lo*.85).toFixed(3));
+  // caption
+  const cp=easeOutQ(seg(p,.62,.82));
+  put('ccpO',C.cap,'opacity',cp.toFixed(3));
+  put('ccpT',C.cap,'transform',`translate3d(0,${((1-cp)*12).toFixed(1)}px,0)`);
+  put('crT',C.rule,'transform',`scaleX(${easeOutQ(seg(p,.68,.9)).toFixed(4)})`);
 }
 const easeOutQ=t=>1-Math.pow(1-t,3);
 
@@ -322,13 +342,6 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
   #veil i{display:block;height:1px;width:0;background:#b8914f;transition:width .8s cubic-bezier(.16,1,.3,1)}
   #veil.on i{width:110px;transition-delay:.15s}
   html.rm #veil{display:none}
-  /* chef portrait — driven by scroll */
-  html:not(.rm) .portrait[data-reveal]{opacity:1!important;transform:none!important;transition:none!important}
-  html:not(.rm) .portrait img{transition:none!important;will-change:transform}
-  .portrait::before{display:none}
-  .portrait-frame,.portrait figcaption,.portrait-line{will-change:transform,opacity}
-  .portrait-line{position:absolute;top:0;left:0;right:0;aspect-ratio:4/5;border:1px solid var(--gold);border-radius:999px 999px 20px 20px;z-index:-1;pointer-events:none}
-  .portrait-glow{position:absolute;inset:-10% -20% auto;height:70%;border-radius:50%;background:radial-gradient(closest-side,rgba(214,182,121,.28),transparent);z-index:-2;pointer-events:none;will-change:transform,opacity}
   /* gallery — masonry columns that drift at different speeds */
   .gallery{columns:auto!important;display:flex;gap:14px;align-items:flex-start}
   @media(min-width:900px){.gallery{gap:22px}}
@@ -370,7 +383,7 @@ function measure(){
   const box=el=>{const t=docTop(el);return{top:t,h:el.offsetHeight,span:Math.max(1,el.offsetHeight-M.vh)}};
   M.hero=box(hero); M.stmt=box(stmt); M.occ=box(occ); M.steps=box(steps); M.about=box(about);
   M.themes=themed.map(s=>{const b=box(s);return{top:b.top,bottom:b.top+b.h,dark:s.dataset.theme==='dark',hero:s===hero}});
-  if(P.el){ M.port={top:docTop(P.el)+P.frame.offsetTop,h:P.frame.offsetHeight}; }
+  if(C.sec){ M.chef=box(C.sec); M.bh=C.box.offsetHeight; }
   M.gal=null;
   if(galleryEl&&!kitchen.hidden&&galleryEl.children.length){
     const gTop=docTop(galleryEl);
@@ -533,7 +546,7 @@ function render(y,realY){
   for(const s of M.themes){ if(s.top<=hy&&s.bottom>hy){ dark=s.hero?p>.42:s.dark; break; } }
   hdr.classList.toggle('dark',dark);
   hdr.classList.toggle('scrolled',realY>M.vh*.9);
-  if(!RM) renderPortrait(y);
+  if(!RM) renderChef(y);
   if(!RM) renderGallery3D(y);
 }
 
@@ -691,10 +704,10 @@ function renderGallery3D(y){
     const b=M.gal.items[i]; if(!b) return;
     const t=clamp((y+M.vh-b.top)/(M.vh*.75));        // 0 → just entering, 1 → well inside
     const e=easeOutQ(t);
-    put('go'+i,it.el,'opacity',seg(t,0,.45).toFixed(3));
-    put('gt'+i,it.el,'transform',`translate3d(0,${((1-e)*60).toFixed(1)}px,0) scale(${(.94+.06*e).toFixed(4)})`);
+    put('go'+i,it.el,'opacity',seg(t,0,.28).toFixed(3));
+    put('gt'+i,it.el,'transform',`translate3d(0,${((1-e)*46).toFixed(1)}px,0) scale(${(.95+.05*e).toFixed(4)})`);
     put('gi'+i,it.img,'transform',`scale(${(1.18-.18*e).toFixed(4)})`);
-    if(it.cap){ const c=seg(t,.55,.9); put('gco'+i,it.cap,'opacity',c.toFixed(3)); }
+    if(it.cap){ const c=seg(t,.25,.6); put('gco'+i,it.cap,'opacity',c.toFixed(3)); }
   });
 }
 
