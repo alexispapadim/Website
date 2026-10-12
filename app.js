@@ -429,14 +429,14 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
   #kitchen .kitchen-head{margin-bottom:clamp(36px,6vh,64px)}
   #kitchen h2{color:var(--cream)}
   #kitchen .g-hint{color:rgba(214,182,121,.7)}
-  .gallery.sheet{columns:auto!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(18px,3vw,34px) clamp(12px,2.4vw,30px);
+  .gallery.csheet{columns:auto!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(18px,3vw,34px) clamp(12px,2.4vw,30px);
     max-width:1120px;margin:0 auto;padding:clamp(16px,3vw,36px);position:relative;border-radius:6px;
     background:
       repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0 1px,transparent 1px 3px),
       repeating-linear-gradient(0deg,rgba(0,0,0,.05) 0 1px,transparent 1px 4px),
       linear-gradient(160deg,#20251a,#171a12);
     box-shadow:inset 0 0 0 1px rgba(214,182,121,.16),inset 0 1px 0 rgba(255,255,255,.04),0 40px 80px -40px rgba(0,0,0,.6)}
-  @media(min-width:900px){.gallery.sheet{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media(min-width:900px){.gallery.csheet{grid-template-columns:repeat(3,minmax(0,1fr))}}
   .sh-item{margin:0!important;min-width:0;will-change:opacity}
   .sh-frame{all:unset;display:block;width:100%;aspect-ratio:4/5;position:relative;overflow:hidden;border-radius:2px;cursor:zoom-in;background:#0d0f0a;
     box-shadow:0 0 0 1px rgba(236,228,216,.07),0 22px 40px -26px rgba(0,0,0,.85);-webkit-mask-image:-webkit-radial-gradient(white,black)}
@@ -923,7 +923,7 @@ const colCount=()=>innerWidth>=900?3:2;
 function renderMasonry(){
   const n=colCount(); galCols=n;
   galleryEl.textContent=''; GI=[];
-  galleryEl.className='gallery sheet';
+  galleryEl.className='gallery csheet';
   PHOTOS.forEach((g,i)=>{
     const fig=document.createElement('figure'); fig.className='sh-item';
     const btn=document.createElement('button'); btn.type='button'; btn.className='sh-frame';
