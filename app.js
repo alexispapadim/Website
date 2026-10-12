@@ -424,31 +424,41 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
   header.scrolled::before{opacity:1}
   header.dark::before{background:rgba(26,30,21,.78);border-bottom-color:rgba(214,182,121,.14)}
   header{padding-top:max(12px,env(safe-area-inset-top))!important;padding-bottom:12px!important;transition:color .45s ease}
-  /* plate stack */
+  /* tasting menu gallery */
   #kitchen.deck-mode{padding:0!important;overflow:visible}
-  .kstage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(14px,2.5vh,28px);overflow:hidden;background:var(--cream);padding-top:clamp(64px,9vh,96px);box-sizing:border-box}
-  .kstage .kitchen-head{margin:0!important;text-align:center;position:relative;z-index:3;padding:0 20px;will-change:transform}
-  .kstage .kitchen-head .eyebrow{justify-content:center;margin-bottom:12px}
-  .kstage .kitchen-head .eyebrow::after{content:"";width:28px;height:1px;background:currentColor}
-  .kstage .kitchen-head h2{font-size:clamp(32px,6.4vw,68px)}
-  .k-glows{position:absolute;inset:0;pointer-events:none;z-index:0}
-  .k-glow{position:absolute;left:50%;top:52%;width:130vmax;height:130vmax;margin:-65vmax 0 0 -65vmax;opacity:0;will-change:opacity}
-  .k-deck{position:relative;width:100%;z-index:2;perspective:1100px;perspective-origin:50% 35%}
-  .k-card{position:absolute;left:50%;top:50%;margin:0;border-radius:18px;overflow:hidden;opacity:0;will-change:transform;
-    box-shadow:0 30px 60px -28px rgba(25,22,14,.55),0 6px 16px -8px rgba(25,22,14,.25);background:var(--cream-2);transform-origin:50% 60%;backface-visibility:hidden}
-  .k-card button{all:unset;display:block;width:100%;height:100%;cursor:zoom-in;position:relative}
-  .k-card button:focus-visible{outline:2px solid var(--gold);outline-offset:-4px}
-  .k-card img{width:100%;height:100%;object-fit:cover;display:block;will-change:transform}
-  .k-shade{position:absolute;inset:0;background:#15180f;opacity:0;pointer-events:none}
-  .k-cap{position:relative;z-index:4;text-align:center;padding:14px 26px 16px;opacity:0;max-width:min(560px,calc(100vw - 32px));
-    background:rgba(246,241,233,.78);-webkit-backdrop-filter:blur(18px) saturate(1.25);backdrop-filter:blur(18px) saturate(1.25);
-    border:1px solid rgba(184,145,79,.28);border-radius:20px;box-shadow:0 18px 40px -22px rgba(32,37,26,.45)}
-  .k-count{display:flex;align-items:center;justify-content:center;gap:10px;font:600 11px var(--sans);letter-spacing:.3em;color:#9a7638;overflow:hidden}
-  .k-count i{width:26px;height:1px;background:var(--gold)}
-  .k-num{display:inline-block}
-  .k-text{overflow:hidden;margin-top:6px;padding-bottom:.12em}
-  .k-text span{display:inline-block;font-family:var(--serif);font-style:italic;font-weight:500;font-size:clamp(20px,3.2vw,28px);line-height:1.25;color:var(--olive)}
-  .k-hint{position:absolute;left:0;right:0;top:calc(100% + 12px);margin:0;font:600 10px var(--sans);letter-spacing:.28em;text-transform:uppercase;color:var(--leaf);opacity:0}
+  .tstage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(16px,3vh,32px);background:var(--cream);
+    padding-top:clamp(64px,9vh,96px);box-sizing:border-box;overflow:hidden}
+  .tstage .kitchen-head{margin:0!important;text-align:center;padding:0 20px;will-change:transform}
+  .tstage .kitchen-head .eyebrow{justify-content:center;margin-bottom:10px}
+  .tstage .kitchen-head .eyebrow::after{content:"";width:28px;height:1px;background:currentColor}
+  .tstage .kitchen-head h2{font-size:clamp(30px,5.6vw,60px)}
+  .t-wrap{display:flex;flex-direction:column;align-items:center;gap:22px}
+  .tstage.wide .t-wrap{flex-direction:row;gap:clamp(48px,6vw,110px)}
+  .t-frame{position:relative;overflow:hidden;background:#e4dacb;will-change:transform,opacity;border-radius:4px;
+    box-shadow:0 40px 70px -40px rgba(32,37,26,.55),0 4px 14px -6px rgba(32,37,26,.2)}
+  .t-frame::after{content:"";position:absolute;inset:10px;border:1px solid rgba(214,182,121,.75);pointer-events:none;z-index:6}
+  .t-open{all:unset;position:absolute;inset:0;z-index:7;cursor:zoom-in}
+  .t-open:focus-visible{outline:2px solid var(--gold);outline-offset:-4px}
+  .t-mask{position:absolute;left:50%;top:50%;overflow:hidden;visibility:hidden;will-change:transform;backface-visibility:hidden}
+  .t-inner{position:absolute;left:50%;top:50%;will-change:transform}
+  .t-inner img{width:100%;height:100%;object-fit:cover;display:block;will-change:transform}
+  .t-shade{position:absolute;inset:0;background:#14170f;opacity:0;pointer-events:none}
+  .t-blade{position:absolute;left:50%;top:50%;width:2px;margin-left:-1px;z-index:5;opacity:0;pointer-events:none;will-change:transform,opacity;
+    background:linear-gradient(to bottom,transparent,rgba(214,182,121,.9) 18%,#fff8e6 50%,rgba(214,182,121,.9) 82%,transparent);
+    box-shadow:0 0 14px 2px rgba(255,236,190,.55)}
+  .t-edge{display:none}
+  .t-card{text-align:center;max-width:min(440px,calc(100vw - 40px));will-change:transform,opacity}
+  .tstage.wide .t-card{text-align:left;max-width:380px}
+  .t-course,.t-title,.t-parts{overflow:hidden;padding-bottom:.08em}
+  .t-num{display:inline-block;font-family:var(--serif);font-style:italic;font-size:22px;color:var(--gold)}
+  .t-title span{display:inline-block;font-family:var(--serif);font-weight:400;font-size:clamp(26px,3.6vw,40px);line-height:1.1;color:var(--olive)}
+  .t-parts span{display:inline-block;margin-top:6px;font:500 11px var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--leaf);line-height:1.8}
+  .t-ticks{display:flex;gap:14px;justify-content:center;margin-top:18px;padding-top:14px;border-top:1px solid rgba(184,145,79,.35)}
+  .tstage.wide .t-ticks{justify-content:flex-start}
+  .t-ticks b{font:400 13px var(--serif);font-style:italic;color:rgba(32,37,26,.35);cursor:pointer;position:relative;padding:4px 2px;transition:color .4s ease}
+  .t-ticks b::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:1px;background:var(--gold);transform:scaleX(0);transition:transform .5s cubic-bezier(.16,1,.3,1)}
+  .t-ticks b.on{color:var(--olive)}.t-ticks b.on::after{transform:scaleX(1)}
+  .t-hint{margin:12px 0 0;font:600 10px var(--sans);letter-spacing:.28em;text-transform:uppercase;color:rgba(91,102,64,.7)}
   /* language curtain */
   #lswap{position:fixed;inset:0;z-index:97;visibility:hidden;pointer-events:none;overflow:hidden}
   .ls-panel{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,#353c2b,#1b2016 75%);transform:translate3d(0,100%,0);will-change:transform;display:flex;align-items:center;justify-content:center}
@@ -596,7 +606,7 @@ function animScroll(to,dur,done,fn=easeIO){
   anim=requestAnimationFrame(step);
 }
 addEventListener('wheel',stopAnim,{passive:true});
-addEventListener('touchstart',e=>{if(!hw.contains(e.target))stopAnim()},{passive:true});
+addEventListener('touchstart',e=>{if(!(e.target instanceof Node)||!hw.contains(e.target))stopAnim()},{passive:true});
 addEventListener('keydown',stopAnim);
 
 // Only accept simple, known-safe fragment ids (never pass URL text to querySelector).
@@ -756,9 +766,8 @@ function deckSnap(){
   if(RM||!D.on||!M.gal||touching||anim||sw||navBusy) return;
   const y=scrollY, top=M.gal.top, span=M.gal.span;
   if(y<=top+2||y>=top+span-2) return;
-  const N=PHOTOS.length, P=deckPhases(N);
-  const pts=[]; for(let k=1;k<=N;k++) pts.push(clamp((k-.85)*P.fanAt/(N-.85)));
-  for(let k=N-1;k>=0;k--) pts.push(P.ringAt+(N-1-k)/Math.max(1,N-1)*(1-P.ringAt));
+  const N=PHOTOS.length, T=deckPhases(N).T;
+  const pts=[]; for(let k=0;k<N;k++) pts.push(Math.min(1,k/T)); pts.push(1);
   const p=(y-top)/span; let best=pts[0];
   for(const q of pts) if(Math.abs(q-p)<Math.abs(best-p)) best=q;
   const ty=top+best*span;
@@ -870,135 +879,121 @@ const capOf=g=>String((lang==='el'?g.el:g.en)||g.en||'');
 const srcOf=g=>'/'+encodeURIComponent(g.file);
 let GI=[], galCols=0, galT=0;
 
-/* ---- the plate stack (pinned, scroll-driven) ----
-   Dishes fly in one by one and land on the pile; the ones underneath sink back and dim.
-   The background glow takes on each dish's colours. At the end the pile fans out like a
-   hand of cards — tap any plate to open it.                                                  */
+/* ---- the tasting menu (pinned, scroll-driven) ----
+   One dish at a time, presented like a course on a printed menu. Moving to the next course is a
+   single clean diagonal cut: a fine gold blade crosses the frame and slices the next dish in,
+   while the previous plate settles back. Each course rests (and the scroll snaps to it).        */
 const D={on:false};
+const ROMAN=['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV','XVI'];
+const CUT_DEG=-20;                       // angle of the knife cut
+function splitDish(t){ const k=t.indexOf(','); return k<0?{title:t,parts:''}:{title:t.slice(0,k).trim(),parts:t.slice(k+1).split(',').map(s=>s.trim()).filter(Boolean).join(' · ')}; }
 function buildDeck(){
   const N=PHOTOS.length;
   kitchen.classList.add('deck-mode');
   const head=kitchen.querySelector('.kitchen-head');
-  const stage=document.createElement('div'); stage.className='stage kstage';
-  stage.innerHTML='<div class="k-glows"></div><div class="k-deck"></div>'+
-    '<div class="k-cap"><div class="k-count"><span class="k-num">01</span><i></i><span class="k-tot"></span></div>'+
-    '<div class="k-text"><span></span></div><p class="k-hint" data-i18n="kt.hint"></p></div>';
+  const stage=document.createElement('div'); stage.className='stage tstage';
+  stage.innerHTML='<div class="t-wrap"><div class="t-frame"><button type="button" class="t-open"></button><i class="t-blade"></i><i class="t-edge"></i></div>'+
+    '<div class="t-card"><div class="t-course"><span class="t-num"></span></div><div class="t-title"><span></span></div>'+
+    '<div class="t-parts"><span></span></div><div class="t-ticks"></div><p class="t-hint" data-i18n="kt.hint"></p></div></div>';
   if(head) stage.prepend(head);
-  galleryEl.hidden=true;
-  kitchen.append(stage);
-  Object.assign(D,{on:true,stage,deck:stage.querySelector('.k-deck'),glows:stage.querySelector('.k-glows'),
-    num:stage.querySelector('.k-num'),text:stage.querySelector('.k-text span'),hint:stage.querySelector('.k-hint'),
-    cap:stage.querySelector('.k-cap'),head,active:-1,capTok:0,cards:[]});
-  stage.querySelector('.k-tot').textContent=String(N).padStart(2,'0');
+  galleryEl.hidden=true; kitchen.append(stage);
+  const frame=stage.querySelector('.t-frame');
+  Object.assign(D,{on:true,stage,head,frame,open:stage.querySelector('.t-open'),blade:stage.querySelector('.t-blade'),
+    card:stage.querySelector('.t-card'),num:stage.querySelector('.t-num'),title:stage.querySelector('.t-title span'),
+    parts:stage.querySelector('.t-parts span'),ticks:stage.querySelector('.t-ticks'),hint:stage.querySelector('.t-hint'),
+    active:-1,capTok:0,layers:[]});
   D.hint.innerHTML=I18N[lang]['kt.hint']||'';
   GI=[];
   PHOTOS.forEach((g,i)=>{
-    const card=document.createElement('figure'); card.className='k-card';
-    const btn=document.createElement('button'); btn.type='button'; btn.setAttribute('aria-label',capOf(g)||('Photo '+(i+1)));
-    const img=document.createElement('img'); img.src=srcOf(g); img.alt=capOf(g); img.decoding='async';
-    if(i>1) img.loading='lazy';
-    const shade=document.createElement('i'); shade.className='k-shade';
-    btn.append(img,shade); card.append(btn); D.deck.append(card);
-    btn.addEventListener('click',()=>{
-      if(D.fan>.85){
-        if(D.front===i) return openLightbox(i);
-        const N=PHOTOS.length, P=deckPhases(N), k=Math.min(N-1,i), sp=P.ringAt+(N-1-k)/Math.max(1,N-1)*(1-P.ringAt);
-        return animScroll(M.gal.top+sp*M.gal.span,700,null,easeIO);
-      }
-      if(D.top===i) openLightbox(i);
-    });
-    const glow=document.createElement('i'); glow.className='k-glow'; D.glows.append(glow);
-    // tint the glow with the dish's own colours
-    const tint=()=>{ try{ const c=document.createElement('canvas'); c.width=c.height=6; const x=c.getContext('2d');
-        x.drawImage(img,img.naturalWidth*.2,img.naturalHeight*.2,img.naturalWidth*.6,img.naturalHeight*.6,0,0,6,6);
-        const d=x.getImageData(0,0,6,6).data; let r=0,gg=0,b=0,n=0;
-        for(let k=0;k<d.length;k+=4){ const s=Math.max(d[k],d[k+1],d[k+2])-Math.min(d[k],d[k+1],d[k+2]); const w=1+s/40; r+=d[k]*w; gg+=d[k+1]*w; b+=d[k+2]*w; n+=w; }
-        glow.style.background=`radial-gradient(closest-side,rgba(${r/n|0},${gg/n|0},${b/n|0},.55),transparent)`;
-      }catch(_){} };
-    if(img.complete&&img.naturalWidth) tint(); else img.addEventListener('load',()=>{tint(); clearTimeout(galT); galT=setTimeout(()=>{measure();tick();},60);},{once:true});
-    img.addEventListener('error',()=>{ console.warn('Gallery photo not found:',g.file); card.style.display='none'; },{once:true});
-    const tilt=[-2.2,1.6,-1.1,2.4,-1.8,1.2][i%6];
-    const rnd=((i*7919)%13)/13;
-    D.cards.push({card,img,shade,glow,g,tilt,from:(i%2?1:-1)*(10+rnd*8),drift:(i%2?1:-1)*(20+rnd*30)});
-    GI.push({el:card,img,cap:null,col:null});
+    const mask=document.createElement('div'); mask.className='t-mask';
+    const inner=document.createElement('div'); inner.className='t-inner';
+    const img=document.createElement('img'); img.src=srcOf(g); img.alt=capOf(g); img.decoding='async'; if(i>1) img.loading='lazy';
+    const shade=document.createElement('i'); shade.className='t-shade';
+    img.addEventListener('error',()=>{ console.warn('Gallery photo not found:',g.file); },{once:true});
+    inner.append(img,shade); mask.append(inner); frame.insertBefore(mask,D.blade);
+    const tick=document.createElement('b'); tick.textContent=ROMAN[i]||String(i+1);
+    tick.addEventListener('click',()=>goCourse(i)); D.ticks.append(tick);
+    D.layers.push({mask,inner,img,shade,tick,g});
+    GI.push({el:mask,img,cap:null,col:null});
   });
-  for(const k in last) if(k.startsWith('k')) delete last[k];
+  D.open.addEventListener('click',()=>{ if(D.active>=0) openLightbox(D.active); });
+  for(const k in last) if(k.startsWith('t')) delete last[k];
 }
+function deckPhases(N){ const T=Math.max(1,N-1)+.45; return {T}; }   // N-1 cuts + a final rest
 function layoutDeck(){
   if(!D.on) return;
-  const N=PHOTOS.length, vw=innerWidth, vh=M.vh;
-  kitchen.style.height=Math.round(vh*(1.1+deckPhases(N).T*.8))+'px';
-  D.R=Math.min(innerWidth*.36,480,vh*.5);
-  const headH=D.head?D.head.offsetHeight:0, capH=D.cap.offsetHeight||90;
-  const avail=Math.max(240,vh-headH-capH-Math.min(96,Math.max(64,vh*.09))-110);
-  const bh=Math.min(avail,(vw-72)*1.25,620);
-  D.bh=bh;
-  D.deck.style.height=Math.round(bh+30)+'px';
-  D.cards.forEach(c=>{
-    const ratio=(c.g.h&&c.g.w)?c.g.h/c.g.w:(c.img.naturalWidth?c.img.naturalHeight/c.img.naturalWidth:1.25);
-    let w,h;
-    if(ratio>=1){ h=bh; w=bh/ratio; } else { w=Math.min(vw-40,bh*1.12); h=w*ratio; }
-    c.w=w; c.h=h;
-    Object.assign(c.card.style,{width:w+'px',height:h+'px',marginLeft:(-w/2)+'px',marginTop:(-h/2)+'px'});
+  const N=PHOTOS.length, vw=innerWidth, vh=M.vh, wide=vw>=900;
+  kitchen.style.height=Math.round(vh*(1.15+deckPhases(N).T*.95))+'px';
+  D.stage.classList.toggle('wide',wide);
+  const headH=D.head?D.head.offsetHeight:0, top=Math.min(96,Math.max(64,vh*.09));
+  let H, W;
+  if(wide){ H=Math.min(vh-top-headH-90,720); W=H*.8; }
+  else { const cardH=D.card.offsetHeight||130; H=Math.min(vh-top-headH-cardH-64,(vw-48)*1.25,640); H=Math.max(H,260); W=H*.8; if(W>vw-40){W=vw-40;H=W*1.25;} }
+  D.W=W; D.H=H; D.diag=Math.hypot(W,H);
+  Object.assign(D.frame.style,{width:W+'px',height:H+'px'});
+  const S=Math.ceil(D.diag*1.6);
+  D.layers.forEach(L=>{
+    Object.assign(L.mask.style,{width:S+'px',height:S+'px',marginLeft:(-S/2)+'px',marginTop:(-S/2)+'px'});
+    Object.assign(L.inner.style,{width:W+'px',height:H+'px',marginLeft:(-W/2)+'px',marginTop:(-H/2)+'px'});
   });
-  const cw=D.cards.reduce((m,c)=>Math.max(m,c.w),0)*.6;
-  D.spread=N>1?Math.min((vw-40-cw)/(N-1),cw*.92,190):0;
+  D.S=S;
+  Object.assign(D.blade.style,{height:S+'px',marginTop:(-S/2)+'px'});
+  for(const k in last) if(k.startsWith('t')) delete last[k];
 }
 function setDeckCaption(i){
-  if(i===D.active) return; const first=D.active<0; D.active=i;
-  const tok=++D.capTok, g=PHOTOS[i];
-  D.num.textContent=String(i+1).padStart(2,'0');
-  D.num.animate([{transform:'translate3d(0,100%,0)',opacity:0},{transform:'none',opacity:1}],{duration:520,easing:'cubic-bezier(.16,1,.3,1)'});
-  const swap=()=>{ if(tok!==D.capTok) return; D.text.textContent=capOf(g);
-    D.text.animate([{transform:'translate3d(0,110%,0)',opacity:0},{transform:'none',opacity:1}],{duration:650,easing:'cubic-bezier(.16,1,.3,1)'}); };
-  if(first) return swap();
-  D.text.animate([{transform:'none',opacity:1},{transform:'translate3d(0,-110%,0)',opacity:0}],{duration:200,easing:'cubic-bezier(.5,0,.75,0)'}).finished.then(swap,swap);
+  if(i===D.active) return; const first=D.active<0, dir=i>D.active?1:-1; D.active=i;
+  const tok=++D.capTok, d=splitDish(capOf(PHOTOS[i]));
+  D.layers.forEach((L,k)=>L.tick.classList.toggle('on',k===i));
+  D.open.setAttribute('aria-label',capOf(PHOTOS[i]));
+  const E='cubic-bezier(.16,1,.3,1)';
+  const els=[D.num,D.title,D.parts];
+  const show=()=>{ if(tok!==D.capTok) return;
+    els.forEach(el=>el.getAnimations().forEach(an=>an.cancel()));
+    D.num.textContent=(ROMAN[i]||String(i+1));
+    D.title.textContent=d.title; D.parts.textContent=d.parts;
+    [D.num,D.title,D.parts].forEach((el,k)=>el.animate([{transform:`translate3d(0,${105*dir}%,0)`,opacity:0},{transform:'none',opacity:1}],{duration:700,delay:k*70,easing:E,fill:'backwards'})); };
+  if(first) return show();
+  els.forEach(el=>el.getAnimations().forEach(an=>an.cancel()));
+  Promise.all(els.map(el=>el.animate([{transform:'none',opacity:1},{transform:`translate3d(0,${-105*dir}%,0)`,opacity:0}],{duration:220,easing:'cubic-bezier(.5,0,.75,0)',fill:'forwards'}).finished)).then(show,show);
 }
-/* gallery scene timeline: plates land (N units) → pile rises onto the ring (1 unit) → ring turns (N-1 stops) */
-function deckPhases(N){
-  const RU=.62, T=N+1+(N-1)*RU;
-  return {T, fanAt:N/T, ringAt:(N+1)/T, step:Math.PI*2/N};
+function goCourse(i){
+  if(!M.gal) return; const N=PHOTOS.length, T=deckPhases(N).T;
+  animScroll(M.gal.top+Math.min(1,i/T)*M.gal.span,0,null,easeIO);
 }
 function renderDeck(y){
   if(!M.gal) return;
-  const N=PHOTOS.length, vh=M.vh, bh=D.bh||400;
-  const P=deckPhases(N), enter=clamp((y+vh-M.gal.top)/vh), p=pin(M.gal,y);
-  const arr=clamp(enter*.85+(p/P.fanAt)*(N-.85),0,N);        // plates landed (continuous)
-  const f=easeIO(seg(p,P.fanAt,P.ringAt)); D.fan=f;           // pile → ring
-  const s=seg(p,P.ringAt,1);                                    // ring turning
-  const spin=-(N-1)*P.step*(1-s);
-  D.top=Math.min(N-1,Math.floor(arr-.35));
-  const R=D.R||220, wrap=x=>{x=(x+Math.PI)%(Math.PI*2); if(x<0)x+=Math.PI*2; return x-Math.PI;};
-  let front=0, best=9;
-  D.cards.forEach((c,i)=>{
-    const a=easeOutQ(clamp(arr-i)), dep=Math.min(3.2,Math.max(0,arr-i-1));
-    // flight in + sinking into the pile
-    let tx=(1-a)*c.drift, ty=(1-a)*vh*.95-dep*bh*.05, tz=0, rz=(1-a)*c.from+a*c.tilt+dep*c.tilt*.4, ry=0;
-    let sc=(1.14-.14*a)*(1-.07*dep), shade=Math.min(.5,.15*dep), glow=Math.max(0,1-Math.abs(arr-(i+1))*1.1), zi=10+i;
-    if(f>0){
-      // on the ring: plates orbit the centre, viewed from slightly above; the front plate faces you
-      const ang=wrap(i*P.step+spin), cz=Math.cos(ang);
-      const rsc=Math.min(.66,(innerWidth*.5)/c.w)*(.9+.14*Math.max(0,cz));
-      const rx=R*Math.sin(ang), rzz=R*(cz-1), ryy=rzz*.24+bh*.06;
-      const rShade=.55*(1-cz)/2, rGlow=Math.max(0,1-Math.abs(ang)/P.step);
-      tx+=(rx-tx)*f; ty+=(ryy-ty)*f; tz=rzz*f; rz*=1-f; ry=(-ang*180/Math.PI*.55)*f;
-      sc+=(rsc-sc)*f; shade+=(rShade-shade)*f; glow+=(rGlow-glow)*f;
-      if(f>.5) zi=200+Math.round(cz*100);
-      if(Math.abs(ang)<best){best=Math.abs(ang); front=i;}
+  const N=PHOTOS.length, vh=M.vh, T=deckPhases(N).T;
+  const enter=clamp((y+vh-M.gal.top)/vh), p=pin(M.gal,y);
+  const u=Math.min(N-1,p*T);                                   // 0 = first course … N-1 = last
+  const idx=Math.min(N-1,Math.floor(u)), frac=u-idx;
+  const c=idx>=N-1?0:easeIO(seg(frac,.3,.92));                 // the cut (rests at the start of each course)
+  const S=D.S||800, half=S/2, sweep=D.diag*.62+2;
+  const lineX=sweep-(2*sweep)*c;                                // blade position along the cut axis
+  // whole frame rises in as the section arrives
+  const e=easeOutQ(enter);
+  put('tF',D.frame,'transform',`translate3d(0,${((1-e)*60).toFixed(1)}px,0) scale(${(.94+.06*e).toFixed(4)})`);
+  put('tFo',D.frame,'opacity',seg(enter,.1,.6).toFixed(3));
+  D.layers.forEach((L,i)=>{
+    let vis='hidden', mx=-S, inS=1, sh=0;
+    if(i===idx){ vis='visible'; mx=0; inS=1-.05*c; sh=.35*c; }
+    else if(i===idx+1&&c>0){ vis='visible'; mx=lineX+half; inS=1.1-.1*c; }
+    if(i===idx&&enter<1) inS*=1.12-.12*e;
+    put('tv'+i,L.mask,'visibility',vis);
+    if(vis==='visible'){
+      put('tm'+i,L.mask,'transform',`rotate(${CUT_DEG}deg) translate3d(${mx.toFixed(1)}px,0,0)`);
+      put('ti'+i,L.inner,'transform',`translate3d(${(-mx).toFixed(1)}px,0,0) rotate(${-CUT_DEG}deg)`);
+      put('tim'+i,L.img,'transform',`scale(${inS.toFixed(4)})`);
+      put('ts'+i,L.shade,'opacity',sh.toFixed(3));
     }
-    put('kT'+i,c.card,'transform',`translate3d(${tx.toFixed(1)}px,${ty.toFixed(1)}px,${tz.toFixed(1)}px) rotateY(${ry.toFixed(2)}deg) rotate(${rz.toFixed(2)}deg) scale(${sc.toFixed(4)})`);
-    put('kZ'+i,c.card,'zIndex',String(zi));
-    put('kO'+i,c.card,'opacity',(a>0.001?1:0).toString());
-    put('kI'+i,c.img,'transform',`scale(${(1.28-.28*a+.04*dep*(1-f)).toFixed(4)})`);
-    put('kS'+i,c.shade,'opacity',shade.toFixed(3));
-    put('kG'+i,c.glow,'opacity',(glow*(1-f*.25)).toFixed(3));
   });
-  D.front=f>.5?front:-1;
-  if(f>.5) setDeckCaption(front);
-  else if(arr>.4) setDeckCaption(Math.min(N-1,Math.max(0,Math.round(arr-1))));
-  put('kCap',D.cap,'opacity',(seg(arr,.3,.8)).toFixed(3));
-  put('kHint',D.hint,'opacity',seg(f,.6,1).toFixed(3));
-  if(D.head) put('kHd',D.head,'transform',`translate3d(0,${(-seg(p,0,.25)*12).toFixed(1)}px,0)`);
+  // the blade: a fine gold line with a glint, only while cutting
+  const bo=c>0&&c<1?Math.sin(Math.PI*c):0;
+  put('tbT',D.blade,'transform',`rotate(${CUT_DEG}deg) translate3d(${lineX.toFixed(1)}px,0,0)`);
+  put('tbO',D.blade,'opacity',bo.toFixed(3));
+  setDeckCaption(c>.5?idx+1:idx);
+  put('tC',D.card,'opacity',seg(enter,.35,.85).toFixed(3));
+  put('tCT',D.card,'transform',`translate3d(0,${((1-easeOutQ(seg(enter,.35,1)))*24).toFixed(1)}px,0)`);
+  if(D.head) put('tHd',D.head,'transform',`translate3d(0,${(-seg(p,0,.2)*10).toFixed(1)}px,0)`);
 }
 
 /* masonry grid: used when the visitor prefers reduced motion */
@@ -1029,8 +1024,8 @@ function renderGallery(){
   if(RM) return renderMasonry();
   if(!D.on) buildDeck();
   else { // language change: refresh captions in place
-    D.cards.forEach((c,i)=>{ c.img.alt=capOf(c.g); c.card.querySelector('button').setAttribute('aria-label',capOf(c.g)); });
-    if(D.active>=0) D.text.textContent=capOf(PHOTOS[D.active]);
+    D.layers.forEach(L=>{ L.img.alt=capOf(L.g); });
+    if(D.active>=0){ const d=splitDish(capOf(PHOTOS[D.active])); D.title.textContent=d.title; D.parts.textContent=d.parts; D.open.setAttribute('aria-label',capOf(PHOTOS[D.active])); }
     D.hint.innerHTML=I18N[lang]['kt.hint']||'';
   }
 }
