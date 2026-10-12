@@ -4,8 +4,9 @@ import { GALLERY } from './gallery.js';
 /* ===== Edit these if details change ===== */
 const CONFIG = {
   email: 'alexis@papadimitriou.uk',
-  phone: '+447856779459',            // used for call + WhatsApp links
-  phoneDisplay: '+44 7856 779459',
+  phone: '+306945009919',            // Greek number: call link + shown on the site
+  phoneDisplay: '+30 694 500 9919',
+  whatsapp: '+447856779459',         // WhatsApp link (UK number)
   turnstileSiteKey: '0x4AAAAAAFUZ8kLv46CVO1UJ', // Cloudflare → Turnstile → your widget → Site key (public)
   api: '/api/enquiry'
 };
@@ -48,7 +49,7 @@ $$('.olive').forEach(e=>e.innerHTML=branch());
 
 /* ---- contact links ---- */
 $('#lnk-tel').href='tel:'+CONFIG.phone; $('#tel-txt').textContent=CONFIG.phoneDisplay;
-$('#lnk-wa').href='https://wa.me/'+CONFIG.phone.replace(/\D/g,'');
+$('#lnk-wa').href='https://wa.me/'+CONFIG.whatsapp.replace(/\D/g,'');
 $('#lnk-mail').href='mailto:'+CONFIG.email; $('#mail-txt').textContent=CONFIG.email;
 $('#f-date').min=new Date().toISOString().slice(0,10);
 
@@ -402,6 +403,13 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
   #veil i{display:block;height:1px;width:0;background:#b8914f;transition:width .8s cubic-bezier(.16,1,.3,1)}
   #veil.on i{width:110px;transition-delay:.15s}
   html.rm #veil{display:none}
+  /* frosted menu bar once you scroll, so it stays readable over photos and text */
+  header::before{content:"";position:absolute;inset:0;z-index:-1;opacity:0;pointer-events:none;
+    background:rgba(240,233,222,.8);-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);
+    border-bottom:1px solid rgba(32,37,26,.08);box-shadow:0 10px 30px -22px rgba(32,37,26,.5);transition:opacity .45s ease,background-color .45s ease,border-color .45s ease}
+  header.scrolled::before{opacity:1}
+  header.dark::before{background:rgba(26,30,21,.78);border-bottom-color:rgba(214,182,121,.14)}
+  header{padding-top:max(12px,env(safe-area-inset-top))!important;padding-bottom:12px!important;transition:color .45s ease}
   /* plate stack */
   #kitchen.deck-mode{padding:0!important;overflow:visible}
   .kstage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(14px,2.5vh,28px);overflow:hidden;background:var(--cream);padding-top:clamp(64px,9vh,96px);box-sizing:border-box}
@@ -418,13 +426,15 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
   .k-card button:focus-visible{outline:2px solid var(--gold);outline-offset:-4px}
   .k-card img{width:100%;height:100%;object-fit:cover;display:block;will-change:transform}
   .k-shade{position:absolute;inset:0;background:#15180f;opacity:0;pointer-events:none}
-  .k-cap{position:relative;z-index:3;text-align:center;min-height:86px;padding:0 20px;opacity:0}
-  .k-count{display:flex;align-items:center;justify-content:center;gap:10px;font:500 11px var(--sans);letter-spacing:.3em;color:var(--gold);overflow:hidden}
+  .k-cap{position:relative;z-index:4;text-align:center;padding:14px 26px 16px;opacity:0;max-width:min(560px,calc(100vw - 32px));
+    background:rgba(246,241,233,.78);-webkit-backdrop-filter:blur(18px) saturate(1.25);backdrop-filter:blur(18px) saturate(1.25);
+    border:1px solid rgba(184,145,79,.28);border-radius:20px;box-shadow:0 18px 40px -22px rgba(32,37,26,.45)}
+  .k-count{display:flex;align-items:center;justify-content:center;gap:10px;font:600 11px var(--sans);letter-spacing:.3em;color:#9a7638;overflow:hidden}
   .k-count i{width:26px;height:1px;background:var(--gold)}
   .k-num{display:inline-block}
-  .k-text{overflow:hidden;margin-top:10px;padding-bottom:.1em}
-  .k-text span{display:inline-block;font-family:var(--serif);font-style:italic;font-size:clamp(20px,3.4vw,30px);line-height:1.25;color:var(--olive)}
-  .k-hint{position:absolute;left:0;right:0;top:100%;margin-top:8px;font:500 10px var(--sans);letter-spacing:.3em;text-transform:uppercase;color:var(--leaf);opacity:0}
+  .k-text{overflow:hidden;margin-top:6px;padding-bottom:.12em}
+  .k-text span{display:inline-block;font-family:var(--serif);font-style:italic;font-weight:500;font-size:clamp(20px,3.2vw,28px);line-height:1.25;color:var(--olive)}
+  .k-hint{position:absolute;left:0;right:0;top:calc(100% + 12px);margin:0;font:600 10px var(--sans);letter-spacing:.28em;text-transform:uppercase;color:var(--leaf);opacity:0}
   /* language curtain */
   #lswap{position:fixed;inset:0;z-index:97;visibility:hidden;pointer-events:none;overflow:hidden}
   .ls-panel{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,#353c2b,#1b2016 75%);transform:translate3d(0,100%,0);will-change:transform;display:flex;align-items:center;justify-content:center}
@@ -664,6 +674,25 @@ function frame(t){
 }
 function tick(){ sy=scrollY; render(sy,sy); }          // instant sync (load, resize, language)
 addEventListener('scroll',()=>{ if(!loop) loop=requestAnimationFrame(frame); },{passive:true});
+/* plate stack: when scrolling stops mid-way, glide to the nearest plate (or the final fan) */
+let snapT=0, touching=false;
+addEventListener('touchstart',()=>{touching=true; clearTimeout(snapT);},{passive:true});
+addEventListener('touchend',()=>{touching=false; queueSnap(180);},{passive:true});
+addEventListener('scroll',()=>queueSnap(170),{passive:true});
+function queueSnap(ms){ clearTimeout(snapT); snapT=setTimeout(deckSnap,ms); }
+function deckSnap(){
+  if(RM||!D.on||!M.gal||touching||anim||sw||navBusy) return;
+  const y=scrollY, top=M.gal.top, span=M.gal.span;
+  if(y<=top+2||y>=top+span-2) return;
+  const N=PHOTOS.length, fanAt=N/(N+1.15);
+  const pts=[]; for(let k=1;k<=N;k++) pts.push(clamp((k-.85)*fanAt/(N-.85)));
+  pts.push(1);
+  const p=(y-top)/span; let best=pts[0];
+  for(const q of pts) if(Math.abs(q-p)<Math.abs(best-p)) best=q;
+  const ty=top+best*span;
+  if(Math.abs(ty-y)<3) return;
+  animScroll(ty,Math.min(700,Math.max(380,Math.abs(ty-y)*.9)),null,easeOut);
+}
 // Re-measure only when the width really changes (rotation, desktop resize) — not when
 // the mobile address bar slides in/out, which is what caused the jumping.
 let rzT=0;

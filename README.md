@@ -182,7 +182,7 @@ Have the policies checked by Alexis's accountant or a lawyer. They are a solid s
 
 | What | Where |
 |---|---|
-| Phone, email, Turnstile site key | `CONFIG` at the top of `app.js` |
+| Phone (Greek), WhatsApp (UK), email, Turnstile site key | `CONFIG` at the top of `app.js` |
 | Business details for the Legal notice | `LEGAL_INFO` in `app.js` |
 | All text (EN + GR) | `i18n.js`: edit **both** `en` and `el` |
 | Legal page wording | `legalPages()` in `app.js` |
@@ -199,7 +199,7 @@ Have the policies checked by Alexis's accountant or a lawyer. They are a solid s
 - [ ] Both `/` and `/el/` read correctly, and the statement words light up on scroll in both.
 - [ ] Sharing the link on WhatsApp shows the preview image.
 - [ ] The sitemap is submitted in Search Console.
-- [ ] The call and WhatsApp links open `+44 7856 779459`.
+- [ ] The call link opens `+30 694 500 9919` and WhatsApp opens `+44 7856 779459`.
 - [ ] A test enquiry reaches Gmail, and the confirmation reaches the test address.
 - [ ] `LEGAL_INFO` is filled in.
 - [ ] The business card matches the site's phone number and email.
