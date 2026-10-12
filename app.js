@@ -5,7 +5,7 @@ const CONFIG = {
   email: 'alexis@papadimitriou.uk',
   phone: '+447856779459',            // used for call + WhatsApp links
   phoneDisplay: '+44 7856 779459',
-  turnstileSiteKey: 'REPLACE_WITH_TURNSTILE_SITE_KEY', // Cloudflare → Turnstile → your widget → Site key (public)
+  turnstileSiteKey: '0x4AAAAAAFUZ8kLv46CVO1UJ', // Cloudflare → Turnstile → your widget → Site key (public)
   api: '/api/enquiry'
 };
 
