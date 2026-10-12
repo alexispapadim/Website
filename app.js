@@ -411,6 +411,12 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
   #veil i{display:block;height:1px;width:0;background:#b8914f;transition:width .8s cubic-bezier(.16,1,.3,1)}
   #veil.on i{width:110px;transition-delay:.15s}
   html.rm #veil{display:none}
+  /* logo homecoming */
+  .hc{position:fixed;inset:0;z-index:98;pointer-events:none;overflow:hidden}
+  .hc-disc{position:absolute;border-radius:50%;background:radial-gradient(circle at 50% 50%,#f4eee5,#ece4d8 60%);transform:scale(0);will-change:transform,opacity}
+  .hc-ring{position:absolute;border-radius:50%;border:1px solid #b8914f;transform:scale(0);will-change:transform,opacity}
+  .hc-ap{position:absolute;display:flex;align-items:flex-end;font-family:'Cormorant Garamond','GFS Didot',Georgia,serif;line-height:.8;color:#20251a;will-change:transform,opacity;white-space:nowrap}
+  .hc-ap span{font-size:.7em;margin-left:-.36em;transform:translateY(.24em)}
   /* frosted menu bar once you scroll, so it stays readable over photos and text */
   header::before{content:"";position:absolute;inset:0;z-index:-1;opacity:0;pointer-events:none;
     background:rgba(240,233,222,.8);-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);
@@ -427,7 +433,7 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
   .kstage .kitchen-head h2{font-size:clamp(32px,6.4vw,68px)}
   .k-glows{position:absolute;inset:0;pointer-events:none;z-index:0}
   .k-glow{position:absolute;left:50%;top:52%;width:130vmax;height:130vmax;margin:-65vmax 0 0 -65vmax;opacity:0;will-change:opacity}
-  .k-deck{position:relative;width:100%;z-index:2}
+  .k-deck{position:relative;width:100%;z-index:2;perspective:1100px;perspective-origin:50% 35%}
   .k-card{position:absolute;left:50%;top:50%;margin:0;border-radius:18px;overflow:hidden;opacity:0;will-change:transform;
     box-shadow:0 30px 60px -28px rgba(25,22,14,.55),0 6px 16px -8px rgba(25,22,14,.25);background:var(--cream-2);transform-origin:50% 60%;backface-visibility:hidden}
   .k-card button{all:unset;display:block;width:100%;height:100%;cursor:zoom-in;position:relative}
@@ -615,12 +621,69 @@ function goTo(hash,instant){
     setTimeout(()=>{ veil.classList.remove('on'); setTimeout(after,180); navBusy=false; },260);
   },520);
 }
+/* ---- logo click: "homecoming" ----
+   A cream circle blooms out of the logo and fills the screen; the AP monogram lifts out of the
+   menu bar, grows and flies to the centre; behind the cream we return to the top; the monogram
+   lands exactly on the opening monogram, the olive branch regrows and the cream melts away.   */
+let homeBusy=false;
+async function homecoming(link){
+  if(homeBusy||navBusy) return;
+  if(RM||scrollY<8){ goTo('#top'); return; }
+  homeBusy=true; stopAnim();
+  const from=link.getBoundingClientRect();
+  const cx=from.left+Math.min(from.width,44)/2, cy=from.top+from.height/2;
+  const rad=Math.hypot(Math.max(cx,innerWidth-cx),Math.max(cy,innerHeight-cy))+4;
+  const wrapEl=document.createElement('div'); wrapEl.className='hc'; wrapEl.setAttribute('aria-hidden','true');
+  const disc=document.createElement('i'); disc.className='hc-disc';
+  Object.assign(disc.style,{width:rad*2+'px',height:rad*2+'px',left:(cx-rad)+'px',top:(cy-rad)+'px'});
+  const ring=document.createElement('i'); ring.className='hc-ring';
+  Object.assign(ring.style,{width:rad*2+'px',height:rad*2+'px',left:(cx-rad)+'px',top:(cy-rad)+'px'});
+  const fly=document.createElement('span'); fly.className='hc-ap'; fly.innerHTML='A<span>P</span>';
+  wrapEl.append(disc,ring,fly); document.body.append(wrapEl);
+  // start the flying monogram exactly on top of the menu-bar logo
+  const logoTxt=link.firstChild&&link.firstChild.nodeType===3?link:link;
+  const fs0=parseFloat(getComputedStyle(link).fontSize)||26;
+  fly.style.fontSize=fs0+'px'; fly.style.left=from.left+'px'; fly.style.top=from.top+'px';
+  const f0=fly.getBoundingClientRect();
+  fly.style.transformOrigin='0 0';
+  const E1='cubic-bezier(.7,0,.2,1)', E2='cubic-bezier(.16,1,.3,1)';
+  link.style.visibility='hidden';
+  disc.animate([{transform:'scale(0)'},{transform:'scale(1)'}],{duration:820,easing:E1,fill:'forwards'});
+  ring.animate([{transform:'scale(0)',opacity:1},{transform:'scale(1.02)',opacity:.0}],{duration:1000,delay:60,easing:E1,fill:'forwards'});
+  // phase 1: lift and grow towards the centre
+  const mid=fly.animate([{transform:'translate3d(0,0,0) scale(1)'},
+    {transform:`translate3d(${innerWidth/2-f0.left-f0.width*1.8}px,${innerHeight*.42-f0.top-f0.height*1.8}px,0) scale(3.6)`}],
+    {duration:820,easing:E1,fill:'forwards'});
+  await mid.finished;
+  // behind the cream: back to the top, restart the opening monogram
+  scrollTo(0,0); sy=0; tick();
+  document.body.classList.remove('loaded'); void document.body.offsetWidth;
+  await wait(40);
+  const target=document.querySelector('#mono .ap')||document.querySelector('#mono');
+  const t=target.getBoundingClientRect(), tfs=parseFloat(getComputedStyle(target).fontSize)||120;
+  const k=tfs/fs0;
+  const cur=fly.getBoundingClientRect();
+  // phase 2: land on the opening monogram
+  const land=fly.animate([{transform:mid.effect.getKeyframes()[1].transform},
+    {transform:`translate3d(${t.left-f0.left}px,${t.top+t.height-f0.top-f0.height*k}px,0) scale(${k})`}],
+    {duration:760,easing:E2,fill:'forwards'});
+  setTimeout(()=>document.body.classList.add('loaded'),260);    // olive branch regrows, letters rise
+  await wait(380);
+  disc.animate([{opacity:1},{opacity:0}],{duration:700,easing:'ease',fill:'forwards'});
+  await land.finished;
+  fly.animate([{opacity:1},{opacity:0}],{duration:500,easing:'ease',fill:'forwards'});
+  link.style.visibility='';
+  try{history.replaceState(null,'',location.pathname+location.search)}catch(_){}
+  await wait(520);
+  wrapEl.remove(); homeBusy=false;
+}
 document.addEventListener('click',e=>{
   const a=e.target.closest('a[href^="#"]'); if(!a)return;
   const h=a.getAttribute('href'), key=h.slice(1);
   if(LEGAL_KEYS.includes(key)){ e.preventDefault(); openLegal(key, sheet.hidden); return; }
   if(h.length<2)return;
-  e.preventDefault(); if(!sheet.hidden) closeLegal(); goTo(h);
+  e.preventDefault(); if(!sheet.hidden) closeLegal();
+  if(h==='#top'&&a.classList.contains('brand')) homecoming(a); else goTo(h);
   try{history.replaceState(null,'',h==='#top'?location.pathname+location.search:h)}catch(_){}
 });
 
@@ -692,9 +755,9 @@ function deckSnap(){
   if(RM||!D.on||!M.gal||touching||anim||sw||navBusy) return;
   const y=scrollY, top=M.gal.top, span=M.gal.span;
   if(y<=top+2||y>=top+span-2) return;
-  const N=PHOTOS.length, fanAt=N/(N+1.15);
-  const pts=[]; for(let k=1;k<=N;k++) pts.push(clamp((k-.85)*fanAt/(N-.85)));
-  pts.push(1);
+  const N=PHOTOS.length, P=deckPhases(N);
+  const pts=[]; for(let k=1;k<=N;k++) pts.push(clamp((k-.85)*P.fanAt/(N-.85)));
+  for(let k=N-1;k>=0;k--) pts.push(P.ringAt+(N-1-k)/Math.max(1,N-1)*(1-P.ringAt));
   const p=(y-top)/span; let best=pts[0];
   for(const q of pts) if(Math.abs(q-p)<Math.abs(best-p)) best=q;
   const ty=top+best*span;
@@ -835,7 +898,14 @@ function buildDeck(){
     if(i>1) img.loading='lazy';
     const shade=document.createElement('i'); shade.className='k-shade';
     btn.append(img,shade); card.append(btn); D.deck.append(card);
-    btn.addEventListener('click',()=>{ if(D.fan>.85||D.top===i) openLightbox(i); });
+    btn.addEventListener('click',()=>{
+      if(D.fan>.85){
+        if(D.front===i) return openLightbox(i);
+        const N=PHOTOS.length, P=deckPhases(N), k=Math.min(N-1,i), sp=P.ringAt+(N-1-k)/Math.max(1,N-1)*(1-P.ringAt);
+        return animScroll(M.gal.top+sp*M.gal.span,700,null,easeIO);
+      }
+      if(D.top===i) openLightbox(i);
+    });
     const glow=document.createElement('i'); glow.className='k-glow'; D.glows.append(glow);
     // tint the glow with the dish's own colours
     const tint=()=>{ try{ const c=document.createElement('canvas'); c.width=c.height=6; const x=c.getContext('2d');
@@ -856,7 +926,8 @@ function buildDeck(){
 function layoutDeck(){
   if(!D.on) return;
   const N=PHOTOS.length, vw=innerWidth, vh=M.vh;
-  kitchen.style.height=Math.round(vh*(1.1+N*.85))+'px';
+  kitchen.style.height=Math.round(vh*(1.1+deckPhases(N).T*.8))+'px';
+  D.R=Math.min(innerWidth*.36,480,vh*.5);
   const headH=D.head?D.head.offsetHeight:0, capH=D.cap.offsetHeight||90;
   const avail=Math.max(240,vh-headH-capH-Math.min(96,Math.max(64,vh*.09))-110);
   const bh=Math.min(avail,(vw-72)*1.25,620);
@@ -882,39 +953,50 @@ function setDeckCaption(i){
   if(first) return swap();
   D.text.animate([{transform:'none',opacity:1},{transform:'translate3d(0,-110%,0)',opacity:0}],{duration:200,easing:'cubic-bezier(.5,0,.75,0)'}).finished.then(swap,swap);
 }
+/* gallery scene timeline: plates land (N units) → pile rises onto the ring (1 unit) → ring turns (N-1 stops) */
+function deckPhases(N){
+  const RU=.62, T=N+1+(N-1)*RU;
+  return {T, fanAt:N/T, ringAt:(N+1)/T, step:Math.PI*2/N};
+}
 function renderDeck(y){
   if(!M.gal) return;
   const N=PHOTOS.length, vh=M.vh, bh=D.bh||400;
-  const enter=clamp((y+vh-M.gal.top)/vh);
-  const p=pin(M.gal,y);
-  const fanAt=N/(N+1.15);
-  const arr=clamp(enter*.85+(p/fanAt)*(N-.85),0,N);         // how many plates have landed (continuous)
-  const fan=easeIO(seg(p,fanAt+.02,1)); D.fan=fan;
+  const P=deckPhases(N), enter=clamp((y+vh-M.gal.top)/vh), p=pin(M.gal,y);
+  const arr=clamp(enter*.85+(p/P.fanAt)*(N-.85),0,N);        // plates landed (continuous)
+  const f=easeIO(seg(p,P.fanAt,P.ringAt)); D.fan=f;           // pile → ring
+  const s=seg(p,P.ringAt,1);                                    // ring turning
+  const spin=-(N-1)*P.step*(1-s);
   D.top=Math.min(N-1,Math.floor(arr-.35));
-  const mid=(N-1)/2;
+  const R=D.R||220, wrap=x=>{x=(x+Math.PI)%(Math.PI*2); if(x<0)x+=Math.PI*2; return x-Math.PI;};
+  let front=0, best=9;
   D.cards.forEach((c,i)=>{
     const a=easeOutQ(clamp(arr-i)), dep=Math.min(3.2,Math.max(0,arr-i-1));
-    // flight in
-    let tx=(1-a)*c.drift, ty=(1-a)*vh*.95, rot=(1-a)*c.from+a*c.tilt, sc=1.14-.14*a;
-    // sinking into the pile
-    sc*=1-.07*dep; ty-=dep*bh*.05; rot+=dep*c.tilt*.4;
-    let shade=Math.min(.5,.15*dep);
-    // fan out at the end
-    if(fan>0){
-      const k=i-mid, fsc=Math.min(.62,(innerWidth-30)/(c.w*1.25));
-      tx=tx*(1-fan)+k*D.spread*fan; ty=ty*(1-fan)+(Math.abs(k)*k*0+Math.abs(k)*bh*.05-bh*.04)*fan;
-      rot=rot*(1-fan)+k*7*fan; sc=sc*(1-fan)+fsc*fan; shade*=1-fan;
+    // flight in + sinking into the pile
+    let tx=(1-a)*c.drift, ty=(1-a)*vh*.95-dep*bh*.05, tz=0, rz=(1-a)*c.from+a*c.tilt+dep*c.tilt*.4, ry=0;
+    let sc=(1.14-.14*a)*(1-.07*dep), shade=Math.min(.5,.15*dep), glow=Math.max(0,1-Math.abs(arr-(i+1))*1.1), zi=10+i;
+    if(f>0){
+      // on the ring: plates orbit the centre, viewed from slightly above; the front plate faces you
+      const ang=wrap(i*P.step+spin), cz=Math.cos(ang);
+      const rsc=Math.min(.66,(innerWidth*.5)/c.w)*(.9+.14*Math.max(0,cz));
+      const rx=R*Math.sin(ang), rzz=R*(cz-1), ryy=rzz*.24+bh*.06;
+      const rShade=.55*(1-cz)/2, rGlow=Math.max(0,1-Math.abs(ang)/P.step);
+      tx+=(rx-tx)*f; ty+=(ryy-ty)*f; tz=rzz*f; rz*=1-f; ry=(-ang*180/Math.PI*.55)*f;
+      sc+=(rsc-sc)*f; shade+=(rShade-shade)*f; glow+=(rGlow-glow)*f;
+      if(f>.5) zi=200+Math.round(cz*100);
+      if(Math.abs(ang)<best){best=Math.abs(ang); front=i;}
     }
-    put('kT'+i,c.card,'transform',`translate3d(${tx.toFixed(1)}px,${ty.toFixed(1)}px,0) rotate(${rot.toFixed(2)}deg) scale(${sc.toFixed(4)})`);
+    put('kT'+i,c.card,'transform',`translate3d(${tx.toFixed(1)}px,${ty.toFixed(1)}px,${tz.toFixed(1)}px) rotateY(${ry.toFixed(2)}deg) rotate(${rz.toFixed(2)}deg) scale(${sc.toFixed(4)})`);
+    put('kZ'+i,c.card,'zIndex',String(zi));
     put('kO'+i,c.card,'opacity',(a>0.001?1:0).toString());
-    put('kI'+i,c.img,'transform',`scale(${(1.28-.28*a+.04*dep*(1-fan)).toFixed(4)})`);
+    put('kI'+i,c.img,'transform',`scale(${(1.28-.28*a+.04*dep*(1-f)).toFixed(4)})`);
     put('kS'+i,c.shade,'opacity',shade.toFixed(3));
-    put('kG'+i,c.glow,'opacity',(Math.max(0,1-Math.abs(arr-(i+1))*1.1)*(1-fan*.6)).toFixed(3));
+    put('kG'+i,c.glow,'opacity',(glow*(1-f*.25)).toFixed(3));
   });
-  if(arr>.4) setDeckCaption(Math.min(N-1,Math.max(0,Math.round(arr-1))));
+  D.front=f>.5?front:-1;
+  if(f>.5) setDeckCaption(front);
+  else if(arr>.4) setDeckCaption(Math.min(N-1,Math.max(0,Math.round(arr-1))));
   put('kCap',D.cap,'opacity',(seg(arr,.3,.8)).toFixed(3));
-  put('kHint',D.hint,'opacity',seg(fan,.6,1).toFixed(3));
-  put('kTxt',D.text.parentNode,'opacity',(1-seg(fan,.1,.5)*.0).toFixed(3));
+  put('kHint',D.hint,'opacity',seg(f,.6,1).toFixed(3));
   if(D.head) put('kHd',D.head,'transform',`translate3d(0,${(-seg(p,0,.25)*12).toFixed(1)}px,0)`);
 }
 

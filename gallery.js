@@ -15,4 +15,5 @@ export const GALLERY = [
   { file: 'food-5.jpg', w: 1000, h: 1250, en: 'Salmon sashimi, pickled ginger, wasabi',          el: 'Σασίμι σολομού, πίκλα τζίντζερ, γουασάμπι' },
   { file: 'food-4.jpg', w: 1200, h: 800,  en: 'On the pass',                                     el: 'Στο πάσο της κουζίνας' },
   { file: 'food-2.jpg', w: 1000, h: 1250, en: 'Tuna sashimi, jalapeño, coriander',               el: 'Σασίμι τόνου, χαλαπένιο, κόλιανδρος' },
+  { file: 'food-6.jpg', w: 1000, h: 1250, en: 'Seared sirloin, tenderstem broccoli, crispy garlic', el: 'Κόντρα φιλέτο, μπροκολίνι, τραγανό σκόρδο' },
 ];
