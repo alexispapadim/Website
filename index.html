@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Alexis Papadimitriou — Private Chef & Catering</title>
+<meta name="description" content="Private chef and catering for events and groups in Athens and London. Michelin-trained. Enquire for your date.">
+<meta name="theme-color" content="#20251a">
+<meta property="og:title" content="Alexis Papadimitriou — Private Chef & Catering">
+<meta property="og:description" content="Michelin-trained private chef for dinners, celebrations and events. Athens & London.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2320251a'/%3E%3Ctext x='32' y='43' font-family='Georgia,serif' font-size='30' fill='%23d6b679' text-anchor='middle'%3EAP%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=GFS+Didot&family=Pinyon+Script&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#ece4d8; --cream-2:#e2d7c6; --paper:#f4eee5;
+  --olive:#20251a; --olive-2:#2a3022; --olive-3:#353c2b; --leaf:#5b6640;
+  --gold:#b8914f; --gold-l:#d6b679;
+  --serif:'Cormorant Garamond','GFS Didot',Georgia,serif;
+  --script:'Pinyon Script','Cormorant Garamond',cursive;
+  --sans:'Commissioner',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --vh:100vh; --pad:clamp(20px,6vw,88px);
+  color-scheme:light;
+}
+@supports (height:100svh){:root{--vh:100svh}}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--olive);color:var(--olive);font-family:var(--sans);font-weight:300;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+img,svg{display:block}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- header ---------- */
+header{position:fixed;inset:0 0 auto 0;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px var(--pad);padding-top:max(14px,env(safe-area-inset-top));color:var(--olive);transition:color .5s ease}
+header.dark{color:var(--cream)}
+.brand{font-family:var(--serif);font-size:26px;letter-spacing:-.04em;text-decoration:none;display:flex;align-items:center;gap:10px}
+.brand small{font-family:var(--sans);font-size:10px;letter-spacing:.32em;text-transform:uppercase;opacity:0;transform:translateX(-6px);transition:.5s}
+header.scrolled .brand small{opacity:.8;transform:none}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.lang{display:flex;border:1px solid currentColor;border-radius:999px;padding:3px;opacity:.85}
+.lang button{background:none;border:0;color:inherit;font:500 11px var(--sans);letter-spacing:.14em;padding:6px 10px;border-radius:999px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--gold);color:var(--olive)}
+.cta{font:500 11px var(--sans);letter-spacing:.2em;text-transform:uppercase;text-decoration:none;padding:10px 16px;border-radius:999px;background:var(--gold);color:var(--olive);transition:transform .3s,background .3s}
+.cta:hover{background:var(--gold-l);transform:translateY(-1px)}
+.cta,.send button,.arw{-webkit-tap-highlight-color:transparent;transition:transform .18s cubic-bezier(.3,.7,.2,1),background .3s}
+.cta:active,.send button:active,.arw:active{transform:scale(.94)}
+
+/* ---------- pinned scenes ---------- */
+.pin{position:relative}
+.stage{position:sticky;top:0;height:var(--vh);overflow:hidden}
+
+/* hero */
+#hero{height:220vh;background:var(--cream)}
+.front{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:clamp(10px,3vw,40px);background:radial-gradient(ellipse at 50% 45%,var(--paper),var(--cream) 70%)}
+.rule{width:clamp(36px,22vw,340px);height:1px;background:var(--gold);position:relative;will-change:transform}
+.rule::after{content:"";position:absolute;top:-3.5px;width:7px;height:7px;background:var(--gold);transform:rotate(45deg)}
+.rule.l{transform-origin:right}.rule.l::after{left:-3px}
+.rule.r{transform-origin:left}.rule.r::after{right:-3px}
+.mono{display:flex;align-items:flex-end;will-change:transform,opacity;font-size:clamp(78px,15vw,170px)}
+.olive{width:.62em;margin-right:-.06em;margin-bottom:-.02em}
+.olive svg{width:100%;height:auto;overflow:visible}
+.ap{display:flex;align-items:flex-end;font-family:var(--serif);font-weight:400;line-height:.8;color:var(--olive)}
+.ap .p{font-size:.7em;margin-left:-.36em;transform:translateY(.24em)}
+.hint{position:absolute;bottom:calc(28px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);font:400 10px var(--sans);letter-spacing:.4em;text-transform:uppercase;color:var(--leaf);display:flex;flex-direction:column;align-items:center;gap:12px}
+.hint i{width:1px;height:42px;background:linear-gradient(var(--gold),transparent);animation:drip 2.2s ease-in-out infinite}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+.back{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,var(--olive-3),var(--olive) 70%);color:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 var(--pad);clip-path:circle(0% at 50% 52%)}
+.back .n{will-change:transform,opacity;opacity:0}
+.first{font-family:var(--serif);font-weight:400;font-size:clamp(52px,12vw,150px);letter-spacing:.16em;line-height:1;margin-right:-.16em}
+.script{font-family:var(--script);color:var(--gold-l);font-size:clamp(46px,10vw,124px);line-height:1;margin-top:-.08em}
+.orn{display:flex;align-items:center;gap:14px;width:min(520px,80vw);margin:22px 0 18px}
+.orn span{flex:1;height:1px;background:var(--gold)}
+.orn b{width:9px;height:9px;background:var(--gold);transform:rotate(45deg)}
+.tag{font:400 clamp(11px,1.6vw,15px) var(--sans);letter-spacing:.38em;text-transform:uppercase;color:var(--gold-l);margin-right:-.38em}
+.place{margin-top:20px;font-family:var(--serif);font-style:italic;font-size:clamp(17px,2.2vw,22px);opacity:.75}
+
+/* statement */
+#statement{height:180vh;background:var(--olive);color:var(--cream)}
+#statement .stage{display:flex;flex-direction:column;justify-content:center;padding:0 var(--pad)}
+.eyebrow{font:500 11px var(--sans);letter-spacing:.34em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:14px;margin-bottom:28px}
+.eyebrow::before{content:"";width:28px;height:1px;background:currentColor}
+.big{font-family:var(--serif);font-weight:300;font-size:clamp(31px,5.4vw,72px);line-height:1.12;letter-spacing:-.01em;max-width:18ch}
+.big{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.big .w{opacity:.14;transition:opacity .15s linear,color .5s ease,text-shadow .7s ease}
+.big em{font-style:italic;color:var(--gold-l)}
+@media(hover:hover){.big .w:hover{opacity:1!important;color:var(--gold-l)}}
+.big .w.on{opacity:1!important;transition:opacity .35s ease,color .5s ease,text-shadow .7s ease}
+.big .w.flash{color:var(--gold-l);text-shadow:0 0 26px rgba(214,182,121,.75)}
+.tap{margin-top:34px;font:400 10px var(--sans);letter-spacing:.36em;text-transform:uppercase;color:var(--gold);opacity:.7;display:flex;align-items:center;gap:10px;transition:opacity .5s}
+.tap::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1.8s ease-in-out infinite}
+.tap.gone{opacity:0}
+@keyframes pulse{0%,100%{transform:scale(.6);opacity:.5}50%{transform:scale(1.2);opacity:1}}
+
+/* sections */
+section.plain{padding:clamp(96px,16vh,180px) var(--pad);position:relative;overflow:hidden}
+.light{background:var(--cream);color:var(--olive)}
+.dark{background:var(--olive);color:var(--cream)}
+h2{font-family:var(--serif);font-weight:300;font-size:clamp(38px,6.4vw,86px);line-height:1.02;letter-spacing:-.015em}
+h2 em{font-style:italic;color:var(--gold)}
+.mask{overflow:hidden;padding-bottom:.08em}
+.mask>span{display:inline-block;transform:translateY(105%);transition:transform .8s cubic-bezier(.16,1,.3,1)}
+.in .mask>span,.mask.in>span{transform:none}
+[data-reveal]{opacity:0;transform:translateY(28px);transition:opacity .65s ease,transform .8s cubic-bezier(.16,1,.3,1);transition-delay:calc(var(--d,0) * 70ms)}
+[data-reveal].in{opacity:1;transform:none}
+
+/* about */
+#about .grid{display:grid;grid-template-columns:1fr;gap:48px;max-width:1200px;margin:0 auto;position:relative;z-index:1}
+@media(min-width:900px){#about .grid{grid-template-columns:1.1fr 1fr;align-items:end;gap:80px}}
+.lead{font-family:var(--serif);font-size:clamp(20px,2.3vw,27px);line-height:1.5;color:var(--olive-3)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:56px;border-top:1px solid rgba(32,37,26,.18);padding-top:28px;max-width:1200px;margin-left:auto;margin-right:auto;position:relative;z-index:1}
+.stat b{display:block;font-family:var(--serif);font-weight:300;font-size:clamp(40px,6vw,76px);line-height:1;color:var(--olive)}
+.stat b sup{color:var(--gold);font-size:.45em;vertical-align:.9em;margin-left:2px}
+.stat span{display:block;margin-top:10px;font-size:clamp(11px,1.2vw,13px);letter-spacing:.14em;text-transform:uppercase;color:var(--leaf);line-height:1.5}
+.watermark{position:absolute;right:-.12em;top:50%;font-family:var(--serif);font-size:clamp(280px,48vw,720px);line-height:1;color:var(--olive);opacity:.045;pointer-events:none;will-change:transform;letter-spacing:-.08em}
+
+/* horizontal occasions */
+#occasions{background:var(--olive);color:var(--cream)}
+#occasions .stage{display:flex;flex-direction:column;justify-content:center;gap:clamp(28px,5vh,56px)}
+#occasions .head{padding:0 var(--pad)}
+.hw{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;cursor:grab}
+.hw::-webkit-scrollbar{display:none}
+.hw.drag{cursor:grabbing}.hw.drag .card{pointer-events:none}
+.track{display:flex;gap:clamp(16px,2.4vw,32px);width:max-content;padding:0 var(--pad)}
+.hctl{display:flex;align-items:center;gap:14px;margin:0 var(--pad)}
+.arw{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid rgba(214,182,121,.4);background:none;color:var(--gold-l);font-size:18px;cursor:pointer;display:grid;place-items:center}
+.arw:hover{background:rgba(214,182,121,.12)}
+.card{width:min(78vw,420px);min-height:min(52vh,460px);border:1px solid rgba(214,182,121,.28);border-radius:22px;padding:clamp(24px,3vw,40px);display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,0) 60%);position:relative;overflow:hidden}
+.card .num{font-family:var(--serif);font-style:italic;font-size:22px;color:var(--gold)}
+.card h3{font-family:var(--serif);font-weight:400;font-size:clamp(32px,3.6vw,46px);line-height:1.05;margin:auto 0 14px}
+.card p{font-size:15px;line-height:1.65;opacity:.78;max-width:32ch}
+.card .olive{position:absolute;right:-14px;top:-10px;width:110px;opacity:.16;transform:rotate(18deg)}
+.bar{flex:1;height:1px;background:rgba(214,182,121,.2);position:relative}
+.bar i{position:absolute;inset:0;background:var(--gold);transform-origin:left;transform:scaleX(0)}
+
+/* process */
+#process .wrap{max-width:900px;margin:0 auto}
+.steps{position:relative;margin-top:64px;padding-left:44px}
+.steps::before,.steps .line{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:1px;background:rgba(32,37,26,.15)}
+.steps .line{background:var(--gold);transform-origin:top;transform:scaleY(0)}
+.step{position:relative;padding-bottom:56px}
+.step:last-child{padding-bottom:0}
+.step::before{content:"";position:absolute;left:-42px;top:12px;width:9px;height:9px;background:var(--cream);border:1px solid var(--gold);transform:rotate(45deg);transition:background .5s}
+.step.in::before{background:var(--gold)}
+.step small{font:500 11px var(--sans);letter-spacing:.3em;color:var(--gold);text-transform:uppercase}
+.step h3{font-family:var(--serif);font-weight:400;font-size:clamp(28px,3.4vw,42px);margin:6px 0 8px}
+.step p{font-size:16px;line-height:1.7;color:var(--olive-3);max-width:46ch}
+
+/* contact */
+#contact{background:radial-gradient(ellipse at 20% 0%,var(--olive-3),var(--olive) 60%)}
+#contact .wrap{max-width:1150px;margin:0 auto;display:grid;gap:56px}
+@media(min-width:960px){#contact .wrap{grid-template-columns:.9fr 1.1fr;gap:80px}}
+#contact .sub{font-family:var(--serif);font-size:clamp(19px,2vw,24px);line-height:1.5;opacity:.8;margin-top:22px;max-width:30ch}
+.direct{margin-top:44px;display:grid;gap:16px}
+.direct p{font:500 11px var(--sans);letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+.direct a{display:flex;align-items:center;gap:16px;text-decoration:none;font-size:16px;word-break:break-all}
+.ic{flex:none;width:44px;height:44px;border:1px solid var(--gold);border-radius:50%;display:grid;place-items:center;color:var(--gold-l);transition:background .3s,color .3s}
+.direct a:hover .ic{background:var(--gold);color:var(--olive)}
+.ic svg{width:18px;height:18px}
+
+form.arrive{animation:arrive 1.2s cubic-bezier(.16,1,.3,1)}
+@keyframes arrive{0%{transform:scale(.97);box-shadow:0 0 0 0 rgba(214,182,121,.8),0 40px 80px -30px rgba(0,0,0,.5)}45%{transform:scale(1.01)}100%{transform:none;box-shadow:0 0 0 18px rgba(214,182,121,0),0 40px 80px -30px rgba(0,0,0,.5)}}
+form{background:var(--paper);color:var(--olive);border-radius:24px;padding:clamp(24px,4vw,48px);display:grid;grid-template-columns:1fr 1fr;gap:22px 18px;box-shadow:0 40px 80px -30px rgba(0,0,0,.5)}
+.f{display:flex;flex-direction:column;gap:8px;grid-column:span 2}
+.f.half{grid-column:span 1}
+@media(max-width:560px){.f.half{grid-column:span 2}}
+label{font:500 10.5px var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--leaf)}
+input,select,textarea{font:400 16px var(--sans);color:var(--olive);background:transparent;border:0;border-bottom:1px solid rgba(32,37,26,.25);padding:10px 0;border-radius:0;outline:none;transition:border-color .3s;width:100%;-webkit-appearance:none;appearance:none}
+select{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23b8914f' stroke-width='1.4'/%3E%3C/svg%3E") no-repeat right 4px center;padding-right:24px}
+input[type=date]{min-height:44px}
+textarea{resize:vertical;min-height:110px;line-height:1.6}
+input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+input::placeholder,textarea::placeholder{color:rgba(32,37,26,.38)}
+.hp{position:absolute;left:-9999px}
+.send{grid-column:span 2;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:8px}
+.send button{font:500 12px var(--sans);letter-spacing:.24em;text-transform:uppercase;background:var(--olive);color:var(--cream);border:0;border-radius:999px;padding:18px 30px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:background .3s,transform .3s}
+.send button:hover{background:var(--olive-3);transform:translateY(-1px)}
+.send button:disabled{opacity:.6;cursor:wait}
+.send button b{color:var(--gold-l);font-weight:400}
+.status{font-family:var(--serif);font-size:18px;font-style:italic;flex:1 1 220px}
+.status.ok{color:var(--leaf)}.status.err{color:#8a3b2a}
+
+footer{background:#181c13;color:var(--cream);padding:56px var(--pad) calc(40px + env(safe-area-inset-bottom));text-align:center}
+footer .ap{color:var(--gold-l);justify-content:center;font-size:56px}
+footer p{margin-top:22px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;opacity:.5}
+
+/* intro animation */
+.olive .lf{opacity:0;transform-box:fill-box;transform-origin:50% 100%}
+.loaded .front .olive .lf{animation:leaf .9s cubic-bezier(.2,.7,.1,1) forwards;animation-delay:calc(.15s + var(--i) * 70ms)}
+.front .olive .stem{stroke-dasharray:240;stroke-dashoffset:240}
+.loaded .front .olive .stem{transition:stroke-dashoffset 1.4s ease;stroke-dashoffset:0}
+.front .ap span{opacity:0;transform:translateY(20px);transition:opacity 1.2s ease,transform 1.4s cubic-bezier(.2,.7,.1,1)}
+.front .ap .p{transform:translateY(calc(.24em + 20px))}
+.loaded .front .ap span{opacity:1;transform:none}
+.loaded .front .ap .p{transform:translateY(.24em);transition-delay:.25s}
+.olive:not(.front .olive) .lf,.card .olive .lf,footer .olive .lf{opacity:1}
+@keyframes leaf{from{opacity:0;transform:scale(.3) rotate(-10deg)}to{opacity:1;transform:none}}
+.front .rule{opacity:0;transition:opacity 1s ease .9s}
+.loaded .front .rule{opacity:1}
+
+/* reduced motion */
+.rm #hero{height:auto}.rm #hero .stage{position:relative}
+.rm #hero .front{display:none}.rm #hero .back{position:relative;min-height:var(--vh);clip-path:none}
+.rm .back .n{opacity:1}
+.rm #statement{height:auto}.rm #statement .stage{position:relative;height:auto;padding-top:120px;padding-bottom:120px}
+.rm .big .w{opacity:1}
+.rm #occasions .stage{position:relative;height:auto;padding:110px 0}
+.rm .hw{scroll-snap-type:x mandatory}.rm .card{scroll-snap-align:center;flex:none}
+.rm [data-reveal],.rm .mask>span{opacity:1;transform:none;transition:none}
+.rm .steps .line{transform:none}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7c855c"/><stop offset="1" stop-color="#3d4530"/></linearGradient>
+    <radialGradient id="og" cx=".35" cy=".35" r=".8"><stop offset="0" stop-color="#7a8458"/><stop offset="1" stop-color="#363d29"/></radialGradient>
+  </defs>
+</svg>
+
+<header id="hdr">
+  <a class="brand" href="#top" aria-label="Alexis Papadimitriou — home">AP <small>Private Chef</small></a>
+  <div class="hdr-r">
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <button type="button" data-lang="el" aria-pressed="false">ΕΛ</button>
+    </div>
+    <a class="cta" href="#contact" data-i18n="nav.enquire">Enquire</a>
+  </div>
+</header>
+
+<main id="top">
+  <!-- 1. Hero: monogram zooms, dark card face reveals -->
+  <section id="hero" class="pin" data-theme="light">
+    <div class="stage">
+      <div class="front">
+        <div class="rule l"></div>
+        <div class="mono" id="mono"><div class="olive"></div><div class="ap"><span class="a">A</span><span class="p">P</span></div></div>
+        <div class="rule r"></div>
+        <div class="hint" id="hint"><span data-i18n="hero.hint">Scroll</span><i></i></div>
+      </div>
+      <div class="back" id="back">
+        <h1>
+          <span class="n first" style="display:block">ALEXIS</span>
+          <span class="n script" style="display:block">Papadimitriou</span>
+        </h1>
+        <div class="n orn"><span></span><b></b><span></span></div>
+        <p class="n tag" data-i18n="hero.tag">Private Chef &amp; Catering</p>
+        <p class="n place" data-i18n="hero.place">Serving London &amp; Athens</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Statement: words light up as you scroll -->
+  <section id="statement" class="pin" data-theme="dark">
+    <div class="stage">
+      <p class="eyebrow" data-i18n="st.eyebrow">The approach</p>
+      <p class="big" id="stmt"></p>
+      <p class="tap" id="tap" data-i18n="st.tap">Tap the words</p>
+    </div>
+  </section>
+
+  <!-- 3. About -->
+  <section id="about" class="plain light" data-theme="light">
+    <div class="watermark" id="wm" aria-hidden="true">AP</div>
+    <div class="grid">
+      <div>
+        <p class="eyebrow" data-reveal data-i18n="ab.eyebrow">The chef</p>
+        <h2 data-reveal-group><span class="mask" style="display:block"><span data-i18n="ab.h1">From Michelin</span></span><span class="mask" style="display:block"><span data-i18n="ab.h2"><em>kitchens</em> to yours.</span></span></h2>
+      </div>
+      <p class="lead" data-reveal style="--d:2" data-i18n="ab.p">Alexis built his craft in two-Michelin-star kitchens in the UK, where precision is an everyday habit. Now based in Greece, he cooks privately for groups — bringing that same standard to villas, homes and venues, with menus shaped around Greek produce and your occasion.</p>
+    </div>
+    <div class="stats">
+      <div class="stat" data-reveal style="--d:1"><b>2<sup>★</sup></b><span data-i18n="ab.s1">Michelin kitchen experience</span></div>
+      <div class="stat" data-reveal style="--d:2"><b>2</b><span data-i18n="ab.s2">Cities — London &amp; Athens</span></div>
+      <div class="stat" data-reveal style="--d:3"><b>1</b><span data-i18n="ab.s3">Menu, written only for you</span></div>
+    </div>
+  </section>
+
+  <!-- 4. Occasions: pinned horizontal scroll -->
+  <section id="occasions" class="pin" data-theme="dark">
+    <div class="stage">
+      <div class="head">
+        <p class="eyebrow" data-i18n="oc.eyebrow">Occasions</p>
+        <h2 data-i18n="oc.h">Cooking for the moments <em>that matter</em></h2>
+      </div>
+      <div class="hw" id="hw"><div class="track" id="track">
+        <article class="card"><div class="olive"></div><span class="num">01</span><h3 data-i18n="oc.1t">Private dinners</h3><p data-i18n="oc.1p">Tasting menus served at home or in your villa, for intimate groups.</p></article>
+        <article class="card"><div class="olive"></div><span class="num">02</span><h3 data-i18n="oc.2t">Celebrations</h3><p data-i18n="oc.2p">Birthdays, anniversaries, engagements — an evening built around your story.</p></article>
+        <article class="card"><div class="olive"></div><span class="num">03</span><h3 data-i18n="oc.3t">Events &amp; catering</h3><p data-i18n="oc.3p">Larger gatherings and corporate events, with the same care in every plate.</p></article>
+        <article class="card"><div class="olive"></div><span class="num">04</span><h3 data-i18n="oc.4t">Villas &amp; retreats</h3><p data-i18n="oc.4p">Multi-day stays with breakfast, lunch and dinner taken care of.</p></article>
+      </div></div>
+      <div class="hctl">
+        <button type="button" class="arw" id="prev" aria-label="Previous">←</button>
+        <div class="bar"><i id="bar"></i></div>
+        <button type="button" class="arw" id="next" aria-label="Next">→</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Process -->
+  <section id="process" class="plain light" data-theme="light">
+    <div class="wrap">
+      <p class="eyebrow" data-reveal data-i18n="pr.eyebrow">How it works</p>
+      <h2 data-reveal-group><span class="mask" style="display:block"><span data-i18n="pr.h">Simple for you. <em>Exacting</em> for us.</span></span></h2>
+      <div class="steps" id="steps">
+        <i class="line" id="pline"></i>
+        <div class="step" data-reveal><small>01</small><h3 data-i18n="pr.1t">Enquire</h3><p data-i18n="pr.1p">Tell us the date, the number of guests and the occasion.</p></div>
+        <div class="step" data-reveal><small>02</small><h3 data-i18n="pr.2t">Design the menu</h3><p data-i18n="pr.2p">Alexis writes a menu around your tastes, dietary needs and the season.</p></div>
+        <div class="step" data-reveal><small>03</small><h3 data-i18n="pr.3t">On the day</h3><p data-i18n="pr.3p">Shopping, cooking, service and clean-up — all handled.</p></div>
+        <div class="step" data-reveal><small>04</small><h3 data-i18n="pr.4t">Enjoy</h3><p data-i18n="pr.4p">You stay with your guests. The kitchen is ours.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Contact -->
+  <section id="contact" class="plain dark" data-theme="dark">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow" data-reveal data-i18n="ct.eyebrow">Enquiries</p>
+        <h2 data-reveal-group><span class="mask" style="display:block"><span data-i18n="ct.h">Let’s plan <em>your evening</em></span></span></h2>
+        <p class="sub" data-reveal style="--d:2" data-i18n="ct.sub">Share a few details and Alexis will get back to you personally.</p>
+        <div class="direct" data-reveal style="--d:3">
+          <p data-i18n="ct.direct">Prefer to talk?</p>
+          <a id="lnk-tel" href="#"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2"/></svg></span><span id="tel-txt"></span></a>
+          <a id="lnk-wa" href="#" target="_blank" rel="noopener"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 .8a4 4 0 0 1-1.8-1.8l.8-1-1-2z"/></svg></span>WhatsApp</a>
+          <a id="lnk-mail" href="#"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M3.5 6l8.5 7 8.5-7"/></svg></span><span id="mail-txt"></span></a>
+        </div>
+      </div>
+
+      <form id="form" novalidate data-reveal style="--d:2">
+        <input class="hp" type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="f half"><label for="f-name" data-i18n="f.name">Full name</label><input id="f-name" name="name" required autocomplete="name"></div>
+        <div class="f half"><label for="f-email">Email</label><input id="f-email" name="email" type="email" required autocomplete="email"></div>
+        <div class="f half"><label for="f-phone" data-i18n="f.phone">Phone</label><input id="f-phone" name="phone" type="tel" autocomplete="tel"></div>
+        <div class="f half"><label for="f-date" data-i18n="f.date">Event date</label><input id="f-date" name="event_date" type="date"></div>
+        <div class="f half"><label for="f-guests" data-i18n="f.guests">Number of guests</label><input id="f-guests" name="guests" type="number" min="1" inputmode="numeric"></div>
+        <div class="f half"><label for="f-loc" data-i18n="f.loc">Location</label>
+          <select id="f-loc" name="location">
+            <option value="Athens" data-i18n="loc.ath">Athens</option>
+            <option value="Elsewhere in Greece" data-i18n="loc.gr">Elsewhere in Greece</option>
+            <option value="London" data-i18n="loc.lon">London</option>
+            <option value="Other" data-i18n="loc.oth">Other</option>
+          </select></div>
+        <div class="f"><label for="f-occ" data-i18n="f.occ">Occasion</label>
+          <select id="f-occ" name="occasion">
+            <option value="Private dinner" data-i18n="oc.1t">Private dinner</option>
+            <option value="Celebration" data-i18n="oc.2t">Celebration</option>
+            <option value="Event / catering" data-i18n="oc.3t">Event / catering</option>
+            <option value="Villa / retreat" data-i18n="oc.4t">Villa / retreat</option>
+            <option value="Other" data-i18n="loc.oth">Other</option>
+          </select></div>
+        <div class="f"><label for="f-msg" data-i18n="f.msg">Message</label><textarea id="f-msg" name="message" data-i18n-ph="f.msgph" placeholder="Dietary needs, ideas, anything we should know"></textarea></div>
+        <div class="send">
+          <button type="submit" id="send"><span data-i18n="f.send">Send enquiry</span><b>→</b></button>
+          <p class="status" id="status" role="status" aria-live="polite"></p>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="ap"><span class="a">A</span><span class="p">P</span></div>
+  <p data-i18n="ft">© 2026 Alexis Papadimitriou · Private Chef &amp; Catering</p>
+</footer>
+
+<script>
+/* ===== Edit these if details change ===== */
+const CONFIG = {
+  email: 'alexis@papadimitriou.uk',
+  phone: '+447856779459',        // used for call + WhatsApp links
+  phoneDisplay: '+44 7856 779459'
+};
+const ENDPOINT = 'https://formsubmit.co/ajax/' + CONFIG.email;
+
+const I18N = {
+  en:{
+    'nav.enquire':'Enquire','hero.hint':'Scroll','hero.tag':'Private Chef &amp; Catering','hero.place':'Serving London &amp; Athens',
+    'st.eyebrow':'The approach','st.tap':'Tap the words',
+    'st.text':'Michelin-starred discipline from the kitchens of the UK, brought to <em>your table</em> in Greece — one evening, one menu, made only for your guests.',
+    'ab.eyebrow':'The chef','ab.h1':'From Michelin','ab.h2':'<em>kitchens</em> to yours.',
+    'ab.p':'Alexis built his craft in two-Michelin-star kitchens in the UK, where precision is an everyday habit. Now based in Greece, he cooks privately for groups — bringing that same standard to villas, homes and venues, with menus shaped around Greek produce and your occasion.',
+    'ab.s1':'Michelin kitchen experience','ab.s2':'Cities — London &amp; Athens','ab.s3':'Menu, written only for you',
+    'oc.eyebrow':'Occasions','oc.h':'Cooking for the moments <em>that matter</em>',
+    'oc.1t':'Private dinners','oc.1p':'Tasting menus served at home or in your villa, for intimate groups.',
+    'oc.2t':'Celebrations','oc.2p':'Birthdays, anniversaries, engagements — an evening built around your story.',
+    'oc.3t':'Events &amp; catering','oc.3p':'Larger gatherings and corporate events, with the same care in every plate.',
+    'oc.4t':'Villas &amp; retreats','oc.4p':'Multi-day stays with breakfast, lunch and dinner taken care of.',
+    'pr.eyebrow':'How it works','pr.h':'Simple for you. <em>Exacting</em> for us.',
+    'pr.1t':'Enquire','pr.1p':'Tell us the date, the number of guests and the occasion.',
+    'pr.2t':'Design the menu','pr.2p':'Alexis writes a menu around your tastes, dietary needs and the season.',
+    'pr.3t':'On the day','pr.3p':'Shopping, cooking, service and clean-up — all handled.',
+    'pr.4t':'Enjoy','pr.4p':'You stay with your guests. The kitchen is ours.',
+    'ct.eyebrow':'Enquiries','ct.h':'Let’s plan <em>your evening</em>','ct.sub':'Share a few details and Alexis will get back to you personally.','ct.direct':'Prefer to talk?',
+    'f.name':'Full name','f.phone':'Phone','f.date':'Event date','f.guests':'Number of guests','f.loc':'Location','f.occ':'Occasion','f.msg':'Message',
+    'f.msgph':'Dietary needs, ideas, anything we should know','f.send':'Send enquiry',
+    'loc.ath':'Athens','loc.gr':'Elsewhere in Greece','loc.lon':'London','loc.oth':'Other',
+    's.sending':'Sending…','s.ok':'Thank you — your enquiry has been sent. Alexis will be in touch soon.',
+    's.err':'Something went wrong. Please email or call directly.','s.req':'Please add your name and a valid email.',
+    'ft':'© 2026 Alexis Papadimitriou · Private Chef &amp; Catering',
+    'title':'Alexis Papadimitriou — Private Chef & Catering'
+  },
+  el:{
+    'nav.enquire':'Επικοινωνία','hero.hint':'Κύλιση','hero.tag':'Ιδιωτικός Σεφ &amp; Catering','hero.place':'Λονδίνο &amp; Αθήνα',
+    'st.eyebrow':'Η φιλοσοφία','st.tap':'Αγγίξτε τις λέξεις',
+    'st.text':'Η πειθαρχία των κουζινών με αστέρια Michelin του Ηνωμένου Βασιλείου, στο <em>δικό σας τραπέζι</em> στην Ελλάδα — μία βραδιά, ένα μενού, φτιαγμένο μόνο για τους καλεσμένους σας.',
+    'ab.eyebrow':'Ο σεφ','ab.h1':'Από τις κουζίνες','ab.h2':'<em>Michelin</em> στη δική σας.',
+    'ab.p':'Ο Αλέξης διαμόρφωσε την τέχνη του σε κουζίνες με δύο αστέρια Michelin στο Ηνωμένο Βασίλειο, όπου η ακρίβεια είναι καθημερινή συνήθεια. Σήμερα, με βάση την Ελλάδα, μαγειρεύει ιδιωτικά για ομάδες — φέρνοντας το ίδιο επίπεδο σε βίλες, σπίτια και χώρους εκδηλώσεων, με μενού βασισμένα στα ελληνικά προϊόντα και την περίστασή σας.',
+    'ab.s1':'Εμπειρία σε κουζίνα Michelin','ab.s2':'Πόλεις — Λονδίνο &amp; Αθήνα','ab.s3':'Μενού, μόνο για εσάς',
+    'oc.eyebrow':'Περιστάσεις','oc.h':'Μαγειρεύοντας για τις στιγμές <em>που μετράνε</em>',
+    'oc.1t':'Ιδιωτικά δείπνα','oc.1p':'Μενού γευσιγνωσίας στο σπίτι ή στη βίλα σας, για μικρές παρέες.',
+    'oc.2t':'Γιορτές','oc.2p':'Γενέθλια, επέτειοι, αρραβώνες — μια βραδιά χτισμένη γύρω από τη δική σας ιστορία.',
+    'oc.3t':'Εκδηλώσεις &amp; catering','oc.3p':'Μεγαλύτερες συγκεντρώσεις και εταιρικές εκδηλώσεις, με την ίδια φροντίδα σε κάθε πιάτο.',
+    'oc.4t':'Βίλες &amp; retreats','oc.4p':'Πολυήμερες διαμονές, με πρωινό, μεσημεριανό και δείπνο φροντισμένα.',
+    'pr.eyebrow':'Πώς λειτουργεί','pr.h':'Απλό για εσάς. <em>Απαιτητικό</em> για εμάς.',
+    'pr.1t':'Επικοινωνία','pr.1p':'Πείτε μας την ημερομηνία, τον αριθμό των καλεσμένων και την περίσταση.',
+    'pr.2t':'Σχεδιασμός μενού','pr.2p':'Ο Αλέξης δημιουργεί ένα μενού με βάση τις προτιμήσεις σας, τις διατροφικές ανάγκες και την εποχή.',
+    'pr.3t':'Την ημέρα','pr.3p':'Ψώνια, μαγείρεμα, σερβίρισμα και καθάρισμα — τα αναλαμβάνουμε όλα.',
+    'pr.4t':'Απολαύστε','pr.4p':'Εσείς μένετε με τους καλεσμένους σας. Η κουζίνα είναι δική μας.',
+    'ct.eyebrow':'Αιτήματα','ct.h':'Ας σχεδιάσουμε <em>τη βραδιά σας</em>','ct.sub':'Μοιραστείτε μερικές λεπτομέρειες και ο Αλέξης θα επικοινωνήσει προσωπικά μαζί σας.','ct.direct':'Προτιμάτε να μιλήσουμε;',
+    'f.name':'Ονοματεπώνυμο','f.phone':'Τηλέφωνο','f.date':'Ημερομηνία εκδήλωσης','f.guests':'Αριθμός ατόμων','f.loc':'Τοποθεσία','f.occ':'Περίσταση','f.msg':'Μήνυμα',
+    'f.msgph':'Διατροφικές ανάγκες, ιδέες, οτιδήποτε πρέπει να γνωρίζουμε','f.send':'Αποστολή',
+    'loc.ath':'Αθήνα','loc.gr':'Αλλού στην Ελλάδα','loc.lon':'Λονδίνο','loc.oth':'Άλλο',
+    's.sending':'Αποστολή…','s.ok':'Ευχαριστούμε — το αίτημά σας στάλθηκε. Ο Αλέξης θα επικοινωνήσει σύντομα μαζί σας.',
+    's.err':'Κάτι πήγε στραβά. Παρακαλούμε στείλτε email ή καλέστε απευθείας.','s.req':'Συμπληρώστε το όνομά σας και ένα έγκυρο email.',
+    'ft':'© 2026 Alexis Papadimitriou · Ιδιωτικός Σεφ &amp; Catering',
+    'title':'Alexis Papadimitriou — Ιδιωτικός Σεφ & Catering'
+  }
+};
+
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (RM) document.documentElement.classList.add('rm');
+const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+const seg=(p,a,b)=>clamp((p-a)/(b-a));
+const ease=t=>1-Math.pow(1-t,3);
+const prog=el=>{const r=el.getBoundingClientRect(),t=el.offsetHeight-innerHeight;return t>0?clamp(-r.top/t):(r.top<0?1:0)};
+
+/* ---- olive branch, drawn in SVG (matches the card) ---- */
+function branch(){
+  const L=[[92,180,-70,.8],[88,168,55,.85],[82,156,-62,.9],[77,142,48,.9],[72,130,-55,.95],[67,116,40,.9],
+           [63,104,-48,.95],[59,90,32,.85],[56,78,-40,.9],[52,64,25,.8],[50,54,-32,.8],[47,40,18,.7],[45,32,-25,.7],[42,14,-5,.65]];
+  const leaf='M0 0C8-12 8-34 0-48C-8-34-8-12 0 0Z';
+  let s='<svg viewBox="0 0 120 210" aria-hidden="true"><path class="stem" d="M104 204C74 160 54 104 42 12" fill="none" stroke="#4a5233" stroke-width="1.6" stroke-linecap="round"/>';
+  s+='<path d="M86 184Q74 188 64 194" fill="none" stroke="#4a5233" stroke-width="1.2"/>';
+  L.forEach(([x,y,r,k],i)=>{s+=`<g transform="translate(${x} ${y}) rotate(${r}) scale(${k})"><path class="lf" style="--i:${i}" d="${leaf}" fill="url(#lg)"/></g>`});
+  s+=`<ellipse class="lf" style="--i:14" cx="62" cy="196" rx="8" ry="6" transform="rotate(-18 62 196)" fill="url(#og)"/>`;
+  s+=`<ellipse class="lf" style="--i:15" cx="74" cy="198" rx="7.5" ry="5.6" transform="rotate(12 74 198)" fill="url(#og)"/>`;
+  return s+'</svg>';
+}
+$$('.olive').forEach(e=>e.innerHTML=branch());
+
+/* ---- contact links ---- */
+$('#lnk-tel').href='tel:'+CONFIG.phone; $('#tel-txt').textContent=CONFIG.phoneDisplay;
+$('#lnk-wa').href='https://wa.me/'+CONFIG.phone.replace(/\D/g,'');
+$('#lnk-mail').href='mailto:'+CONFIG.email; $('#mail-txt').textContent=CONFIG.email;
+$('#f-date').min=new Date().toISOString().slice(0,10);
+
+/* ---- language ---- */
+let lang='en';
+function buildStatement(){
+  const tmp=document.createElement('div'); tmp.innerHTML=I18N[lang]['st.text'];
+  const out=[];
+  tmp.childNodes.forEach(n=>{
+    const em=n.nodeType===1;
+    n.textContent.split(/\s+/).filter(Boolean).forEach(w=>out.push(em?`<em class="w">${w}</em>`:`<span class="w">${w}</span>`));
+  });
+  $('#stmt').innerHTML=out.join(' ');
+  words=$$('#stmt .w');
+  if(stmtLit) words.forEach(w=>w.classList.add('on'));
+}
+let words=[], stmtLit=false;
+function setLang(l){
+  lang=I18N[l]?l:'en';
+  document.documentElement.lang=lang;
+  document.title=I18N[lang].title;
+  $$('[data-i18n]').forEach(e=>{const v=I18N[lang][e.dataset.i18n]; if(v!=null) e.innerHTML=v});
+  $$('[data-i18n-ph]').forEach(e=>e.placeholder=I18N[lang][e.dataset.i18nPh]);
+  $$('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
+  buildStatement(); $('#status').textContent=''; $('#status').className='status';
+  try{localStorage.setItem('ap-lang',lang)}catch(e){}
+  layout(); tick();
+}
+$$('.lang button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+
+/* ---- scroll scenes ---- */
+const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=$$('.rule'), names=$$('.back .n');
+const stmt=$('#statement'), occ=$('#occasions'), hw=$('#hw'), track=$('#track'), bar=$('#bar');
+const steps=$('#steps'), pline=$('#pline'), wm=$('#wm'), about=$('#about'), hdr=$('#hdr');
+const themed=$$('[data-theme]');
+let hDist=0;
+const docTop=el=>el.getBoundingClientRect().top+scrollY;
+
+function layout(){
+  hDist=Math.max(0,hw.scrollWidth-hw.clientWidth);
+  if (RM){ occ.style.height='auto'; return; }
+  occ.style.height=(innerHeight+hDist*1.15)+'px';
+}
+
+/* ---- horizontal cards: driven by page scroll AND swipeable/draggable ---- */
+let hUser=false, hTimer=0;
+const markUser=()=>{hUser=true;clearTimeout(hTimer);hTimer=setTimeout(()=>hUser=false,160)};
+const yForLeft=left=>docTop(occ)+(hDist?clamp(left/hDist):0)*(occ.offsetHeight-innerHeight);
+hw.addEventListener('touchstart',markUser,{passive:true});
+hw.addEventListener('wheel',e=>{if(Math.abs(e.deltaX)>Math.abs(e.deltaY))markUser()},{passive:true});
+hw.addEventListener('scroll',()=>{
+  bar.style.transform=`scaleX(${hDist?hw.scrollLeft/hDist:0})`;
+  if(hUser&&!RM){markUser(); stopAnim(); scrollTo(0,yForLeft(hw.scrollLeft))}
+},{passive:true});
+// mouse drag on desktop
+let drag=null;
+hw.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse')return;drag={x:e.clientX,l:hw.scrollLeft,moved:false}});
+addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x;if(Math.abs(dx)>4){drag.moved=true;hw.classList.add('drag')}markUser();hw.scrollLeft=drag.l-dx});
+addEventListener('pointerup',()=>{drag=null;hw.classList.remove('drag')});
+// arrow buttons: one card at a time
+function stepCards(dir){
+  const c=track.children[0], step=c.offsetWidth+parseFloat(getComputedStyle(track).columnGap||0);
+  const target=clamp(Math.round(hw.scrollLeft/step+dir)*step,0,hDist);
+  if(RM){hw.scrollTo({left:target,behavior:'smooth'});return}
+  animScroll(yForLeft(target),520);
+}
+$('#prev').addEventListener('click',()=>stepCards(-1));
+$('#next').addEventListener('click',()=>stepCards(1));
+
+/* ---- snappy animated scrolling for nav links ---- */
+let anim=0;
+function stopAnim(){if(anim){cancelAnimationFrame(anim);anim=0}}
+const easeIO=t=>t<.5?16*t**5:1-Math.pow(-2*t+2,5)/2; // quint in-out: quick, decisive
+function animScroll(to,dur,done){
+  stopAnim();
+  to=clamp(to,0,document.documentElement.scrollHeight-innerHeight);
+  if(RM){scrollTo(0,to);done&&done();return}
+  const from=scrollY, d=to-from, t0=performance.now();
+  dur=dur||Math.min(1150,Math.max(520,Math.abs(d)*.12));
+  const step=now=>{const t=clamp((now-t0)/dur);scrollTo(0,from+d*easeIO(t));if(t<1)anim=requestAnimationFrame(step);else{anim=0;done&&done()}};
+  anim=requestAnimationFrame(step);
+}
+['wheel','touchstart','keydown'].forEach(ev=>addEventListener(ev,stopAnim,{passive:true}));
+function goTo(hash,instant){
+  const el=hash==='#top'?null:document.querySelector(hash);
+  const y=el?docTop(el):0;
+  const after=()=>{if(hash==='#contact'){const f=$('#form');f.classList.remove('arrive');void f.offsetWidth;f.classList.add('arrive');$$('#contact [data-reveal],#contact [data-reveal-group]').forEach(e=>e.classList.add('in'))}};
+  if(instant){scrollTo(0,y);after();return}
+  animScroll(y,0,after);
+}
+document.addEventListener('click',e=>{
+  const a=e.target.closest('a[href^="#"]'); if(!a)return;
+  const h=a.getAttribute('href'); if(h.length<2)return;
+  e.preventDefault(); goTo(h);
+  try{history.replaceState(null,'',h==='#top'?location.pathname+location.search:h)}catch(_){}
+});
+
+/* ---- statement: tap to light up ---- */
+$('#stmt').addEventListener('click',e=>{
+  const w=e.target.closest('.w'), idx=w?words.indexOf(w):0;
+  stmtLit=true; $('#tap').classList.add('gone');
+  words.forEach((el,i)=>setTimeout(()=>{
+    el.classList.add('on','flash');
+    setTimeout(()=>el.classList.remove('flash'),i===idx?900:420);
+  },Math.abs(i-idx)*32));
+});
+
+function tick(){
+  // hero
+  const p=RM?1:prog(hero);
+  if(!RM){
+    const z=ease(seg(p,0,.55));
+    mono.style.transform=`scale(${1+z*1.6})`;
+    mono.style.opacity=1-seg(p,.18,.45);
+    rules.forEach(r=>r.style.transform=`scaleX(${1-ease(seg(p,0,.28))})`);
+    back.style.clipPath=`circle(${ease(seg(p,.12,.58))*76}% at 50% 52%)`;
+    names.forEach((n,i)=>{const t=ease(seg(p,.45+i*.06,.7+i*.06));n.style.opacity=t;n.style.transform=`translateY(${(1-t)*48}px)`});
+    hint.style.opacity=1-seg(p,0,.06);
+  }
+  // statement words
+  const lit=(RM?1:seg(prog(stmt),.08,.82))*words.length;
+  words.forEach((el,i)=>el.style.opacity=.14+.86*clamp(lit-i));
+  // horizontal cards follow page scroll unless the user is swiping them
+  if(!RM&&!hUser){hw.scrollLeft=prog(occ)*hDist}
+  // process line
+  const r=steps.getBoundingClientRect();
+  if(!RM) pline.style.transform=`scaleY(${clamp((innerHeight*.62-r.top)/r.height)})`;
+  // watermark parallax
+  const ar=about.getBoundingClientRect(); if(!RM) wm.style.transform=`translateY(calc(-50% + ${ar.top*-.18}px))`;
+  // header colour follows the section beneath it
+  let dark=false;
+  for(const s of themed){const b=s.getBoundingClientRect(); if(b.top<=40&&b.bottom>40){dark=s.dataset.theme==='dark'; if(s===hero) dark=p>.42; break}}
+  hdr.classList.toggle('dark',dark);
+  hdr.classList.toggle('scrolled',scrollY>innerHeight*.9);
+}
+
+let raf=0;
+addEventListener('scroll',()=>{if(!raf)raf=requestAnimationFrame(()=>{raf=0;tick()})},{passive:true});
+addEventListener('resize',()=>{layout();tick()});
+
+/* ---- reveal on view ---- */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.18,rootMargin:'0px 0px -6% 0px'});
+$$('[data-reveal],[data-reveal-group]').forEach(e=>io.observe(e));
+
+/* ---- form ---- */
+const form=$('#form'), status=$('#status'), send=$('#send');
+form.addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(form._honey.value) return;
+  const name=form.name.value.trim(), email=form.email.value.trim();
+  if(!name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){status.className='status err';status.textContent=I18N[lang]['s.req'];return}
+  send.disabled=true; status.className='status'; status.textContent=I18N[lang]['s.sending'];
+  const data=Object.fromEntries(new FormData(form)); delete data._honey;
+  data._subject=`New enquiry — ${name}${data.event_date?' — '+data.event_date:''}`;
+  data._template='table'; data.language=lang==='el'?'Greek':'English';
+  try{
+    const res=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(data)});
+    const j=await res.json().catch(()=>({}));
+    if(!res.ok||String(j.success)!=='true') throw new Error(j.message||'failed');
+    form.reset(); status.className='status ok'; status.textContent=I18N[lang]['s.ok'];
+  }catch(err){
+    status.className='status err';
+    status.innerHTML=I18N[lang]['s.err']+` <a href="mailto:${CONFIG.email}">${CONFIG.email}</a>`;
+  }finally{send.disabled=false}
+});
+
+/* ---- init ---- */
+let start='en';
+try{start=new URLSearchParams(location.search).get('lang')||localStorage.getItem('ap-lang')||''}catch(e){}
+if(!start) start=(navigator.language||'').toLowerCase().startsWith('el')?'el':'en';
+setLang(start);
+requestAnimationFrame(()=>document.body.classList.add('loaded'));
+const landHash=location.hash&&document.querySelector(location.hash)?location.hash:'';
+if(landHash){history.scrollRestoration='manual';goTo(landHash,true)}
+(document.fonts?document.fonts.ready:Promise.resolve()).then(()=>{layout();tick();if(landHash)goTo(landHash,true)});
+</script>
+</body>
+</html>
