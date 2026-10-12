@@ -4,8 +4,8 @@ import { GALLERY } from './gallery.js';
 /* ===== Edit these if details change ===== */
 const CONFIG = {
   email: 'alexis@papadimitriou.uk',
-  phone: '+306945009919',            // used for call + WhatsApp links
-  phoneDisplay: '+30 694 500 9919',
+  phone: '+447856779459',            // used for call + WhatsApp links
+  phoneDisplay: '+44 7856 779459',
   turnstileSiteKey: '0x4AAAAAAFUZ8kLv46CVO1UJ', // Cloudflare → Turnstile → your widget → Site key (public)
   api: '/api/enquiry'
 };
@@ -240,22 +240,82 @@ function placeInd(){
   const b=$('.lang button[aria-pressed="true"]'); if(!b) return;
   ind.style.width=b.offsetWidth+'px'; ind.style.transform=`translateX(${b.offsetLeft-3}px)`;
 }
-let langBusy=false;
-function switchLang(l){
-  if(l===lang||langBusy) return;
-  const root=document.documentElement;
-  if(RM){ setLang(l); return; }
-  langBusy=true;
-  if(document.startViewTransition){
-    root.classList.add('vt-lang');
-    const vt=document.startViewTransition(()=>setLang(l));
-    vt.finished.finally(()=>{ root.classList.remove('vt-lang'); langBusy=false; });
-    return;
+/* ---- language switch: a liquid curtain sweeps up, the language name morphs letter by letter
+        from one alphabet to the other, then the curtain lifts away and the new text cascades in ---- */
+const LNAME={en:'English',el:'Ελληνικά'};
+const GLYPHS='ΑΒΓΔΘΛΞΠΣΦΨΩαβγδεζηθλμξπσφψωAEGKMNRSWXZ';
+const lsw=document.createElement('div'); lsw.id='lswap'; lsw.setAttribute('aria-hidden','true');
+lsw.innerHTML='<div class="ls-panel"><i class="ls-bulge ls-top"></i><i class="ls-bulge ls-bot"></i>'+
+  '<div class="ls-inner"><span class="ls-ap">A<span>P</span></span><div class="ls-word"></div><i class="ls-rule"></i>'+
+  '<div class="ls-sub"><b data-l="en">English</b><em></em><b data-l="el">Ελληνικά</b></div></div></div>';
+document.body.appendChild(lsw);
+const LS={panel:lsw.querySelector('.ls-panel'),top:lsw.querySelector('.ls-top'),bot:lsw.querySelector('.ls-bot'),
+  inner:lsw.querySelector('.ls-inner'),word:lsw.querySelector('.ls-word'),rule:lsw.querySelector('.ls-rule'),
+  ap:lsw.querySelector('.ls-ap'),subs:[...lsw.querySelectorAll('.ls-sub b')]};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const EASE_IO='cubic-bezier(.76,0,.24,1)', EASE_OUT='cubic-bezier(.16,1,.3,1)';
+function scramble(el,from,to,dur){
+  return new Promise(res=>{
+    const L=Math.max(from.length,to.length), t0=performance.now(); let lastSwap=0, noise=[];
+    const step=now=>{
+      const t=clamp((now-t0)/dur);
+      if(now-lastSwap>45){ lastSwap=now; noise=[...Array(L)].map(()=>GLYPHS[(Math.random()*GLYPHS.length)|0]); }
+      let s='';
+      for(let i=0;i<L;i++){ const r=t*(L+5)-i*1.0;
+        s+= r>=5 ? (to[i]||'') : r>0 ? noise[i] : (from[i]||''); }
+      el.textContent=s;
+      if(t<1) requestAnimationFrame(step); else { el.textContent=to; res(); }
+    };
+    requestAnimationFrame(step);
+  });
+}
+function cascadeIn(){
+  const vis=[];
+  for(const el of $$('main [data-i18n], header [data-i18n], #stmt')){
+    if(vis.length>=26) break;
+    const r=el.getBoundingClientRect();
+    if(r.width&&r.bottom>0&&r.top<innerHeight&&getComputedStyle(el).visibility!=='hidden') vis.push(el);
   }
-  // Older browsers: soft fade out, swap, rise back in.
-  root.classList.add('lang-out');
-  setTimeout(()=>{ setLang(l); root.classList.remove('lang-out'); root.classList.add('lang-in');
-    setTimeout(()=>{ root.classList.remove('lang-in'); langBusy=false; },650); },230);
+  vis.sort((a,b)=>a.getBoundingClientRect().top-b.getBoundingClientRect().top);
+  vis.forEach((el,i)=>el.animate(
+    [{opacity:0,transform:'translate3d(0,34px,0)',filter:'blur(8px)'},{opacity:1,transform:'none',filter:'blur(0)'}],
+    {duration:850,delay:120+i*55,easing:EASE_OUT,fill:'backwards'}));
+}
+let langBusy=false;
+async function switchLang(l){
+  if(l===lang||langBusy) return;
+  if(RM){ setLang(l); return; }
+  langBusy=true; const from=lang;
+  $$('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===l)); placeInd();
+  LS.word.textContent=LNAME[from];
+  LS.subs.forEach(b=>b.classList.toggle('on',b.dataset.l===l));
+  lsw.style.visibility='visible';
+  // 1. curtain sweeps up, its leading edge bulging then flattening like liquid
+  const inA=LS.panel.animate([{transform:'translate3d(0,100%,0)'},{transform:'translate3d(0,0,0)'}],{duration:700,easing:EASE_IO,fill:'forwards'});
+  LS.top.animate([{transform:'scaleY(1)'},{transform:'scaleY(1)',offset:.35},{transform:'scaleY(0)'}],{duration:700,easing:EASE_IO,fill:'forwards'});
+  LS.bot.animate([{transform:'scaleY(0)'},{transform:'scaleY(0)'}],{duration:10,fill:'forwards'});
+  LS.ap.animate([{opacity:0,transform:'translate3d(0,30px,0) scale(.9)'},{opacity:1,transform:'none'}],{duration:700,delay:300,easing:EASE_OUT,fill:'both'});
+  LS.word.animate([{opacity:0,transform:'translate3d(0,60px,0)',letterSpacing:'.3em'},{opacity:1,transform:'none',letterSpacing:'.02em'}],{duration:900,delay:320,easing:EASE_OUT,fill:'both'});
+  LS.rule.animate([{transform:'scaleX(0)'},{transform:'scaleX(1)'}],{duration:900,delay:450,easing:EASE_OUT,fill:'both'});
+  LS.subs[0].parentNode.animate([{opacity:0,transform:'translate3d(0,14px,0)'},{opacity:1,transform:'none'}],{duration:700,delay:520,easing:EASE_OUT,fill:'both'});
+  await inA.finished;
+  // 2. page swaps underneath while the name morphs between alphabets
+  const y=scrollY; setLang(l); if(Math.abs(scrollY-y)>1) scrollTo(0,y);
+  await wait(120);
+  await scramble(LS.word,LNAME[from],LNAME[l],620);
+  await wait(260);
+  // 3. curtain lifts away (its trailing edge curls), new text cascades in behind it
+  const out=[
+    LS.panel.animate([{transform:'translate3d(0,0,0)'},{transform:'translate3d(0,-100%,0)'}],{duration:800,easing:EASE_IO,fill:'forwards'}),
+    LS.bot.animate([{transform:'scaleY(0)'},{transform:'scaleY(1)',offset:.55},{transform:'scaleY(.2)'}],{duration:800,easing:EASE_IO,fill:'forwards'}),
+    LS.inner.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translate3d(0,-80px,0)'}],{duration:520,easing:'cubic-bezier(.5,0,.75,0)',fill:'forwards'})
+  ];
+  setTimeout(cascadeIn,230);
+  await out[0].finished;
+  lsw.style.visibility='hidden';
+  lsw.querySelectorAll('*').forEach(e=>e.getAnimations().forEach(an=>an.cancel()));
+  LS.panel.getAnimations().forEach(an=>an.cancel());
+  langBusy=false;
 }
 $$('.lang button').forEach(b=>b.addEventListener('click',()=>switchLang(b.dataset.lang)));
 
@@ -342,6 +402,21 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
   #veil i{display:block;height:1px;width:0;background:#b8914f;transition:width .8s cubic-bezier(.16,1,.3,1)}
   #veil.on i{width:110px;transition-delay:.15s}
   html.rm #veil{display:none}
+  /* language curtain */
+  #lswap{position:fixed;inset:0;z-index:97;visibility:hidden;pointer-events:none;overflow:hidden}
+  .ls-panel{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,#353c2b,#1b2016 75%);transform:translate3d(0,100%,0);will-change:transform;display:flex;align-items:center;justify-content:center}
+  .ls-bulge{position:absolute;left:-25%;right:-25%;height:26vh;background:inherit;border-radius:50%;will-change:transform}
+  .ls-top{top:-13vh;background:#2a3022;transform-origin:50% 100%}
+  .ls-bot{bottom:-13vh;background:#1d2218;transform-origin:50% 0;transform:scaleY(0)}
+  .ls-inner{position:relative;display:flex;flex-direction:column;align-items:center;gap:18px;color:#ece4d8;text-align:center;padding:0 20px}
+  .ls-ap{font-family:'Cormorant Garamond','GFS Didot',Georgia,serif;font-size:40px;line-height:.8;color:#d6b679;display:flex;align-items:flex-end;opacity:0}
+  .ls-ap span{font-size:.7em;margin-left:-.36em;transform:translateY(.24em)}
+  .ls-word{font-family:'Cormorant Garamond','GFS Didot',Georgia,serif;font-style:italic;font-weight:300;font-size:clamp(58px,15vw,150px);line-height:1;color:#f1e7d6;min-height:1.1em;white-space:nowrap;opacity:0}
+  .ls-rule{display:block;width:min(260px,60vw);height:1px;background:#b8914f;transform:scaleX(0)}
+  .ls-sub{display:flex;align-items:center;gap:14px;font:500 11px 'Commissioner',system-ui,sans-serif;letter-spacing:.32em;text-transform:uppercase;opacity:0}
+  .ls-sub b{font-weight:500;color:rgba(236,228,216,.45);transition:color .5s}
+  .ls-sub b.on{color:#d6b679}
+  .ls-sub em{width:5px;height:5px;background:#b8914f;transform:rotate(45deg)}
   /* gallery — masonry columns that drift at different speeds */
   .gallery{columns:auto!important;display:flex;gap:14px;align-items:flex-start}
   @media(min-width:900px){.gallery{gap:22px}}
