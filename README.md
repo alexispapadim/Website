@@ -10,8 +10,10 @@ The QR code on his business card brings people here to send an enquiry.
 | `index.html` | Page layout and styles |
 | `app.js` | Animations, the legal pages, and the form |
 | `i18n.js` | All the site text in English and Greek |
+| `gallery.js` | The list of food photos for the gallery |
+| `alexis.jpg` | His headshot |
 | `robots.txt`, `sitemap.xml` | Tell search engines what to index |
-| `og.jpg`, `apple-touch-icon.png` | The image shown when the link is shared, and the phone home-screen icon |
+| `og.JPG`, `apple-touch-icon.PNG` | The image shown when the link is shared, and the phone home-screen icon |
 | `worker.js` | The enquiry backend (`/api/enquiry`), plus the pre-rendered Greek page at `/el/` |
 | `wrangler.jsonc` | Cloudflare settings: project name, domains and email addresses |
 | `_headers` | Security headers for the website |
@@ -105,6 +107,21 @@ The settings now come from `wrangler.jsonc`.
    - Alexis should get the enquiry in Gmail.
    - The test email address should get the confirmation.
 3. If anything fails, check **Workers & Pages → website → Observability / Logs**.
+
+## Adding food photos (the "From the kitchen" gallery)
+
+1. **Upload the photo to GitHub**, e.g. `food-1.jpg`.
+   - Photos straight from a phone are fine. Under about 400 KB each loads fastest.
+   - Upper- or lower-case extensions both work.
+2. **List it in `gallery.js`.** Open the file on GitHub, tap the pencil to edit, and add a line with the file name and a caption in English and Greek:
+   ```js
+   { file: 'food-1.jpg', en: 'Charred octopus, fava', el: 'Χταπόδι, φάβα' },
+   ```
+3. **Commit.** The gallery section appears automatically once there's at least one photo.
+   - It shows as a two-column grid on phones and three columns on desktop.
+   - Tapping a photo opens it full screen; swipe or use the arrows to browse.
+
+His headshot is `alexis.jpg`, shown in "The chef" section.
 
 ---
 

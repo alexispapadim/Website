@@ -76,6 +76,19 @@ export default {
     if (url.pathname === '/el/' && (request.method === 'GET' || request.method === 'HEAD')) {
       return greekPage(env, url);
     }
+    // Images uploaded from phones often get capitalised extensions (photo.JPG). If the exact
+    // name isn't found, try the other case so both spellings work.
+    const m = url.pathname.match(/^(\/[\w.\- %]+)\.(jpe?g|png|webp|avif)$/i);
+    if (m && (request.method === 'GET' || request.method === 'HEAD')) {
+      const res = await env.ASSETS.fetch(request);
+      if (res.status !== 404) return res;
+      for (const ext of [m[2].toLowerCase(), m[2].toUpperCase()]) {
+        if (ext === m[2]) continue;
+        const alt = await env.ASSETS.fetch(new Request(new URL(m[1] + '.' + ext, url), request));
+        if (alt.ok) return alt;
+      }
+      return res;
+    }
     return env.ASSETS.fetch(request);
   }
 };
@@ -477,6 +490,10 @@ async function greekPage(env, url) {
     .on('[data-i18n]', { element(e) {
       const v = el[e.getAttribute('data-i18n')];
       if (v != null) e.setInnerContent(v, { html: true });
+    } })
+    .on('[data-i18n-alt]', { element(e) {
+      const v = el[e.getAttribute('data-i18n-alt')];
+      if (v != null) e.setAttribute('alt', v);
     } })
     .on('[data-i18n-ph]', { element(e) {
       const v = el[e.getAttribute('data-i18n-ph')];
