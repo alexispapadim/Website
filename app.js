@@ -5,7 +5,7 @@ import { GALLERY } from './gallery.js';
 const CONFIG = {
   email: 'alexis@papadimitriou.uk',
   phone: '+306945009919',            // used for call + WhatsApp links
-  phoneDisplay: '+44 7856 779459',
+  phoneDisplay: '+30 694 500 9919',
   turnstileSiteKey: '0x4AAAAAAFUZ8kLv46CVO1UJ', // Cloudflare → Turnstile → your widget → Site key (public)
   api: '/api/enquiry'
 };
