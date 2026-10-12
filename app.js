@@ -402,6 +402,29 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
   #veil i{display:block;height:1px;width:0;background:#b8914f;transition:width .8s cubic-bezier(.16,1,.3,1)}
   #veil.on i{width:110px;transition-delay:.15s}
   html.rm #veil{display:none}
+  /* plate stack */
+  #kitchen.deck-mode{padding:0!important;overflow:visible}
+  .kstage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(14px,2.5vh,28px);overflow:hidden;background:var(--cream);padding-top:clamp(64px,9vh,96px);box-sizing:border-box}
+  .kstage .kitchen-head{margin:0!important;text-align:center;position:relative;z-index:3;padding:0 20px;will-change:transform}
+  .kstage .kitchen-head .eyebrow{justify-content:center;margin-bottom:12px}
+  .kstage .kitchen-head .eyebrow::after{content:"";width:28px;height:1px;background:currentColor}
+  .kstage .kitchen-head h2{font-size:clamp(32px,6.4vw,68px)}
+  .k-glows{position:absolute;inset:0;pointer-events:none;z-index:0}
+  .k-glow{position:absolute;left:50%;top:52%;width:130vmax;height:130vmax;margin:-65vmax 0 0 -65vmax;opacity:0;will-change:opacity}
+  .k-deck{position:relative;width:100%;z-index:2}
+  .k-card{position:absolute;left:50%;top:50%;margin:0;border-radius:18px;overflow:hidden;opacity:0;will-change:transform;
+    box-shadow:0 30px 60px -28px rgba(25,22,14,.55),0 6px 16px -8px rgba(25,22,14,.25);background:var(--cream-2);transform-origin:50% 60%;backface-visibility:hidden}
+  .k-card button{all:unset;display:block;width:100%;height:100%;cursor:zoom-in;position:relative}
+  .k-card button:focus-visible{outline:2px solid var(--gold);outline-offset:-4px}
+  .k-card img{width:100%;height:100%;object-fit:cover;display:block;will-change:transform}
+  .k-shade{position:absolute;inset:0;background:#15180f;opacity:0;pointer-events:none}
+  .k-cap{position:relative;z-index:3;text-align:center;min-height:86px;padding:0 20px;opacity:0}
+  .k-count{display:flex;align-items:center;justify-content:center;gap:10px;font:500 11px var(--sans);letter-spacing:.3em;color:var(--gold);overflow:hidden}
+  .k-count i{width:26px;height:1px;background:var(--gold)}
+  .k-num{display:inline-block}
+  .k-text{overflow:hidden;margin-top:10px;padding-bottom:.1em}
+  .k-text span{display:inline-block;font-family:var(--serif);font-style:italic;font-size:clamp(20px,3.4vw,30px);line-height:1.25;color:var(--olive)}
+  .k-hint{position:absolute;left:0;right:0;top:100%;margin-top:8px;font:500 10px var(--sans);letter-spacing:.3em;text-transform:uppercase;color:var(--leaf);opacity:0}
   /* language curtain */
   #lswap{position:fixed;inset:0;z-index:97;visibility:hidden;pointer-events:none;overflow:hidden}
   .ls-panel{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,#353c2b,#1b2016 75%);transform:translate3d(0,100%,0);will-change:transform;display:flex;align-items:center;justify-content:center}
@@ -450,6 +473,7 @@ const M={vh:innerHeight,w:0,hero:{},stmt:{},occ:{},steps:{},about:{},themes:[]};
 let hDist=0, cardStep=1;
 function measure(){
   M.vh=probe.offsetHeight||innerHeight; M.w=innerWidth;
+  if(typeof layoutDeck==='function') layoutDeck();
   const d=Math.ceil(Math.hypot(innerWidth,M.vh*1.04)*1.02);
   disc.style.width=disc.style.height=d+'px'; disc.style.margin=`${-d/2}px 0 0 ${-d/2}px`;
   hDist=Math.max(0,track.scrollWidth-hw.clientWidth);
@@ -460,7 +484,8 @@ function measure(){
   M.themes=themed.map(s=>{const b=box(s);return{top:b.top,bottom:b.top+b.h,dark:s.dataset.theme==='dark',hero:s===hero}});
   if(C.sec){ M.chef=box(C.sec); M.bh=C.box.offsetHeight; }
   M.gal=null;
-  if(galleryEl&&!kitchen.hidden&&galleryEl.children.length){
+  if(kitchen&&!kitchen.hidden&&D.on){ M.gal=box(kitchen); }
+  else if(galleryEl&&!kitchen.hidden&&galleryEl.children.length){
     const gTop=docTop(galleryEl);
     M.gal={top:gTop,h:galleryEl.offsetHeight,items:GI.map(it=>({top:gTop+it.col.offsetTop+it.el.offsetTop,h:it.el.offsetHeight}))};
   }
@@ -622,7 +647,7 @@ function render(y,realY){
   hdr.classList.toggle('dark',dark);
   hdr.classList.toggle('scrolled',realY>M.vh*.9);
   if(!RM) renderChef(y);
-  if(!RM) renderGallery3D(y);
+  if(!RM){ if(D.on) renderDeck(y); else renderGallery3D(y); }
 }
 
 /* Smoothing: animations glide towards the scroll position instead of copying it.
@@ -741,11 +766,122 @@ form.addEventListener('submit',async e=>{
 const kitchen=$('#kitchen'), galleryEl=$('#gallery'), lb=$('#lightbox'), lbImg=$('#lb-img'), lbCap=$('#lb-cap'), lbCount=$('#lb-count');
 const PHOTOS=(Array.isArray(GALLERY)?GALLERY:[]).filter(g=>g&&typeof g.file==='string'&&/^[\w.\- ]+\.(jpe?g|png|webp|avif)$/i.test(g.file));
 const capOf=g=>String((lang==='el'?g.el:g.en)||g.en||'');
+const srcOf=g=>'/'+encodeURIComponent(g.file);
 let GI=[], galCols=0, galT=0;
-function renderGallery(){
-  if(!kitchen||!galleryEl) return;
-  if(!PHOTOS.length){ kitchen.hidden=true; return; }
-  kitchen.hidden=false;
+
+/* ---- the plate stack (pinned, scroll-driven) ----
+   Dishes fly in one by one and land on the pile; the ones underneath sink back and dim.
+   The background glow takes on each dish's colours. At the end the pile fans out like a
+   hand of cards — tap any plate to open it.                                                  */
+const D={on:false};
+function buildDeck(){
+  const N=PHOTOS.length;
+  kitchen.classList.add('deck-mode');
+  const head=kitchen.querySelector('.kitchen-head');
+  const stage=document.createElement('div'); stage.className='stage kstage';
+  stage.innerHTML='<div class="k-glows"></div><div class="k-deck"></div>'+
+    '<div class="k-cap"><div class="k-count"><span class="k-num">01</span><i></i><span class="k-tot"></span></div>'+
+    '<div class="k-text"><span></span></div><p class="k-hint" data-i18n="kt.hint"></p></div>';
+  if(head) stage.prepend(head);
+  galleryEl.hidden=true;
+  kitchen.append(stage);
+  Object.assign(D,{on:true,stage,deck:stage.querySelector('.k-deck'),glows:stage.querySelector('.k-glows'),
+    num:stage.querySelector('.k-num'),text:stage.querySelector('.k-text span'),hint:stage.querySelector('.k-hint'),
+    cap:stage.querySelector('.k-cap'),head,active:-1,capTok:0,cards:[]});
+  stage.querySelector('.k-tot').textContent=String(N).padStart(2,'0');
+  D.hint.innerHTML=I18N[lang]['kt.hint']||'';
+  GI=[];
+  PHOTOS.forEach((g,i)=>{
+    const card=document.createElement('figure'); card.className='k-card';
+    const btn=document.createElement('button'); btn.type='button'; btn.setAttribute('aria-label',capOf(g)||('Photo '+(i+1)));
+    const img=document.createElement('img'); img.src=srcOf(g); img.alt=capOf(g); img.decoding='async';
+    if(i>1) img.loading='lazy';
+    const shade=document.createElement('i'); shade.className='k-shade';
+    btn.append(img,shade); card.append(btn); D.deck.append(card);
+    btn.addEventListener('click',()=>{ if(D.fan>.85||D.top===i) openLightbox(i); });
+    const glow=document.createElement('i'); glow.className='k-glow'; D.glows.append(glow);
+    // tint the glow with the dish's own colours
+    const tint=()=>{ try{ const c=document.createElement('canvas'); c.width=c.height=6; const x=c.getContext('2d');
+        x.drawImage(img,img.naturalWidth*.2,img.naturalHeight*.2,img.naturalWidth*.6,img.naturalHeight*.6,0,0,6,6);
+        const d=x.getImageData(0,0,6,6).data; let r=0,gg=0,b=0,n=0;
+        for(let k=0;k<d.length;k+=4){ const s=Math.max(d[k],d[k+1],d[k+2])-Math.min(d[k],d[k+1],d[k+2]); const w=1+s/40; r+=d[k]*w; gg+=d[k+1]*w; b+=d[k+2]*w; n+=w; }
+        glow.style.background=`radial-gradient(closest-side,rgba(${r/n|0},${gg/n|0},${b/n|0},.55),transparent)`;
+      }catch(_){} };
+    if(img.complete&&img.naturalWidth) tint(); else img.addEventListener('load',()=>{tint(); clearTimeout(galT); galT=setTimeout(()=>{measure();tick();},60);},{once:true});
+    const tilt=[-2.2,1.6,-1.1,2.4,-1.8,1.2][i%6];
+    const rnd=((i*7919)%13)/13;
+    D.cards.push({card,img,shade,glow,g,tilt,from:(i%2?1:-1)*(10+rnd*8),drift:(i%2?1:-1)*(20+rnd*30)});
+    GI.push({el:card,img,cap:null,col:null});
+  });
+  for(const k in last) if(k.startsWith('k')) delete last[k];
+}
+function layoutDeck(){
+  if(!D.on) return;
+  const N=PHOTOS.length, vw=innerWidth, vh=M.vh;
+  kitchen.style.height=Math.round(vh*(1.1+N*.85))+'px';
+  const headH=D.head?D.head.offsetHeight:0, capH=D.cap.offsetHeight||90;
+  const avail=Math.max(240,vh-headH-capH-Math.min(96,Math.max(64,vh*.09))-110);
+  const bh=Math.min(avail,(vw-72)*1.25,620);
+  D.bh=bh;
+  D.deck.style.height=Math.round(bh+30)+'px';
+  D.cards.forEach(c=>{
+    const ratio=(c.g.h&&c.g.w)?c.g.h/c.g.w:(c.img.naturalWidth?c.img.naturalHeight/c.img.naturalWidth:1.25);
+    let w,h;
+    if(ratio>=1){ h=bh; w=bh/ratio; } else { w=Math.min(vw-40,bh*1.12); h=w*ratio; }
+    c.w=w; c.h=h;
+    Object.assign(c.card.style,{width:w+'px',height:h+'px',marginLeft:(-w/2)+'px',marginTop:(-h/2)+'px'});
+  });
+  const cw=D.cards.reduce((m,c)=>Math.max(m,c.w),0)*.6;
+  D.spread=N>1?Math.min((vw-40-cw)/(N-1),cw*.92,190):0;
+}
+function setDeckCaption(i){
+  if(i===D.active) return; const first=D.active<0; D.active=i;
+  const tok=++D.capTok, g=PHOTOS[i];
+  D.num.textContent=String(i+1).padStart(2,'0');
+  D.num.animate([{transform:'translate3d(0,100%,0)',opacity:0},{transform:'none',opacity:1}],{duration:520,easing:'cubic-bezier(.16,1,.3,1)'});
+  const swap=()=>{ if(tok!==D.capTok) return; D.text.textContent=capOf(g);
+    D.text.animate([{transform:'translate3d(0,110%,0)',opacity:0},{transform:'none',opacity:1}],{duration:650,easing:'cubic-bezier(.16,1,.3,1)'}); };
+  if(first) return swap();
+  D.text.animate([{transform:'none',opacity:1},{transform:'translate3d(0,-110%,0)',opacity:0}],{duration:200,easing:'cubic-bezier(.5,0,.75,0)'}).finished.then(swap,swap);
+}
+function renderDeck(y){
+  if(!M.gal) return;
+  const N=PHOTOS.length, vh=M.vh, bh=D.bh||400;
+  const enter=clamp((y+vh-M.gal.top)/vh);
+  const p=pin(M.gal,y);
+  const fanAt=N/(N+1.15);
+  const arr=clamp(enter*.85+(p/fanAt)*(N-.85),0,N);         // how many plates have landed (continuous)
+  const fan=easeIO(seg(p,fanAt+.02,1)); D.fan=fan;
+  D.top=Math.min(N-1,Math.floor(arr-.35));
+  const mid=(N-1)/2;
+  D.cards.forEach((c,i)=>{
+    const a=easeOutQ(clamp(arr-i)), dep=Math.min(3.2,Math.max(0,arr-i-1));
+    // flight in
+    let tx=(1-a)*c.drift, ty=(1-a)*vh*.95, rot=(1-a)*c.from+a*c.tilt, sc=1.14-.14*a;
+    // sinking into the pile
+    sc*=1-.07*dep; ty-=dep*bh*.05; rot+=dep*c.tilt*.4;
+    let shade=Math.min(.5,.15*dep);
+    // fan out at the end
+    if(fan>0){
+      const k=i-mid, fsc=Math.min(.62,(innerWidth-30)/(c.w*1.25));
+      tx=tx*(1-fan)+k*D.spread*fan; ty=ty*(1-fan)+(Math.abs(k)*k*0+Math.abs(k)*bh*.05-bh*.04)*fan;
+      rot=rot*(1-fan)+k*7*fan; sc=sc*(1-fan)+fsc*fan; shade*=1-fan;
+    }
+    put('kT'+i,c.card,'transform',`translate3d(${tx.toFixed(1)}px,${ty.toFixed(1)}px,0) rotate(${rot.toFixed(2)}deg) scale(${sc.toFixed(4)})`);
+    put('kO'+i,c.card,'opacity',(a>0.001?1:0).toString());
+    put('kI'+i,c.img,'transform',`scale(${(1.28-.28*a+.04*dep*(1-fan)).toFixed(4)})`);
+    put('kS'+i,c.shade,'opacity',shade.toFixed(3));
+    put('kG'+i,c.glow,'opacity',(Math.max(0,1-Math.abs(arr-(i+1))*1.1)*(1-fan*.6)).toFixed(3));
+  });
+  if(arr>.4) setDeckCaption(Math.min(N-1,Math.max(0,Math.round(arr-1))));
+  put('kCap',D.cap,'opacity',(seg(arr,.3,.8)).toFixed(3));
+  put('kHint',D.hint,'opacity',seg(fan,.6,1).toFixed(3));
+  put('kTxt',D.text.parentNode,'opacity',(1-seg(fan,.1,.5)*.0).toFixed(3));
+  if(D.head) put('kHd',D.head,'transform',`translate3d(0,${(-seg(p,0,.25)*12).toFixed(1)}px,0)`);
+}
+
+/* masonry grid: used when the visitor prefers reduced motion */
+function renderMasonry(){
   const n=innerWidth>=900?3:2; galCols=n;
   galleryEl.textContent=''; GI=[];
   const cols=[...Array(n)].map(()=>{const c=document.createElement('div'); c.className='g-col'; galleryEl.append(c); return c;});
@@ -754,9 +890,8 @@ function renderGallery(){
     const fig=document.createElement('figure'); fig.className='g-item';
     const btn=document.createElement('button'); btn.type='button';
     const img=document.createElement('img');
-    img.src='/'+encodeURIComponent(g.file); img.loading='lazy'; img.decoding='async'; img.alt=capOf(g);
+    img.src=srcOf(g); img.loading='lazy'; img.decoding='async'; img.alt=capOf(g);
     if(g.w&&g.h){ img.width=g.w; img.height=g.h; }
-    img.addEventListener('load',()=>{ clearTimeout(galT); galT=setTimeout(()=>{measure();tick();},60); },{once:true});
     btn.append(img); btn.setAttribute('aria-label',capOf(g)||('Photo '+(i+1)));
     btn.addEventListener('click',()=>openLightbox(i));
     fig.append(btn);
@@ -764,27 +899,23 @@ function renderGallery(){
     if(capOf(g)){ cap=document.createElement('figcaption'); cap.textContent=capOf(g); fig.append(cap); }
     col.append(fig); GI.push({el:fig,img,cap,col});
   });
-  if(RM) GI.forEach(it=>it.el.style.opacity=1);
-  for(const k in last) if(k.startsWith('g')) delete last[k];
+  GI.forEach(it=>it.el.style.opacity=1);
 }
-addEventListener('resize',()=>{ if(PHOTOS.length&&(innerWidth>=900?3:2)!==galCols){ renderGallery(); measure(); tick(); } });
-// Columns drift at different speeds; each photo rises, sharpens out of a soft zoom, then its caption appears.
+function renderGallery(){
+  if(!kitchen||!galleryEl) return;
+  if(!PHOTOS.length){ kitchen.hidden=true; return; }
+  kitchen.hidden=false;
+  if(RM) return renderMasonry();
+  if(!D.on) buildDeck();
+  else { // language change: refresh captions in place
+    D.cards.forEach((c,i)=>{ c.img.alt=capOf(c.g); c.card.querySelector('button').setAttribute('aria-label',capOf(c.g)); });
+    if(D.active>=0) D.text.textContent=capOf(PHOTOS[D.active]);
+    D.hint.innerHTML=I18N[lang]['kt.hint']||'';
+  }
+}
+addEventListener('resize',()=>{ if(RM&&PHOTOS.length&&(innerWidth>=900?3:2)!==galCols){ renderMasonry(); measure(); tick(); } });
 const COL_SPEED=[0,-1,.55];
-function renderGallery3D(y){
-  if(!M.gal) return;
-  const gp=clamp((y+M.vh-M.gal.top)/(M.vh+M.gal.h))-.5;
-  const amp=Math.min(90,M.vh*.11);
-  galleryEl.querySelectorAll(':scope>.g-col').forEach((c,i)=>put('gc'+i,c,'transform',`translate3d(0,${(gp*amp*COL_SPEED[i%3]*2).toFixed(1)}px,0)`));
-  GI.forEach((it,i)=>{
-    const b=M.gal.items[i]; if(!b) return;
-    const t=clamp((y+M.vh-b.top)/(M.vh*.75));        // 0 → just entering, 1 → well inside
-    const e=easeOutQ(t);
-    put('go'+i,it.el,'opacity',seg(t,0,.28).toFixed(3));
-    put('gt'+i,it.el,'transform',`translate3d(0,${((1-e)*46).toFixed(1)}px,0) scale(${(.95+.05*e).toFixed(4)})`);
-    put('gi'+i,it.img,'transform',`scale(${(1.18-.18*e).toFixed(4)})`);
-    if(it.cap){ const c=seg(t,.25,.6); put('gco'+i,it.cap,'opacity',c.toFixed(3)); }
-  });
-}
+function renderGallery3D(y){ /* masonry needs no scroll effects */ }
 
 /* lightbox: the photo flies out of the grid and back */
 let lbIndex=0, lbOpener=null, lbBusy=false;
