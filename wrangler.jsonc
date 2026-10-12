@@ -1,0 +1,26 @@
+{
+  // Cloudflare Worker for papadimitriou.uk
+  // Static site files are served from this folder; /api/enquiry runs worker.js.
+  "name": "website",
+  "main": "worker.js",
+  "compatibility_date": "2025-06-01",
+  "assets": {
+    "directory": "./",
+    "binding": "ASSETS"
+  },
+  "workers_dev": false,
+  "routes": [
+    { "pattern": "papadimitriou.uk", "custom_domain": true },
+    { "pattern": "www.papadimitriou.uk", "custom_domain": true }
+  ],
+  "keep_vars": true,
+  "vars": {
+    "TO_EMAIL": "alexis@papadimitriou.uk",
+    "FROM_EMAIL": "alexis@papadimitriou.uk",
+    "SITE_URL": "https://papadimitriou.uk",
+    "ALLOWED_ORIGINS": "https://papadimitriou.uk,https://www.papadimitriou.uk"
+  },
+  "observability": { "enabled": true }
+  // Secrets (set in the dashboard, never in this file):
+  //   RESEND_API_KEY, TURNSTILE_SECRET
+}
