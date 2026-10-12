@@ -82,7 +82,9 @@ export default {
     if (m && (request.method === 'GET' || request.method === 'HEAD')) {
       const res = await env.ASSETS.fetch(request);
       if (res.status !== 404) return res;
-      for (const ext of [m[2].toLowerCase(), m[2].toUpperCase()]) {
+      // Phones save the same photo as .jpg, .JPG, .jpeg or .JPEG — accept any of them.
+      const fam = /^jpe?g$/i.test(m[2]) ? ['jpg', 'JPG', 'jpeg', 'JPEG', 'Jpg'] : [m[2].toLowerCase(), m[2].toUpperCase()];
+      for (const ext of fam) {
         if (ext === m[2]) continue;
         const alt = await env.ASSETS.fetch(new Request(new URL(m[1] + '.' + ext, url), request));
         if (alt.ok) return alt;

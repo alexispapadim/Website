@@ -271,15 +271,23 @@ function scramble(el,from,to,dur){
   });
 }
 function cascadeIn(){
+  // Only animate text that is actually visible right now, and only up to its current opacity —
+  // so things the scroll scenes are keeping hidden (e.g. the hero tagline) never flash.
+  const effOpacity=el=>{ let o=1; for(let n=el;n&&n.nodeType===1;n=n.parentElement){ const cs=getComputedStyle(n);
+      if(cs.visibility==='hidden'||cs.display==='none') return 0; o*=parseFloat(cs.opacity); if(o<.05) return 0; } return o; };
+  const coveredByHeroDisc=el=>{ if(!el.closest('#hero')) return false; return M.hero&&pin(M.hero,scrollY)<.8; };
   const vis=[];
   for(const el of $$('main [data-i18n], header [data-i18n], #stmt')){
     if(vis.length>=26) break;
     const r=el.getBoundingClientRect();
-    if(r.width&&r.bottom>0&&r.top<innerHeight&&getComputedStyle(el).visibility!=='hidden') vis.push(el);
+    if(!r.width||r.bottom<=0||r.top>=innerHeight) continue;
+    if(coveredByHeroDisc(el)) continue;
+    const eo=effOpacity(el); if(eo<.6) continue;
+    vis.push({el,o:parseFloat(getComputedStyle(el).opacity)||1});
   }
-  vis.sort((a,b)=>a.getBoundingClientRect().top-b.getBoundingClientRect().top);
-  vis.forEach((el,i)=>el.animate(
-    [{opacity:0,transform:'translate3d(0,34px,0)',filter:'blur(8px)'},{opacity:1,transform:'none',filter:'blur(0)'}],
+  vis.sort((a,b)=>a.el.getBoundingClientRect().top-b.el.getBoundingClientRect().top);
+  vis.forEach(({el,o},i)=>el.animate(
+    [{opacity:0,transform:'translate3d(0,34px,0)',filter:'blur(8px)'},{opacity:o,transform:'none',filter:'blur(0)'}],
     {duration:850,delay:120+i*55,easing:EASE_OUT,fill:'backwards'}));
 }
 let langBusy=false;
@@ -837,6 +845,7 @@ function buildDeck(){
         glow.style.background=`radial-gradient(closest-side,rgba(${r/n|0},${gg/n|0},${b/n|0},.55),transparent)`;
       }catch(_){} };
     if(img.complete&&img.naturalWidth) tint(); else img.addEventListener('load',()=>{tint(); clearTimeout(galT); galT=setTimeout(()=>{measure();tick();},60);},{once:true});
+    img.addEventListener('error',()=>{ console.warn('Gallery photo not found:',g.file); card.style.display='none'; },{once:true});
     const tilt=[-2.2,1.6,-1.1,2.4,-1.8,1.2][i%6];
     const rnd=((i*7919)%13)/13;
     D.cards.push({card,img,shade,glow,g,tilt,from:(i%2?1:-1)*(10+rnd*8),drift:(i%2?1:-1)*(20+rnd*30)});
