@@ -354,6 +354,7 @@ html.locked,html.locked body{overflow:hidden}
 .rm .c-word span,.rm .c-cap,.rm .c-line{opacity:1}.rm .c-rule{transform:none}
 .about-grid{grid-template-columns:1fr!important;max-width:900px!important}
 #about{padding-top:clamp(40px,8vh,90px)}
+.g-hint{margin-top:14px;font:600 10px var(--sans);letter-spacing:.26em;text-transform:uppercase;color:var(--leaf)}
 </style>
 </head>
 <body>
@@ -461,10 +462,11 @@ html.locked,html.locked body{overflow:hidden}
   </section>
 
   <!-- 4b. Food gallery (filled from gallery.js; hidden until photos are added) -->
-  <section id="kitchen" class="plain light" data-theme="light" hidden>
+  <section id="kitchen" class="plain dark" data-theme="dark" hidden>
     <div class="kitchen-head">
       <p class="eyebrow" data-reveal data-i18n="kt.eyebrow">From the kitchen</p>
       <h2 data-reveal-group><span class="mask" style="display:block"><span data-i18n="kt.h">A taste of <em>recent tables</em></span></span></h2>
+      <p class="g-hint" data-reveal style="--d:2" data-i18n="kt.hint">Tap any dish to see it larger</p>
     </div>
     <div class="gallery" id="gallery"></div>
   </section>
