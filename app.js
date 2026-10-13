@@ -1,5 +1,5 @@
 import { I18N } from './i18n.js';
-import { GALLERY } from './gallery.js';
+import { GALLERY, PRODUCE } from './gallery.js';
 
 /* ===== Edit these if details change ===== */
 const CONFIG = {
@@ -426,18 +426,21 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
   header{padding-top:max(12px,env(safe-area-inset-top))!important;padding-bottom:12px!important;transition:color .45s ease}
   /* the pass: contact-sheet gallery */
   #kitchen{background:radial-gradient(ellipse at 50% 0%,#2a3022 0%,#1a1e15 55%,#14170f 100%)!important;color:var(--cream)}
-  #kitchen .kitchen-head{margin-bottom:clamp(36px,6vh,64px)}
+  :is(#kitchen,#produce) .kitchen-head{margin-bottom:clamp(36px,6vh,64px)}
+  #produce{background:linear-gradient(180deg,var(--cream-2,#e9e1d4),var(--paper,#f1ebe1))}
+  #produce .g-hint{color:var(--leaf)}
+  #produce .gallery.csheet{box-shadow:inset 0 0 0 1px rgba(214,182,121,.16),inset 0 1px 0 rgba(255,255,255,.04),0 50px 90px -46px rgba(32,37,26,.75)}
   #kitchen h2{color:var(--cream)}
   #kitchen .g-hint{color:rgba(214,182,121,.7)}
-  .gallery.csheet{columns:auto!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(18px,3vw,34px) clamp(12px,2.4vw,30px);
+  .gallery.csheet{columns:auto!important;display:flex!important;flex-wrap:wrap;justify-content:center;align-items:flex-start;--n:2;--cg:clamp(12px,2.4vw,30px);gap:clamp(18px,3vw,34px) var(--cg);
     max-width:1120px;margin:0 auto;padding:clamp(16px,3vw,36px);position:relative;border-radius:6px;
     background:
       repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0 1px,transparent 1px 3px),
       repeating-linear-gradient(0deg,rgba(0,0,0,.05) 0 1px,transparent 1px 4px),
       linear-gradient(160deg,#20251a,#171a12);
     box-shadow:inset 0 0 0 1px rgba(214,182,121,.16),inset 0 1px 0 rgba(255,255,255,.04),0 40px 80px -40px rgba(0,0,0,.6)}
-  @media(min-width:900px){.gallery.csheet{grid-template-columns:repeat(3,minmax(0,1fr))}}
-  .sh-item{margin:0!important;min-width:0;will-change:opacity}
+  @media(min-width:900px){.gallery.csheet{--n:3}}
+  .sh-item{margin:0!important;min-width:0;will-change:opacity;flex:0 0 auto;width:calc((100% - (var(--n) - 1) * var(--cg)) / var(--n))}
   .sh-frame{all:unset;display:block;width:100%;aspect-ratio:4/5;position:relative;overflow:hidden;border-radius:2px;cursor:zoom-in;background:#0d0f0a;
     box-shadow:0 0 0 1px rgba(236,228,216,.07),0 22px 40px -26px rgba(0,0,0,.85);-webkit-mask-image:-webkit-radial-gradient(white,black)}
   .sh-frame:focus-visible{outline:2px solid #d6b679;outline-offset:4px}
@@ -545,9 +548,8 @@ function measure(){
   if(C.sec){ M.chef=box(C.sec); M.bh=C.box.offsetHeight; }
   M.gal=null;
   if(kitchen&&!kitchen.hidden&&D.on){ M.gal=box(kitchen); }
-  else if(galleryEl&&!kitchen.hidden&&galleryEl.children.length){
-    const gTop=docTop(galleryEl);
-    M.gal={top:gTop,h:galleryEl.offsetHeight,items:GI.map(it=>({top:docTop(it.el),h:it.el.offsetHeight}))};
+  else if(GI.length){
+    M.gal={items:GI.map(it=>it.gone?null:({top:docTop(it.el),h:it.el.offsetHeight}))};
   }
 }
 const layout=measure;
@@ -901,7 +903,10 @@ form.addEventListener('submit',async e=>{
 
 /* ===================== food gallery ===================== */
 const kitchen=$('#kitchen'), galleryEl=$('#gallery'), lb=$('#lightbox'), lbImg=$('#lb-img'), lbCap=$('#lb-cap'), lbCount=$('#lb-count');
-const PHOTOS=(Array.isArray(GALLERY)?GALLERY:[]).filter(g=>g&&typeof g.file==='string'&&/^[\w.\- ]+\.(jpe?g|png|webp|avif)$/i.test(g.file));
+const okPhotos=list=>(Array.isArray(list)?list:[]).filter(g=>g&&typeof g.file==='string'&&/^[\w.\- ]+\.(jpe?g|png|webp|avif)$/i.test(g.file));
+const PHOTOS=okPhotos(GALLERY);
+const SETS=[{sec:$('#produce'),el:$('#produce-gallery'),photos:okPhotos(typeof PRODUCE==='undefined'?[]:PRODUCE),items:[]},
+            {sec:kitchen,el:galleryEl,photos:PHOTOS,items:[]}].filter(s=>s.sec&&s.el);
 const capOf=g=>String((lang==='el'?g.el:g.en)||g.en||'');
 const srcOf=g=>'/'+encodeURIComponent(g.file);
 let GI=[], galCols=0, galT=0;
@@ -922,22 +927,26 @@ const colCount=()=>innerWidth>=900?3:2;
    frame and the dish develops from a dim black-and-white print into full colour.                */
 function renderMasonry(){
   const n=colCount(); galCols=n;
-  galleryEl.textContent=''; GI=[];
-  galleryEl.className='gallery csheet';
-  PHOTOS.forEach((g,i)=>{
-    const fig=document.createElement('figure'); fig.className='sh-item';
-    const btn=document.createElement('button'); btn.type='button'; btn.className='sh-frame';
-    const bw=document.createElement('img'); bw.className='sh-bw'; bw.src=srcOf(g); bw.alt=''; bw.decoding='async'; bw.loading=i<n*2?'eager':'lazy';
-    const img=document.createElement('img'); img.className='sh-col'; img.src=srcOf(g); img.alt=capOf(g); img.decoding='async'; img.loading=bw.loading;
-    const lamp=document.createElement('i'); lamp.className='sh-lamp';
-    const corners=document.createElement('i'); corners.className='sh-corners';
-    img.addEventListener('error',()=>{ console.warn('Gallery photo not found:',g.file); fig.remove(); clearTimeout(galT); galT=setTimeout(()=>{measure();tick();},80); },{once:true});
-    btn.append(bw,img,lamp,corners); btn.setAttribute('aria-label',capOf(g)||('Photo '+(i+1)));
-    btn.addEventListener('click',()=>openViewer(i,img));
-    const cap=document.createElement('figcaption');
-    cap.innerHTML='<div class="sh-meta"><span class="sh-no"></span><span class="g-n"></span></div><span class="g-t"></span><span class="g-p"></span>';
-    fig.append(btn,cap); galleryEl.append(fig);
-    GI.push({el:fig,btn,img,bw,lamp,cap,col:null,g,i});
+  GI=[];
+  SETS.forEach(set=>{
+    set.el.textContent=''; set.items=[];
+    set.el.className='gallery csheet';
+    set.photos.forEach((g,li)=>{
+      const fig=document.createElement('figure'); fig.className='sh-item';
+      const btn=document.createElement('button'); btn.type='button'; btn.className='sh-frame';
+      const bw=document.createElement('img'); bw.className='sh-bw'; bw.src=srcOf(g); bw.alt=''; bw.decoding='async'; bw.loading=li<n*2?'eager':'lazy';
+      const img=document.createElement('img'); img.className='sh-col'; img.src=srcOf(g); img.alt=capOf(g); img.decoding='async'; img.loading=bw.loading;
+      const lamp=document.createElement('i'); lamp.className='sh-lamp';
+      const corners=document.createElement('i'); corners.className='sh-corners';
+      const it={el:fig,btn,img,bw,lamp,cap:null,g,i:li,set,gone:false};
+      img.addEventListener('error',()=>{ console.warn('Gallery photo not found:',g.file); it.gone=true; fig.remove(); clearTimeout(galT); galT=setTimeout(()=>{measure();tick();},80); },{once:true});
+      btn.append(bw,img,lamp,corners); btn.setAttribute('aria-label',capOf(g)||('Photo '+(li+1)));
+      btn.addEventListener('click',()=>openViewer(set,set.items.filter(x=>!x.gone).indexOf(it),img));
+      const cap=document.createElement('figcaption'); it.cap=cap;
+      cap.innerHTML='<div class="sh-meta"><span class="sh-no"></span><span class="g-n"></span></div><span class="g-t"></span><span class="g-p"></span>';
+      fig.append(btn,cap); set.el.append(fig);
+      set.items.push(it); GI.push(it);
+    });
   });
   fillGalleryText();
   for(const k in last) if(k.startsWith('g')) delete last[k];
@@ -952,17 +961,16 @@ function fillGalleryText(){
     it.img.alt=capOf(it.g); it.btn.setAttribute('aria-label',capOf(it.g)); });
 }
 function renderGallery(){
-  if(!kitchen||!galleryEl) return;
-  if(!PHOTOS.length){ kitchen.hidden=true; return; }
-  kitchen.hidden=false;
+  if(!SETS.length) return;
+  SETS.forEach(s=>{ s.sec.hidden=!s.photos.length; });
   if(!GI.length) renderMasonry(); else fillGalleryText();
 }
-addEventListener('resize',()=>{ if(PHOTOS.length&&colCount()!==galCols){ galCols=colCount(); measure(); tick(); } });
+addEventListener('resize',()=>{ if(GI.length&&colCount()!==galCols){ galCols=colCount(); measure(); tick(); } });
 function renderGallery3D(y){
   if(!M.gal||!M.gal.items) return;
   const vh=M.vh;
   GI.forEach((it,i)=>{
-    const b=M.gal.items[i]; if(!b) return;
+    const b=M.gal.items[i]; if(!b||it.gone) return;
     const t=clamp((y+vh-b.top)/(vh*.6));                     // 0 entering … 1 fully developed
     const e=easeOutQ(seg(t,.12,1));
     put('gm'+i,it.img,'clipPath',e>=.999?'none':`inset(0 0 ${((1-e)*100).toFixed(2)}% 0)`);
@@ -980,10 +988,11 @@ function renderGallery3D(y){
    The tapped photo flies out of the grid to full screen. Swipe (the photo follows your finger),
    use the arrows or tap the small photos along the bottom. Closing flies it back into the grid. */
 let viewer=null;
-function openLightbox(i){ openViewer(i, GI[i]&&GI[i].img); }
-function openViewer(i,fromImg){
-  if(viewer||!PHOTOS.length) return;
-  const N=PHOTOS.length, E1='cubic-bezier(.2,.8,.2,1)';
+function openLightbox(i){ const s=SETS.find(x=>x.el===galleryEl)||SETS[0]; if(s) openViewer(s,i,s.items[i]&&s.items[i].img); }
+function openViewer(set,i,fromImg){
+  const live=set.items.filter(it=>!it.gone), P=live.map(it=>it.g);
+  if(viewer||!P.length) return; if(i<0) i=0;
+  const N=P.length, E1='cubic-bezier(.2,.8,.2,1)';
   const v=document.createElement('div'); v.className='vw'; v.setAttribute('role','dialog'); v.setAttribute('aria-modal','true');
   const closeL=I18N[lang]['lg.close']||'Close';
   v.innerHTML=`<div class="vw-bg"></div><div class="vw-count"></div><button type="button" class="vw-btn vw-x" aria-label="${esc(closeL)}">✕</button>
@@ -993,16 +1002,16 @@ function openViewer(i,fromImg){
   const stage=v.querySelector('.vw-stage'), bg=v.querySelector('.vw-bg'), ui=v.querySelector('.vw-ui'), cnt=v.querySelector('.vw-count');
   const capN=v.querySelector('.vw-cap .g-n'), capT=v.querySelector('.vw-cap .g-t'), capP=v.querySelector('.vw-cap .g-p');
   const btns=[...v.querySelectorAll('.vw-btn')], thumbs=v.querySelector('.vw-thumbs');
-  const slides=PHOTOS.map(g=>{ const s=document.createElement('div'); s.className='vw-slide';
+  const slides=P.map(g=>{ const s=document.createElement('div'); s.className='vw-slide';
     const im=document.createElement('img'); im.src=srcOf(g); im.alt=capOf(g); im.decoding='async'; s.append(im); stage.append(s); return s; });
-  const th=PHOTOS.map((g,k)=>{ const b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label',capOf(g));
+  const th=P.map((g,k)=>{ const b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label',capOf(g));
     const im=document.createElement('img'); im.src=srcOf(g); im.alt=''; b.append(im); b.onclick=()=>go(k); thumbs.append(b); return b; });
   let cur=i, W=stage.clientWidth, drag=0, capI=-1;
   const place=anim=>slides.forEach((s,k)=>{ const off=(k-cur)*W*1.04+drag, d=Math.min(1,Math.abs(off)/W);
     s.style.transition=anim?'transform .65s cubic-bezier(.16,1,.3,1),opacity .65s ease':'none';
     s.style.transform=`translate3d(${off.toFixed(1)}px,0,0) scale(${(1-.12*d).toFixed(4)})`;
     s.style.opacity=(1-.65*d).toFixed(3); s.style.visibility=(Math.abs(k-cur)<=1||anim)?'visible':'hidden'; });
-  const setCapV=()=>{ if(capI===cur) return; const first=capI<0; capI=cur; const d=splitDish(capOf(PHOTOS[cur]));
+  const setCapV=()=>{ if(capI===cur) return; const first=capI<0; capI=cur; const d=splitDish(capOf(P[cur]));
     capN.textContent=numOf(cur); capT.textContent=d.title; capP.textContent=d.parts;
     if(!first&&!RM) [capN,capT,capP].forEach((el,k)=>el.animate([{opacity:0,transform:'translateY(12px)'},{opacity:1,transform:'none'}],{duration:600,delay:k*60,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'})); };
   const update=anim=>{ place(anim); setCapV(); cnt.textContent=`${cur+1} / ${N}`;
@@ -1021,7 +1030,7 @@ function openViewer(i,fromImg){
   (target.complete&&target.naturalWidth)?flyIn():target.addEventListener('load',flyIn,{once:true});
   function close(){
     if(!viewer) return; viewer=null;
-    const img=slides[cur].querySelector('img'), back=GI[cur]&&GI[cur].img, b=img.getBoundingClientRect();
+    const img=slides[cur].querySelector('img'), back=live[cur]&&live[cur].img, b=img.getBoundingClientRect();
     [ui,cnt,...btns].forEach(el=>el.animate([{opacity:1},{opacity:0}],{duration:180,fill:'forwards'}));
     bg.animate([{opacity:1},{opacity:0}],{duration:RM?1:440,fill:'forwards'});
     const a=back&&back.getBoundingClientRect();
