@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=10';
-import * as GAL from './gallery.js?v=10';
-import * as SEA from './seasons.js?v=10';
+import { I18N } from './i18n.js?v=11';
+import * as GAL from './gallery.js?v=11';
+import * as SEA from './seasons.js?v=11';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -1196,10 +1196,11 @@ const MENU_RATIO=1055/1491;
   .mv-x:focus-visible,.mv-arw:focus-visible,.mv-plan:focus-visible,.mv-dots button:focus-visible{outline:2px solid #d6b679;outline-offset:2px}
   .mv-arw{position:absolute;top:46%;z-index:3;opacity:0}.mv-prev{left:18px}.mv-next{right:18px}.mv-arw:disabled{opacity:.25!important;cursor:default}
   @media(max-width:760px){.mv-arw{display:none}}
-  .mv-rail{position:relative;z-index:2;flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior:contain}
+  .mv-rail{position:relative;z-index:2;flex:1;min-height:0;display:flex;overflow:hidden;touch-action:pan-y pinch-zoom}
   .mv-rail::-webkit-scrollbar,.mv-slide::-webkit-scrollbar{display:none}
-  .mv.zoomed .mv-rail{overflow-x:hidden;scroll-snap-type:none}
-  .mv-slide{flex:0 0 100%;height:100%;overflow:auto;scroll-snap-align:center;scroll-snap-stop:always;overscroll-behavior:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  
+  .mv-slide{flex:0 0 100%;height:100%;overflow:hidden;scrollbar-width:none;will-change:transform}
+  .mv.zoomed .mv-slide.cur{overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
   .mv-page{display:flex;width:max-content;min-width:100%;min-height:100%;box-sizing:border-box;padding:6px 16px}
   .mv-img{display:block;margin:auto;width:var(--mw,340px);max-width:none;height:auto;aspect-ratio:1055/1491;border-radius:4px;background:#f2ecdf;cursor:zoom-in;
     box-shadow:0 40px 90px -30px rgba(0,0,0,.85),0 0 0 1px rgba(214,182,121,.14);transition:width .6s cubic-bezier(.16,1,.3,1);-webkit-user-select:none;user-select:none;-webkit-user-drag:none}
@@ -1361,10 +1362,32 @@ function openMenu(card){
     dots.forEach((d,k)=>d.classList.toggle('on',k===cur)); if(prev){ prev.disabled=cur===0; next.disabled=cur===N-1; } };
   const fit=()=>{ const w=rail.clientWidth, h=rail.clientHeight;
     v.style.setProperty('--mw',Math.max(160,Math.min(w-32,760,(h-12)*MENU_RATIO)).toFixed(1)+'px');
-    if(!zoomed) rail.scrollLeft=cur*w; };
-  function go(k){ k=clamp(k,0,N-1); if(zoomed) unzoom(); rail.scrollTo({left:k*rail.clientWidth,behavior:RM?'auto':'smooth'}); }
-  rail.addEventListener('scroll',()=>{ const k=clamp(Math.round(rail.scrollLeft/Math.max(1,rail.clientWidth)),0,N-1);
-    if(k!==cur){ cur=k; setUI(); } },{passive:true});
+    if(!zoomed&&typeof place==='function') place(0,false); };
+  /* paging: the menus sit side by side; dragging moves them with your finger, letting go settles
+     on the nearest one (a quick flick is enough). Arrows, dots and keys glide the same way.   */
+  let dragX=0, slideAnim=null;
+  const place=(px,anim)=>{ const W=rail.clientWidth;
+    slides.forEach((sl,k)=>{ const x=(k-cur)*W+px;
+      if(anim&&!RM){ sl.s.animate([{transform:sl.s.style.transform||'none'},{transform:`translate3d(${x}px,0,0)`}],{duration:520,easing:'cubic-bezier(.16,1,.3,1)'}); }
+      sl.s.style.transform=`translate3d(${x}px,0,0)`; sl.s.classList.toggle('cur',k===cur); }); };
+  slides.forEach(sl=>{ sl.s.style.position='absolute'; sl.s.style.inset='0'; sl.s.style.width='100%'; });
+  function go(k){ k=clamp(k,0,N-1); if(zoomed) unzoom(); const was=cur; cur=k; place(0,was!==k||dragX!==0); dragX=0; setUI(); }
+  let ds=null, dragged=false;
+  rail.addEventListener('pointerdown',e=>{ if(zoomed||N<2||(e.pointerType==='mouse'&&e.button!==0)) return;
+    ds={id:e.pointerId,x:e.clientX,y:e.clientY,t:performance.now(),mode:''}; dragged=false; });
+  rail.addEventListener('pointermove',e=>{ if(!ds||e.pointerId!==ds.id) return;
+    const dx=e.clientX-ds.x, dy=e.clientY-ds.y;
+    if(!ds.mode){ if(Math.abs(dx)<8&&Math.abs(dy)<8) return; ds.mode=Math.abs(dx)>Math.abs(dy)?'h':'v'; if(ds.mode==='h'){ try{rail.setPointerCapture(e.pointerId)}catch(_){} } }
+    if(ds.mode!=='h') return;
+    dragged=true; dragX=dx; if((cur===0&&dx>0)||(cur===N-1&&dx<0)) dragX=dx*.35; place(dragX,false); });
+  const endDrag=e=>{ if(!ds||(e&&e.pointerId!==ds.id)) return; const s=ds; ds=null; if(s.mode!=='h'){ return; }
+    const W=rail.clientWidth, v=dragX/Math.max(1,performance.now()-s.t), fast=Math.abs(v)>.45&&Math.abs(dragX)>30;
+    const step=(dragX<-W*.2||(fast&&dragX<0))?1:(dragX>W*.2||(fast&&dragX>0))?-1:0;
+    go(cur+step); setTimeout(()=>dragged=false,60); };
+  rail.addEventListener('pointerup',endDrag); rail.addEventListener('pointercancel',endDrag);
+  rail.addEventListener('wheel',e=>{ if(zoomed||N<2||Math.abs(e.deltaX)<=Math.abs(e.deltaY)||Math.abs(e.deltaX)<18) return; e.preventDefault();
+    if(slideAnim) return; slideAnim=setTimeout(()=>slideAnim=null,520); go(cur+(e.deltaX>0?1:-1)); },{passive:false});
+  place(0,false);
   function zoomAt(sl,e){
     const r=sl.im.getBoundingClientRect(), pr=sl.s.getBoundingClientRect();
     const fx=clamp((e.clientX-r.left)/r.width), fy=clamp((e.clientY-r.top)/r.height), ox=e.clientX-pr.left, oy=e.clientY-pr.top;
@@ -1380,8 +1403,8 @@ function openMenu(card){
   function unzoom(){ const sl=slides[cur]; zoomed=false; v.classList.remove('zoomed'); sl.im.style.width='';
     sl.s.scrollTo({left:0,top:0,behavior:RM?'auto':'smooth'}); setUI(); }
   slides.forEach(sl=>{
-    sl.im.addEventListener('click',e=>{ e.stopPropagation(); zoomed?unzoom():zoomAt(sl,e); });
-    sl.p.addEventListener('click',e=>{ if(e.target===sl.p&&!zoomed) close(); });
+    sl.im.addEventListener('click',e=>{ e.stopPropagation(); if(dragged) return; zoomed?unzoom():zoomAt(sl,e); });
+    sl.p.addEventListener('click',e=>{ if(e.target===sl.p&&!zoomed&&!dragged) close(); });
   });
   if(prev){ prev.onclick=()=>go(cur-1); next.onclick=()=>go(cur+1); }
   v.querySelector('.mv-x').onclick=()=>close();
