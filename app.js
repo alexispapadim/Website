@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=9';
-import * as GAL from './gallery.js?v=9';
-import * as SEA from './seasons.js?v=9';
+import { I18N } from './i18n.js?v=10';
+import * as GAL from './gallery.js?v=10';
+import * as SEA from './seasons.js?v=10';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -1084,26 +1084,50 @@ const MENU_RATIO=1055/1491;
   .rm .oc-hint i::after{animation:none}
   @media(max-width:600px){#occasions h2{font-size:clamp(32px,9vw,40px)}}
   @media(max-height:980px){.oc-sub{display:none!important}}
-  /* season cards: the original card, with the season's produce drawn in gold as you scroll */
-  .card.season{cursor:pointer;flex:none;isolation:isolate;transition:border-color .5s ease,background .5s ease,transform .7s cubic-bezier(.16,1,.3,1)}
+  /* season cards: the original card, with the menu's hand-drawn produce in gold */
+  .card.season{cursor:pointer;flex:none;isolation:isolate;position:relative;padding:0;min-height:0;height:clamp(330px,56vh,520px);overflow:hidden;
+    transition:border-color .5s ease,background .5s ease,transform .7s cubic-bezier(.16,1,.3,1)}
   .card.season .olive{display:none}
-  .s-ill{position:absolute;top:-4%;right:-8%;width:68%;z-index:-1;pointer-events:none;will-change:transform}
-  .s-ill svg{width:100%;height:auto;display:block;overflow:visible}
-  .s-ill path,.s-ill circle,.s-ill ellipse{fill:none;stroke:#d6b679;stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;stroke-dasharray:1 1;stroke-dashoffset:1}
-  .s-ill .fine{stroke-width:.8;opacity:.75}
-  .s-ill svg{opacity:.62;transition:opacity .6s ease}
-  .rm .s-ill path,.rm .s-ill circle,.rm .s-ill ellipse{stroke-dashoffset:0}
-  .s-rule{display:block;height:1px;width:56px;background:linear-gradient(90deg,#d6b679,rgba(214,182,121,0));transform-origin:0 50%;margin:14px 0 0}
-  .s-copy{flex:1;display:flex;flex-direction:column;padding-top:clamp(40px,10vh,110px)}
-  .s-count{display:none}
-  .card.season h3{margin:0 0 8px}
-  .card.season .s-menu{font:italic 400 17px/1.35 var(--serif);color:#d6b679;opacity:1;max-width:none;margin:0 0 12px}
-  .card.season .s-desc{font-size:14.5px;line-height:1.62;opacity:.78;max-width:36ch;margin:0 0 22px}
-  .s-cta{all:unset;box-sizing:border-box;align-self:flex-start;margin-top:auto;display:inline-flex;align-items:center;gap:14px;min-height:44px;cursor:pointer;
+  .s-art{position:absolute;inset:0 0 auto 0;height:74%;overflow:hidden;z-index:0;pointer-events:none;
+    -webkit-mask-image:linear-gradient(180deg,#000 55%,transparent 100%);mask-image:linear-gradient(180deg,#000 55%,transparent 100%);transition:opacity .6s ease,transform .8s cubic-bezier(.16,1,.3,1)}
+  .s-mask{position:absolute;display:block;aspect-ratio:900/1272;background:#d6b679;opacity:.6;transition:opacity .6s ease,background-color .6s ease;will-change:transform,clip-path;
+    -webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+  .card.season > .num{position:absolute;top:clamp(20px,2.6vw,30px);left:clamp(22px,2.4vw,30px);z-index:2}
+  .card.season > .s-rule{position:absolute;top:calc(clamp(20px,2.6vw,30px) + 34px);left:clamp(22px,2.4vw,30px);z-index:2}
+  .s-rule{display:block;height:1px;width:56px;background:linear-gradient(90deg,#d6b679,rgba(214,182,121,0));transform-origin:0 50%}
+  .s-copy{position:absolute;left:0;right:0;bottom:0;z-index:1;display:flex;flex-direction:column;padding:56px clamp(22px,2.4vw,30px) clamp(18px,2.2vw,26px);
+    background:linear-gradient(180deg,rgba(32,37,26,0) 0,rgba(32,37,26,.86) 48px,#20251a 100%)}
+  .card.season h3{margin:0 0 6px}
+  .card.season .s-menu{font:italic 400 17px/1.35 var(--serif);color:#d6b679;opacity:1;max-width:none;margin:0}
+  .s-note{display:grid;grid-template-rows:0fr;transition:grid-template-rows .6s cubic-bezier(.16,1,.3,1)}
+  .s-note > div{overflow:hidden;min-height:0}
+  .card.season .s-desc{font-size:14.5px;line-height:1.62;opacity:.82;max-width:40ch;margin:0;padding-top:12px}
+  .card.season.note-open .s-note{grid-template-rows:1fr}
+  .s-copy{max-height:100%;box-sizing:border-box;transition:padding-top .5s cubic-bezier(.16,1,.3,1)}
+  .s-copy > *{flex:none}
+  .card.season .s-note{flex:0 1 auto;min-height:0}
+  .s-note > div{overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(214,182,121,.4) transparent}
+  .card.season.note-open .s-note > div{overflow-y:auto}
+  .card.season.note-open .s-copy{padding-top:26px;background:linear-gradient(180deg,rgba(32,37,26,0) 0,rgba(32,37,26,.92) 22px,#20251a 100%)}
+  .card.season.note-open > .num,.card.season.note-open > .s-rule{visibility:hidden}
+  .card.season.note-open .s-art{opacity:.35;transform:translateY(-6%)}
+  .s-note .s-desc{opacity:0;transform:translateY(10px);transition:opacity .4s ease,transform .6s cubic-bezier(.16,1,.3,1)}
+  .card.season.note-open .s-note .s-desc{opacity:.82;transform:none;transition-delay:.12s}
+  .s-actions{display:flex;align-items:center;gap:10px;margin-top:10px}
+  .s-cta-t{white-space:nowrap}
+  .card.season .s-more{align-self:flex-start;margin-top:6px;min-height:38px}
+  .s-more{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:9px;min-height:44px;cursor:pointer;color:rgba(236,228,216,.75);font:500 10px var(--sans);letter-spacing:.2em;text-transform:uppercase;-webkit-tap-highlight-color:transparent;transition:color .3s}
+  .s-more i{position:relative;width:22px;height:22px;border-radius:50%;border:1px solid rgba(236,228,216,.35);flex:none;transition:transform .5s cubic-bezier(.16,1,.3,1),border-color .3s}
+  .s-more i::before,.s-more i::after{content:"";position:absolute;left:50%;top:50%;width:9px;height:1px;margin:-.5px 0 0 -4.5px;background:currentColor}
+  .s-more i::after{transform:rotate(90deg)}
+  .note-open .s-more i{transform:rotate(45deg)}
+  .s-more:hover{color:#f4eee5}.s-more:hover i{border-color:#d6b679}
+  .s-more:focus-visible{outline:2px solid #d6b679;outline-offset:3px;border-radius:4px}
+  .s-cta{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:12px;min-height:44px;cursor:pointer;
     font:600 10.5px var(--sans);letter-spacing:.22em;text-transform:uppercase;color:#d6b679;-webkit-tap-highlight-color:transparent}
-  .s-cta i{position:relative;display:block;width:34px;height:34px;border-radius:50%;border:1px solid rgba(214,182,121,.6);flex:none;transition:background .45s ease,border-color .45s ease,transform .6s cubic-bezier(.16,1,.3,1)}
-  .s-cta i::before{content:"";position:absolute;left:10px;right:10px;top:50%;height:1px;background:currentColor;transition:left .45s cubic-bezier(.16,1,.3,1),right .45s cubic-bezier(.16,1,.3,1)}
-  .s-cta i::after{content:"";position:absolute;right:10px;top:50%;width:6px;height:6px;border-top:1px solid currentColor;border-right:1px solid currentColor;transform:translate(0,-50%) rotate(45deg);transform-origin:center;transition:right .45s cubic-bezier(.16,1,.3,1)}
+  .s-cta i{position:relative;display:block;width:34px;height:34px;border-radius:50%;border:1px solid rgba(214,182,121,.6);flex:none;color:#d6b679;transition:background .45s ease,border-color .45s ease,color .45s,transform .6s cubic-bezier(.16,1,.3,1)}
+  .s-cta i::before{content:"";position:absolute;left:10px;right:10px;top:50%;height:1px;background:currentColor}
+  .s-cta i::after{content:"";position:absolute;right:10px;top:50%;width:6px;height:6px;border-top:1px solid currentColor;border-right:1px solid currentColor;transform:translate(0,-50%) rotate(45deg)}
   .s-cta-t{position:relative;padding-bottom:3px}
   .s-cta-t::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:currentColor;transform:scaleX(.25);transform-origin:0 50%;transition:transform .6s cubic-bezier(.16,1,.3,1)}
   .s-cta:focus-visible{outline:2px solid #d6b679;outline-offset:4px;border-radius:4px}
@@ -1111,16 +1135,15 @@ const MENU_RATIO=1055/1491;
   .card.season:active{transform:scale(.985)}
   @media(hover:hover){
     .card.season:hover{border-color:rgba(214,182,121,.65)}
-    .card.season:hover .s-ill svg{opacity:.9}
+    .card.season:hover .s-mask{opacity:.85}
     .card.season:hover .s-cta-t::after{transform:scaleX(1)}
     .card.season:hover .s-cta i{background:#d6b679;border-color:#d6b679;color:#20251a;transform:translateX(4px)}
   }
-  .s-cta i{color:#d6b679}
-  @media(min-width:1024px){.card.season{width:max(270px,calc((var(--wrap) - 3 * clamp(16px,2.4vw,32px)) / 4));min-height:0}.card.season .s-copy{padding-top:clamp(36px,7vh,120px)}}
-  @media(min-width:601px) and (max-height:940px){.card.season .s-desc{display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:16px}}
-  @media(max-width:600px) and (max-height:900px){.card.season .s-desc{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}}
-  @media(max-height:820px){.card.season .s-copy{padding-top:28px}.card.season .s-desc{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:16px}}
-  @media(max-height:700px){.card.season .s-desc{-webkit-line-clamp:2}.card.season h3{font-size:32px!important}.card.season .s-copy{padding-top:16px}}
+  @media(min-width:1024px){.card.season{width:max(270px,calc((var(--wrap) - 3 * clamp(16px,2.4vw,32px)) / 4));height:clamp(380px,56vh,540px)}}
+  .mv-fly,.mv-paper{position:fixed;z-index:3;pointer-events:none;transform-origin:0 0}
+  .mv-paper{background:#f3eee3;border-radius:4px;box-shadow:0 40px 90px -30px rgba(0,0,0,.85)}
+  .mv-fly{-webkit-mask-size:100% 100%;mask-size:100% 100%;background:#d6b679}
+  .mv-ready .mv-img{opacity:1}
 
   /* form controls: one look in every browser */
   #form input:-webkit-autofill,#form input:-webkit-autofill:hover,#form input:-webkit-autofill:focus,#form textarea:-webkit-autofill{
@@ -1241,33 +1264,43 @@ const MENU_RATIO=1055/1491;
 })();
 
 /* line drawings of each season's produce (stroked, so they can draw themselves on scroll) */
+/* the hand-drawn produce from each season's menu (text removed), and where on the card to frame it:
+   fx/fy = point of the drawing to centre on (0–1), s = how large the drawing is relative to the card */
 const SEASON_ART={
-  summer:`<svg viewBox="0 0 160 160"><path pathLength="1" d="M80 44C112 42 132 66 132 94C132 124 108 146 80 146C52 146 28 124 28 94C28 66 48 46 80 44Z"/><path pathLength="1" class="fine" d="M80 48C70 70 70 116 80 142"/><path pathLength="1" d="M80 44C81 34 85 26 92 20"/><path pathLength="1" d="M88 26C102 10 128 8 142 16C130 30 106 36 88 26Z"/><path pathLength="1" class="fine" d="M90 25C106 20 122 17 138 17"/><path pathLength="1" class="fine" d="M44 80C48 70 56 62 66 58"/></svg>`,
-  autumn:`<svg viewBox="0 0 160 160"><path pathLength="1" d="M68 26C68 18 88 18 88 26C88 46 86 60 94 74C106 94 112 110 110 124C108 140 96 150 78 150C60 150 48 140 46 124C44 110 50 94 62 74C70 60 68 46 68 26Z"/><path pathLength="1" d="M76 21C75 13 78 7 84 3"/><path pathLength="1" class="fine" d="M60 98C66 116 66 132 62 144"/><path pathLength="1" class="fine" d="M96 98C90 116 90 132 94 144"/><path pathLength="1" class="fine" d="M78 80C80 102 80 126 78 148"/><path pathLength="1" d="M86 20C100 12 112 18 108 28C104 34 96 30 100 25"/><path pathLength="1" d="M60 30C46 22 30 26 28 40C42 44 54 40 60 30Z"/></svg>`,
-  winter:`<svg viewBox="0 0 160 160"><circle pathLength="1" cx="80" cy="92" r="52"/><circle pathLength="1" class="fine" cx="80" cy="92" r="43"/><path pathLength="1" class="fine" d="M80 92L80 50M80 92L110 62M80 92L122 92M80 92L110 122M80 92L80 134M80 92L50 122M80 92L38 92M80 92L50 62"/><circle pathLength="1" class="fine" cx="80" cy="92" r="5"/><path pathLength="1" d="M84 40C90 26 104 18 120 18C114 32 100 40 84 40Z"/><path pathLength="1" class="fine" d="M86 38C96 30 106 24 118 20"/></svg>`,
-  spring:`<svg viewBox="0 0 160 160"><path pathLength="1" d="M80 150L80 120"/><path pathLength="1" d="M80 120C54 120 40 104 40 86C54 92 68 102 80 120C92 102 106 92 120 86C120 104 106 120 80 120Z"/><path pathLength="1" d="M80 104C58 96 50 76 56 56C66 66 74 82 80 104C86 82 94 66 104 56C110 76 102 96 80 104Z"/><path pathLength="1" d="M80 86C66 72 66 50 80 26C94 50 94 72 80 86Z"/><path pathLength="1" class="fine" d="M56 56C46 50 40 42 38 32C48 34 54 42 56 56M104 56C114 50 120 42 122 32C112 34 106 42 104 56"/><path pathLength="1" class="fine" d="M80 140C92 134 108 136 122 144C108 150 92 148 80 140"/></svg>`
+  summer:{img:'art-summer.webp',fx:.80,fy:.66,s:2.0},
+  autumn:{img:'art-autumn.webp',fx:.36,fy:.56,s:1.55},
+  winter:{img:'art-winter.webp',fx:.82,fy:.68,s:2.0},
+  spring:{img:'art-spring.webp',fx:.30,fy:.42,s:1.5}
 };
 var SEAS=null;                          // set once the cards are built (render may run before that)
 function buildSeasons(){
   SEAS=seasonCards().map((card,i)=>{
-    const S=SEASON_DATA[card.dataset.season];
+    const key=card.dataset.season, S=SEASON_DATA[key], A=SEASON_ART[key]||null;
     const menus=S&&Array.isArray(S.menus)?S.menus.filter(m=>m&&okImg(m.file)):[];
     card._menus=menus;
-    const ill=card.querySelector('.s-ill'); if(ill&&!ill.firstChild) ill.innerHTML=SEASON_ART[card.dataset.season]||'';
+    const mask=card.querySelector('.s-mask');
+    if(mask&&A){ const u=`url("/${A.img}")`; mask.style.webkitMaskImage=u; mask.style.maskImage=u; }
     card.classList.toggle('no-menu',!menus.length);
     card.querySelector('.s-cta').hidden=!menus.length;
-    return {card,i,ill,strokes:ill?[...ill.querySelectorAll('path,circle,ellipse')]:[],rule:card.querySelector('.s-rule'),
-      parts:[card.querySelector('.num'),...card.querySelectorAll('.s-copy > *')],l:0,w:1};
+    const more=card.querySelector('.s-more');
+    if(more&&!more._b){ more._b=1; more.addEventListener('click',e=>{ e.stopPropagation();
+      const open=!card.classList.contains('note-open'); card.classList.toggle('note-open',open); more.setAttribute('aria-expanded',String(open)); }); }
+    return {card,i,A,mask,box:card.querySelector('.s-art'),rule:card.querySelector('.s-rule'),
+      parts:[card.querySelector('.num'),...card.querySelectorAll('.s-copy > *')],l:0,w:1,mw:0,mh:0};
   });
   measureSeasons();
 }
 function measureSeasons(){
   if(!SEAS) return;
   M.hwL=hw.getBoundingClientRect().left;
-  SEAS.forEach(s=>{ s.l=s.card.offsetLeft; s.w=s.card.offsetWidth||1; });
+  SEAS.forEach(s=>{ s.l=s.card.offsetLeft; s.w=s.card.offsetWidth||1;
+    if(s.mask&&s.A&&s.box){ const bw=s.box.offsetWidth, bh=s.box.offsetHeight, mw=bw*s.A.s, mh=mw*1272/900;
+      s.mw=mw; s.mh=mh; s.mask.style.width=mw.toFixed(1)+'px';
+      s.mask.style.left=(bw*.62-s.A.fx*mw).toFixed(1)+'px'; s.mask.style.top=(bh*.46-s.A.fy*mh).toFixed(1)+'px'; } });
 }
 /* Each card has its own progress: how far the section has come up the screen and how far the
-   card has slid in from the right. That drives the drawing, the gold rule and the text rise. */
+   card has slid in from the right. That reveals the drawing (an ink circle opening from the
+   produce), grows the gold rule and lifts the text in. */
 function renderSeasons(){
   if(!SEAS||RM) return;
   const vw=innerWidth, vh=M.vh, y=sy;
@@ -1275,20 +1308,21 @@ function renderSeasons(){
   SEAS.forEach((s,i)=>{
     const x=M.hwL+s.l-curLeft;
     const vis=clamp((vw-x)/(s.w*.75));
-    const d=Math.min(seg(enter,.12+i*.06,.72+i*.06),vis);
-    const e=ease(d);
-    s.strokes.forEach((p,k)=>put('sd'+i+'_'+k,p,'strokeDashoffset',(1-ease(seg(d,k*.05,.62+k*.05))).toFixed(4)));
+    const d=Math.min(seg(enter,.1+i*.06,.7+i*.06),vis), e=ease(d);
     const drift=((x+s.w/2)-vw/2)/vw;
-    put('si'+i,s.ill,'transform',`translate3d(${(drift*-28).toFixed(1)}px,${((1-e)*24).toFixed(1)}px,0) rotate(${(drift*-6+(1-e)*8).toFixed(2)}deg)`);
+    if(s.mask&&s.A){
+      put('sc'+i,s.mask,'clipPath',e>=.999?'none':`circle(${(e*78).toFixed(2)}% at ${(s.A.fx*100).toFixed(1)}% ${(s.A.fy*100).toFixed(1)}%)`);
+      put('si'+i,s.mask,'transform',`translate3d(${(drift*-30).toFixed(1)}px,${((1-e)*30).toFixed(1)}px,0) scale(${(1.12-.12*e).toFixed(4)})`);
+    }
     if(s.rule) put('sr'+i,s.rule,'transform',`scaleX(${e.toFixed(3)})`);
-    s.parts.forEach((el,k)=>{ if(!el) return; const t=ease(seg(d,.18+k*.08,.6+k*.08));
+    s.parts.forEach((el,k)=>{ if(!el) return; const t=ease(seg(d,.25+k*.09,.68+k*.09));
       put('so'+i+'_'+k,el,'opacity',t.toFixed(3)); put('st'+i+'_'+k,el,'transform',`translate3d(0,${((1-t)*22).toFixed(1)}px,0)`); });
   });
 }
 function refreshSeasons(){
   seasonCards().forEach(card=>{
     const menus=card._menus||[], n=menus.length, name=tr('sn.'+card.dataset.season), view=n>1?tr('sn.views',{n}):tr('sn.view');
-    card.querySelector('.s-count').textContent=n>1?tr('sn.menus',{n}):'';
+    const mt=card.querySelector('.s-more-t'); if(mt) mt.textContent=tr('sn.note');
     card.querySelector('.s-menu').textContent=menus.map(mTitle).join(' · ');
     card.querySelector('.s-cta-t').textContent=view;
     const cta=card.querySelector('.s-cta'); cta.setAttribute('aria-label',`${view} — ${name}`); cta.setAttribute('aria-haspopup','dialog');
@@ -1296,6 +1330,7 @@ function refreshSeasons(){
 }
 buildSeasons();
 $('#track').addEventListener('click',e=>{
+  if(e.target.closest('.s-more')) return;
   const card=e.target.closest('.card.season'); if(!card||!(card._menus&&card._menus.length)) return;
   if(performance.now()-lastDragEnd<400) return;          // that was a swipe, not a tap
   openMenu(card);
@@ -1369,7 +1404,32 @@ function openMenu(card){
   if(RM) bg.animate([{opacity:0},{opacity:1}],{duration:1,fill:'forwards'});
   else bg.animate([{clipPath:cardClip(cr),opacity:.6},{clipPath:'inset(0px 0px 0px 0px round 0px)',opacity:1}],{duration:700,easing:'cubic-bezier(.7,0,.2,1)',fill:'forwards'});
   [top,foot,prev,next].filter(Boolean).forEach(el=>el.animate([{opacity:0,transform:'translateY(10px)'},{opacity:1,transform:'none'}],{duration:RM?1:520,delay:RM?0:260,easing:'cubic-bezier(.16,1,.3,1)',fill:'forwards'}));
-  slides.forEach(sl=>sl.im.animate([{opacity:0,transform:'translate3d(0,60px,0) scale(.94)'},{opacity:1,transform:'none'}],{duration:RM?1:900,delay:RM?0:300,easing:E1,fill:'backwards'}));
+  const S0=SEAS&&SEAS.find(s=>s.card===card), srcM=S0&&S0.mask;
+  const mr=srcM&&srcM.getBoundingClientRect(), br=S0&&S0.box&&S0.box.getBoundingClientRect(), tr0=tgt.getBoundingClientRect();
+  if(!RM&&mr&&mr.width&&tr0.width&&S0.A){
+    // 1) a sheet of menu paper settles where the menu will be
+    const paper=document.createElement('div'); paper.className='mv-paper';
+    const fly=document.createElement('div'); fly.className='mv-fly';
+    const u=`url("/${S0.A.img}")`; fly.style.webkitMaskImage=u; fly.style.maskImage=u;
+    [paper,fly].forEach(el=>Object.assign(el.style,{left:tr0.left+'px',top:tr0.top+'px',width:tr0.width+'px',height:tr0.height+'px'}));
+    v.append(paper,fly);
+    slides.forEach(sl=>sl.im.style.opacity='0');
+    paper.animate([{opacity:0,transform:'translate3d(0,40px,0) scale(.96)'},{opacity:1,transform:'none'}],{duration:700,delay:260,easing:E1,fill:'backwards'});
+    // 2) the gold drawing lifts out of the card and grows into the paper, turning to pencil grey
+    const k=mr.width/tr0.width, ky=mr.height/tr0.height;
+    const clip0=`inset(${(clamp((br.top-mr.top)/mr.height)*100).toFixed(2)}% ${(clamp((mr.right-br.right)/mr.width)*100).toFixed(2)}% ${(clamp((mr.bottom-br.bottom)/mr.height)*100).toFixed(2)}% ${(clamp((br.left-mr.left)/mr.width)*100).toFixed(2)}%)`;
+    srcM.style.visibility='hidden';
+    const flyA=fly.animate([
+      {transform:`translate(${(mr.left-tr0.left).toFixed(1)}px,${(mr.top-tr0.top).toFixed(1)}px) scale(${k.toFixed(4)},${ky.toFixed(4)})`,clipPath:clip0,backgroundColor:'#d6b679',opacity:.7},
+      {transform:'none',clipPath:'inset(0% 0% 0% 0%)',backgroundColor:'#a9a487',opacity:1}],{duration:1050,easing:'cubic-bezier(.65,0,.2,1)',fill:'forwards'});
+    // 3) then the menu (with its text) fades in on top
+    flyA.finished.then(()=>{
+      slides.forEach(sl=>sl.im.style.opacity='');
+      tgt.animate([{opacity:0},{opacity:1}],{duration:520,easing:'ease',fill:'backwards'}).finished.then(()=>{ fly.remove(); paper.remove(); },()=>{});
+      slides.slice(1).forEach(sl=>sl.im.animate([{opacity:0},{opacity:1}],{duration:400}));
+      srcM.style.visibility='';
+    },()=>{ srcM.style.visibility=''; slides.forEach(sl=>sl.im.style.opacity=''); fly.remove(); paper.remove(); });
+  } else slides.forEach(sl=>sl.im.animate([{opacity:0,transform:'translate3d(0,60px,0) scale(.94)'},{opacity:1,transform:'none'}],{duration:RM?1:900,delay:RM?0:300,easing:E1,fill:'backwards'}));
   v.querySelector('.mv-x').focus({preventScroll:true});
 
   function close(quiet){
