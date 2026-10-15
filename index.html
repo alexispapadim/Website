@@ -302,7 +302,9 @@ html.locked,html.locked body{overflow:hidden}
 .portrait img{width:100%;height:100%;object-fit:cover;object-position:50% 30%;display:block;transform:scale(1.12);transition:transform 1.8s cubic-bezier(.16,1,.3,1)}
 .portrait.in img{transform:scale(1)}
 .portrait figcaption{margin-top:18px;text-align:center;font:500 11px var(--sans);letter-spacing:.3em;text-transform:uppercase;color:var(--leaf)}
-.about-text .lead{margin-top:28px}
+.about-body{margin-top:28px}
+.about-body .more{font-family:var(--serif);font-size:clamp(17px,1.7vw,19px);line-height:1.65;color:var(--olive-3);opacity:.86;margin-top:1.1em;max-width:40ch}
+#about h2{font-size:clamp(36px,5.4vw,52px)}
 
 /* food gallery */
 :is(#kitchen,#produce) .kitchen-head{max-width:1200px;margin:0 auto 44px}
@@ -372,7 +374,7 @@ html.locked,html.locked body{overflow:hidden}
   #about .about-text .eyebrow{grid-column:1;grid-row:1}
   #about .about-text h2{grid-column:1;grid-row:2}
   #about .about-text{align-items:start}
-  #about .about-text .lead{grid-column:2;grid-row:2;margin-top:.55em}
+  #about .about-text .about-body{grid-column:2;grid-row:2;margin-top:.55em}
   .stats{max-width:var(--wrap);margin-top:72px;padding-top:36px}
 
   /* occasions: line up with the other sections, roomier cards */
@@ -515,8 +517,12 @@ html.locked,html.locked body{overflow:hidden}
     <div class="about-grid">
       <div class="about-text">
         <p class="eyebrow" data-reveal data-i18n="ab.eyebrow">The chef</p>
-        <h2 data-reveal-group><span class="mask" style="display:block"><span data-i18n="ab.h1">From Michelin</span></span><span class="mask" style="display:block"><span data-i18n="ab.h2"><em>kitchens</em> to yours.</span></span></h2>
-        <p class="lead" data-reveal style="--d:2" data-i18n="ab.p">Alexis built his craft in two-Michelin-star kitchens in the UK, where precision is an everyday habit. Now based in Greece, he works as a private chef for groups in Athens, across Greece and in London — bringing that same standard to villas, homes and venues, with menus shaped around Greek produce and your occasion.</p>
+        <h2 data-reveal-group><span class="mask" style="display:block"><span data-i18n="ab.h1">I don’t cook to manipulate flavour.</span></span><span class="mask" style="display:block"><span data-i18n="ab.h2">I cook to <em>show it off.</em></span></span></h2>
+        <div class="about-body" data-reveal style="--d:2">
+          <p class="lead" data-i18n="ab.p">For me, it has always been entirely about the produce. My passion begins and ends with it. True cooking isn’t about forced creations — it’s about having the restraint to let the ingredients speak for themselves.</p>
+          <p class="more" data-i18n="ab.p2">Drawing on my training — from the disciplined precision of Michelin fine-dining kitchens to the honest, real traditions of classic Italian, Greek and Japanese cooking — I focus entirely on bringing out the natural beauty of what is right in front of us.</p>
+          <p class="more" data-i18n="ab.p3">But above all, my canvas is your vision. It is all about what the guest wants, and it is my job to make it happen — no matter the request, the cuisine or the dietary demand.</p>
+        </div>
       </div>
     </div>
     <div class="stats">
@@ -526,18 +532,56 @@ html.locked,html.locked body{overflow:hidden}
     </div>
   </section>
 
-  <!-- 4. Occasions: pinned horizontal scroll -->
+  <!-- 4. Seasonal menus: pinned horizontal scroll (menus and photos in seasons.js) -->
   <section id="occasions" class="pin" data-theme="dark">
     <div class="stage">
       <div class="head">
-        <p class="eyebrow" data-i18n="oc.eyebrow">Occasions</p>
-        <h2 data-i18n="oc.h">Cooking for the moments <em>that matter</em></h2>
+        <p class="eyebrow" data-i18n="oc.eyebrow">Seasonal menus</p>
+        <h2 data-i18n="oc.h">A menu for <em>every season</em></h2>
+        <p class="oc-sub" data-i18n="oc.sub">Sample menus, kept simple on purpose. Yours is written for your occasion — as refined or as relaxed as you like.</p>
+        <p class="oc-hint"><i aria-hidden="true"></i><span data-i18n="oc.hint">Tap a season to open its menu</span></p>
       </div>
       <div class="hw" id="hw"><div class="track" id="track">
-        <article class="card"><div class="olive"></div><span class="num">01</span><h3 data-i18n="oc.1t">Private dinners</h3><p data-i18n="oc.1p">Tasting menus served at home or in your villa, for intimate groups.</p></article>
-        <article class="card"><div class="olive"></div><span class="num">02</span><h3 data-i18n="oc.2t">Celebrations</h3><p data-i18n="oc.2p">Birthdays, anniversaries, engagements — an evening built around your story.</p></article>
-        <article class="card"><div class="olive"></div><span class="num">03</span><h3 data-i18n="oc.3t">Events &amp; catering</h3><p data-i18n="oc.3p">Larger gatherings and corporate events, with the same care in every plate.</p></article>
-        <article class="card"><div class="olive"></div><span class="num">04</span><h3 data-i18n="oc.4t">Villas &amp; retreats</h3><p data-i18n="oc.4p">Multi-day stays with breakfast, lunch and dinner taken care of.</p></article>
+        <article class="card season" data-season="summer">
+          <div class="s-art" aria-hidden="true"><img class="s-bg" alt="" loading="lazy" decoding="async"><div class="s-papers"></div><span class="s-open"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span></div>
+          <div class="s-body">
+            <div class="s-top"><span class="num">01</span><span class="s-count"></span></div>
+            <h3 data-i18n="sn.summer">Summer</h3>
+            <p class="s-menu"></p>
+            <p class="s-desc" data-i18n="sn.summer.p"></p>
+            <button type="button" class="s-cta"><span class="s-cta-t"></span><i aria-hidden="true">→</i></button>
+          </div>
+        </article>
+        <article class="card season" data-season="autumn">
+          <div class="s-art" aria-hidden="true"><img class="s-bg" alt="" loading="lazy" decoding="async"><div class="s-papers"></div><span class="s-open"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span></div>
+          <div class="s-body">
+            <div class="s-top"><span class="num">02</span><span class="s-count"></span></div>
+            <h3 data-i18n="sn.autumn">Autumn</h3>
+            <p class="s-menu"></p>
+            <p class="s-desc" data-i18n="sn.autumn.p"></p>
+            <button type="button" class="s-cta"><span class="s-cta-t"></span><i aria-hidden="true">→</i></button>
+          </div>
+        </article>
+        <article class="card season" data-season="winter">
+          <div class="s-art" aria-hidden="true"><img class="s-bg" alt="" loading="lazy" decoding="async"><div class="s-papers"></div><span class="s-open"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span></div>
+          <div class="s-body">
+            <div class="s-top"><span class="num">03</span><span class="s-count"></span></div>
+            <h3 data-i18n="sn.winter">Winter</h3>
+            <p class="s-menu"></p>
+            <p class="s-desc" data-i18n="sn.winter.p"></p>
+            <button type="button" class="s-cta"><span class="s-cta-t"></span><i aria-hidden="true">→</i></button>
+          </div>
+        </article>
+        <article class="card season" data-season="spring">
+          <div class="s-art" aria-hidden="true"><img class="s-bg" alt="" loading="lazy" decoding="async"><div class="s-papers"></div><span class="s-open"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span></div>
+          <div class="s-body">
+            <div class="s-top"><span class="num">04</span><span class="s-count"></span></div>
+            <h3 data-i18n="sn.spring">Spring</h3>
+            <p class="s-menu"></p>
+            <p class="s-desc" data-i18n="sn.spring.p"></p>
+            <button type="button" class="s-cta"><span class="s-cta-t"></span><i aria-hidden="true">→</i></button>
+          </div>
+        </article>
       </div></div>
       <div class="hctl">
         <button type="button" class="arw" id="prev" aria-label="Previous">←</button>
@@ -601,7 +645,8 @@ html.locked,html.locked body{overflow:hidden}
         <div class="f half"><label for="f-name" data-i18n="f.name">Full name</label><input id="f-name" name="name" required minlength="2" maxlength="80" autocomplete="name"></div>
         <div class="f half"><label for="f-email">Email</label><input id="f-email" name="email" type="email" required maxlength="254" autocomplete="email"></div>
         <div class="f half"><label for="f-phone" data-i18n="f.phone">Phone</label><input id="f-phone" name="phone" type="tel" maxlength="32" autocomplete="tel"></div>
-        <div class="f half"><label for="f-date" data-i18n="f.date">Event date</label><input id="f-date" name="event_date" type="date"></div>
+        <div class="f half dp-f"><label for="f-date" id="l-date" data-i18n="f.date">Event date</label><input type="hidden" name="event_date" id="f-date-v">
+          <button type="button" id="f-date" class="dp-btn" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="l-date f-date"><span class="dp-val is-ph">Choose a date</span><svg class="dp-ico" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button></div>
         <div class="f half"><label for="f-guests" data-i18n="f.guests">Number of guests</label><input id="f-guests" name="guests" type="number" min="1" max="1000" step="1" inputmode="numeric"></div>
         <div class="f half"><label for="f-loc" data-i18n="f.loc">Location</label>
           <select id="f-loc" name="location">
@@ -657,6 +702,6 @@ html.locked,html.locked body{overflow:hidden}
   <article class="sheet-body" id="sheet-body"></article>
 </div>
 
-<script type="module" src="/app.js?v=8"></script>
+<script type="module" src="/app.js?v=9"></script>
 </body>
 </html>
