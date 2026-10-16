@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=14';
-import * as GAL from './gallery.js?v=14';
-import * as SEA from './seasons.js?v=14';
+import { I18N } from './i18n.js?v=15';
+import * as GAL from './gallery.js?v=15';
+import * as SEA from './seasons.js?v=15';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -1469,6 +1469,99 @@ function growArt(paper,file,delay=0){
     requestAnimationFrame(frame);
   }),()=>{ show(); });
 }
+/* ---- the living drawing (WebGL) ----
+   Each drawing has a growth map (*-grow.png): red = when each line of the drawing grows, measured
+   along the drawn stems from the plant's roots; green = which fruit a pixel belongs to. The shader
+   reveals the drawing in that order — the growing tips push forward with a glint of gold sap,
+   leaves unfurl outward from where they join the stem, and when the growth reaches a fruit's
+   stalk the fruit buds, swells with a spring and sways on its stem. It finishes on the exact
+   drawing, then hands over to the static image.                                                 */
+const GROWMAP={"art-summer.webp": {"map": "art-summer-grow.png", "fruits": [{"a": [0.13, 0.33], "t": 0.72}, {"a": [0.09, 0.53], "t": 0.463}, {"a": [0.17, 0.74], "t": 0.248}, {"a": [0.88, 0.38], "t": 0.293}, {"a": [0.8, 0.58], "t": 0.525}, {"a": [0.86, 0.7], "t": 0.644}]}, "art-summer-2.webp": {"map": "art-summer-2-grow.png", "fruits": [{"a": [0.17, 0.57], "t": 0.162}, {"a": [0.84, 0.46], "t": 0.404}, {"a": [0.79, 0.7], "t": 0.688}]}, "art-autumn.webp": {"map": "art-autumn-grow.png", "fruits": [{"a": [0.24, 0.84], "t": 0.124}, {"a": [0.74, 0.88], "t": 0.124}]}, "art-winter.webp": {"map": "art-winter-grow.png", "fruits": [{"a": [0.18, 0.58], "t": 0.251}, {"a": [0.84, 0.46], "t": 0.406}, {"a": [0.79, 0.7], "t": 0.681}]}, "art-spring.webp": {"map": "art-spring-grow.png", "fruits": [{"a": [0.21, 0.6], "t": 0.514}]}};
+const GL_VS=`attribute vec2 p;varying vec2 uv;void main(){uv=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=vec4(p,0.,1.);}`;
+const GL_FS=`precision highp float;varying vec2 uv;
+uniform sampler2D art,tmap,lab;uniform float t,asp;uniform vec2 px;
+uniform vec4 fr[6];uniform vec2 fa[6];uniform int nf;
+const vec3 ink=vec3(.663,.643,.529);const vec3 gold=vec3(.86,.68,.36);
+float T(vec2 q){vec4 m=texture2D(tmap,q);return m.r>.995?9.:m.r*1.0039;}
+float L(vec2 q){return floor(texture2D(lab,q).g*255./40.+.5);}
+void main(){
+  vec3 col=vec3(0.);float al=0.;
+  float lb=L(uv);
+  if(lb<.5){
+    float tm=T(uv),e=t-tm;
+    if(e>0.){
+      // unfurl: freshly grown ink is drawn slightly back along the direction of growth, then slides out
+      vec2 g=vec2(T(uv+vec2(px.x,0.))-T(uv-vec2(px.x,0.)),(T(uv+vec2(0.,px.y))-T(uv-vec2(0.,px.y))));
+      float gl=length(g);vec2 dir=gl>1e-5&&gl<1.?g/gl:vec2(0.);
+      float k=1.-smoothstep(0.,.09,e);
+      vec2 q=uv-dir*k*.018*vec2(1.,asp);
+      float a=texture2D(art,q).a*smoothstep(0.,.035,e);
+      float sap=1.-smoothstep(0.,.05,e);
+      col=mix(ink,gold*1.15,sap*.85);al=a;
+    }
+  }
+  for(int i=0;i<6;i++){ if(i>=nf)break;
+    vec4 f=fr[i];  // f.x=progress, f.y=scale, f.z=angle, f.w=glow
+    if(f.x<=0.)continue;
+    vec2 an=fa[i];vec2 d=(uv-an)*vec2(1.,asp);
+    float c=cos(-f.z),s=sin(-f.z);d=vec2(c*d.x-s*d.y,s*d.x+c*d.y)/max(f.y,.001);
+    vec2 q=an+d*vec2(1.,1./asp);
+    if(q.x<0.||q.y<0.||q.x>1.||q.y>1.)continue;
+    if(abs(L(q)-float(i+1))>.5)continue;
+    float a=texture2D(art,q).a*smoothstep(0.,.25,f.x);
+    if(a>al){al=a;col=mix(ink,gold*1.1,f.w);}
+  }
+  gl_FragColor=vec4(col*al,al);
+}`;
+const imgCache={};
+function loadImg(src){ if(!imgCache[src]){ const im=new Image(); im.src=src; imgCache[src]=(im.decode?im.decode():new Promise((r,j)=>{im.onload=r;im.onerror=j;})).then(()=>im); } return imgCache[src]; }
+function growArtGL(paper,file,delay=0){
+  const art=paper.querySelector('.mp-art'), G=GROWMAP[file];
+  if(!art||RM||!G) return null;
+  const cv=document.createElement('canvas'); cv.className='mp-grow'; cv.setAttribute('aria-hidden','true');
+  const gl=cv.getContext('webgl',{premultipliedAlpha:true,alpha:true,antialias:false});
+  if(!gl) return null;
+  art.style.visibility='hidden'; paper.prepend(cv);
+  const show=()=>{ art.style.visibility=''; cv.remove(); try{ const x=gl.getExtension('WEBGL_lose_context'); x&&x.loseContext(); }catch(_){} };
+  return Promise.all([loadImg('/'+file),loadImg('/'+G.map)]).then(([im,mp])=>new Promise(res=>{
+    const w=art.offsetWidth, h=art.offsetHeight, dpr=Math.min(2,devicePixelRatio||1);
+    if(!w||!h){ show(); return res(); }
+    cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); gl.viewport(0,0,cv.width,cv.height);
+    const sh=(type,src)=>{ const s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s); if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+    const pr=gl.createProgram(); gl.attachShader(pr,sh(gl.VERTEX_SHADER,GL_VS)); gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,GL_FS)); gl.linkProgram(pr); gl.useProgram(pr);
+    const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+    const loc=gl.getAttribLocation(pr,'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+    const tex=(unit,img,filt,name)=>{ const tx=gl.createTexture(); gl.activeTexture(gl.TEXTURE0+unit); gl.bindTexture(gl.TEXTURE_2D,tx);
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,filt); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,filt);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img); gl.uniform1i(gl.getUniformLocation(pr,name),unit); };
+    tex(0,im,gl.LINEAR,'art'); tex(1,mp,gl.LINEAR,'tmap'); tex(2,mp,gl.NEAREST,'lab');
+    const U=n=>gl.getUniformLocation(pr,n);
+    gl.uniform1f(U('asp'),h/w); gl.uniform2f(U('px'),1.5/mp.naturalWidth,1.5/mp.naturalHeight);
+    const F=G.fruits.slice(0,6); gl.uniform1i(U('nf'),F.length);
+    gl.uniform2fv(U('fa'),new Float32Array(F.flatMap(f=>f.a)));
+    gl.enable(gl.BLEND); gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
+    const GROW=3000, FRUIT=1250;                     // ms for the whole plant, ms for a fruit to swell
+    const elastic=q=>q<=0?0:q>=1?1:Math.pow(2,-9*q)*Math.sin((q*10-.75)*(2*Math.PI)/3.2)+1;
+    const end=Math.max(GROW*1.04,...F.map(f=>f.t*GROW+FRUIT))+120;
+    const t0=performance.now()+delay, fv=new Float32Array(24);
+    const frame=now=>{
+      const ms=now-t0; if(ms<0){ requestAnimationFrame(frame); return; }
+      gl.uniform1f(U('t'),Math.min(1.08,ms/GROW));
+      F.forEach((f,i)=>{ const q=clamp((ms-f.t*GROW)/FRUIT);
+        fv[i*4]=q; fv[i*4+1]=q<=0?0:.04+.96*elastic(q);
+        fv[i*4+2]=q<=0?0:(i%2?1:-1)*.22*Math.sin(q*13)*Math.exp(-q*4.2)*(1-q);
+        fv[i*4+3]=(1-smoothstepJS(.15,.85,q))*.9; });
+      gl.uniform4fv(U('fr'),fv);
+      gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT); gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+      if(ms<end) requestAnimationFrame(frame); else { show(); res(); }
+    };
+    requestAnimationFrame(frame);
+  })).catch(e=>{ console.warn('grow',e); show(); });
+}
+const smoothstepJS=(a,b,x)=>{ const t=clamp((x-a)/(b-a)); return t*t*(3-2*t); };
+function growArtAny(paper,file,delay){ return growArtGL(paper,file,delay)||growArt(paper,file,delay); }
 function openMenu(card){
   if(menuV||viewer) return;
   const menus=card._menus, N=menus.length, key=card.dataset.season;
@@ -1506,7 +1599,7 @@ function openMenu(card){
       if(anim&&!RM) sl.s.animate([{transform:sl.s.style.transform||'none'},{transform:to}],{duration:560,easing:'cubic-bezier(.16,1,.3,1)'});
       sl.s.style.transform=to; }); };
   function go(k){ k=clamp(k,0,N-1); const was=cur; cur=k; place(0,was!==k||dragX!==0); dragX=0; setUI();
-    const sl=slides[cur]; if(!sl.seen){ sl.seen=true; growArt(sl.paper,menus[cur].art,120); revealMenu(sl.paper,700); } }
+    const sl=slides[cur]; if(!sl.seen){ sl.seen=true; growArtAny(sl.paper,menus[cur].art,120); revealMenu(sl.paper,1700); } }
   let ds=null, dragged=false;
   rail.addEventListener('pointerdown',e=>{ if(N<2||(e.pointerType==='mouse'&&e.button!==0)) return;
     ds={id:e.pointerId,x:e.clientX,y:e.clientY,t:performance.now(),mode:''}; dragged=false; });
@@ -1549,7 +1642,7 @@ function openMenu(card){
   first.paper.animate([{opacity:0,transform:'translate3d(0,40px,0) scale(.97)'},{opacity:1,transform:'none'}],{duration:RM?1:760,delay:RM?0:220,easing:E1,fill:'backwards'});
   if(srcM&&!RM) srcM.animate([{opacity:.6},{opacity:0}],{duration:420,fill:'forwards'}).finished.then(()=>srcM.getAnimations().forEach(x=>x.cancel()),()=>{});
   if(RM) revealMenu(first.paper,0);
-  else { growArt(first.paper,menus[0].art,560); revealMenu(first.paper,1350); }
+  else { growArtAny(first.paper,menus[0].art,560); revealMenu(first.paper,2300); }
   v.querySelector('.mv-x').focus({preventScroll:true});
 
   function close(quiet){
