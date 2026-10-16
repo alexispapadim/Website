@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=18';
-import * as GAL from './gallery.js?v=18';
-import * as SEA from './seasons.js?v=18';
+import { I18N } from './i18n.js?v=19';
+import * as GAL from './gallery.js?v=19';
+import * as SEA from './seasons.js?v=19';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -1417,11 +1417,11 @@ function menuHTML(m,key){
 function revealMenu(paper,delay=0){   // the text settles onto the page line by line
   if(RM) return;
   [...paper.querySelectorAll('.mp-a')].forEach((el,k)=>{
-    const d=delay+k*55, EZ='cubic-bezier(.16,1,.3,1)';
+    const d=delay+k*20, EZ='cubic-bezier(.16,1,.3,1)';
     if(el.classList.contains('mp-orn')){
-      el.animate([{opacity:0},{opacity:1}],{duration:500,delay:d,fill:'backwards'});
-      el.animate([{transform:'scaleX(.2)'},{transform:'none'}],{duration:900,delay:d,easing:EZ,fill:'backwards'});
-    } else el.animate([{opacity:0,transform:'translate3d(0,14px,0)'},{opacity:1,transform:'none'}],{duration:760,delay:d,easing:EZ,fill:'backwards'});
+      el.animate([{opacity:0},{opacity:1}],{duration:360,delay:d,fill:'backwards'});
+      el.animate([{transform:'scaleX(.2)'},{transform:'none'}],{duration:560,delay:d,easing:EZ,fill:'backwards'});
+    } else el.animate([{opacity:0,transform:'translate3d(0,8px,0)'},{opacity:1,transform:'none'}],{duration:480,delay:d,easing:EZ,fill:'backwards'});
   });
 }
 /* ---- growing the drawing ----
@@ -1558,7 +1558,7 @@ function growArtGL(paper,file,delay=0){
     gl.enable(gl.BLEND); gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
     // a short time-lapse: the plant starts slowly, gathers pace and eases to rest; each fruit grows
     // from a small bud on its stalk to full size once the growth reaches it
-    const GROW=4600, FRUIT=2600;
+    const GROW=1900, FRUIT=1000;
     const ease=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2, eo=x=>1-Math.pow(1-x,3);
     const t0=performance.now()+delay, fv=new Float32Array(24), fs=F.map(()=>-1);
     let doneAt=0;
@@ -1601,9 +1601,9 @@ function growSeq(paper,file,delay=0){
     const W=cv.width, H=cv.height, gx=S.ground[0]*W, gy=S.ground[1]*H, k=S.k*W;
     const F=S.frames, n=F.length;
     // timing: early stages pass a little quicker, the plant lingers as it matures
-    const hold=i=>300+i*22, fade=420;
+    const hold=i=>55+i*6, fade=115;
     const starts=[]; let acc=0; for(let i=0;i<n;i++){ starts.push(acc); acc+=hold(i)+fade; }
-    const GROW=acc-fade, SETTLE=1300, t0=performance.now()+delay;
+    const GROW=acc-fade, SETTLE=520, t0=performance.now()+delay;
     const sm=x=>x*x*(3-2*x);
     const draw=(i,alpha,breathe)=>{ if(alpha<=0) return; const [sx,fw,fh,ax,ay]=F[i], sc=k*(1+breathe);
       ctx.globalAlpha=alpha; ctx.drawImage(sheet,sx,0,fw,fh,gx-ax*sc,gy-ay*sc,fw*sc,fh*sc); };
@@ -1673,7 +1673,7 @@ function openMenu(card){
       if(anim&&!RM) sl.s.animate([{transform:sl.s.style.transform||'none'},{transform:to}],{duration:560,easing:'cubic-bezier(.16,1,.3,1)'});
       sl.s.style.transform=to; }); };
   function go(k){ k=clamp(k,0,N-1); const was=cur; cur=k; place(0,was!==k||dragX!==0); dragX=0; setUI();
-    const sl=slides[cur]; if(!sl.seen){ sl.seen=true; growArtAny(sl.paper,menus[cur].art,120); revealMenu(sl.paper,120+growLen(menus[cur].art)-600); } }
+    const sl=slides[cur]; if(!sl.seen){ sl.seen=true; growArtAny(sl.paper,menus[cur].art,80); revealMenu(sl.paper,120); } }
   let ds=null, dragged=false;
   rail.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse'&&e.button!==0) return;
     ds={id:e.pointerId,x:e.clientX,y:e.clientY,t:performance.now(),mode:''}; dragged=false; });
@@ -1732,16 +1732,16 @@ function openMenu(card){
   const cr=card.getBoundingClientRect(), E1='cubic-bezier(.2,.8,.2,1)';
   const cardClip=r=>`inset(${r.top.toFixed(1)}px ${(innerWidth-r.right).toFixed(1)}px ${(innerHeight-r.bottom).toFixed(1)}px ${r.left.toFixed(1)}px round 22px)`;
   if(RM) bg.animate([{opacity:0},{opacity:1}],{duration:1,fill:'forwards'});
-  else bg.animate([{clipPath:cardClip(cr),opacity:.6},{clipPath:'inset(0px 0px 0px 0px round 0px)',opacity:1}],{duration:700,easing:'cubic-bezier(.7,0,.2,1)',fill:'forwards'});
-  [top,foot,prev,next].filter(Boolean).forEach(el=>el.animate([{opacity:0,transform:'translateY(10px)'},{opacity:1,transform:'none'}],{duration:RM?1:520,delay:RM?0:300,easing:'cubic-bezier(.16,1,.3,1)',fill:'forwards'}));
+  else bg.animate([{clipPath:cardClip(cr),opacity:.7},{clipPath:'inset(0px 0px 0px 0px round 0px)',opacity:1}],{duration:440,easing:'cubic-bezier(.6,0,.2,1)',fill:'forwards'});
+  [top,foot,prev,next].filter(Boolean).forEach(el=>el.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'none'}],{duration:RM?1:380,delay:RM?0:220,easing:'cubic-bezier(.16,1,.3,1)',fill:'forwards'}));
   // the opening: paper settles, the card's drawing lifts out and lands on it, then the menu is written in
   // the opening: the card opens out, a sheet of menu paper settles, the season's produce grows on it
   // from the ground or the branch, then the menu is written in
   const S0=SEAS&&SEAS.find(s=>s.card===card), srcM=S0&&S0.mask, first=slides[0];
-  first.paper.animate([{opacity:0,transform:'translate3d(0,40px,0) scale(.97)'},{opacity:1,transform:'none'}],{duration:RM?1:760,delay:RM?0:220,easing:E1,fill:'backwards'});
-  if(srcM&&!RM) srcM.animate([{opacity:.6},{opacity:0}],{duration:420,fill:'forwards'}).finished.then(()=>srcM.getAnimations().forEach(x=>x.cancel()),()=>{});
+  first.paper.animate([{opacity:0,transform:'translate3d(0,24px,0) scale(.98)'},{opacity:1,transform:'none'}],{duration:RM?1:480,delay:RM?0:140,easing:E1,fill:'backwards'});
+  if(srcM&&!RM) srcM.animate([{opacity:.6},{opacity:0}],{duration:260,fill:'forwards'}).finished.then(()=>srcM.getAnimations().forEach(x=>x.cancel()),()=>{});
   if(RM) revealMenu(first.paper,0);
-  else { growArtAny(first.paper,menus[0].art,560); revealMenu(first.paper,560+growLen(menus[0].art)); }
+  else { growArtAny(first.paper,menus[0].art,300); revealMenu(first.paper,360); }
   v.querySelector('.mv-x').focus({preventScroll:true});
 
   /* closing: the text lifts away, then the page itself glides back down into its card, shrinking
@@ -1753,14 +1753,14 @@ function openMenu(card){
     const onScreen=a.width&&a.bottom>0&&a.top<innerHeight;
     removeEventListener('keydown',key2); removeEventListener('resize',onResize);
     [top,foot,prev,next].filter(Boolean).forEach(el=>el.animate([{opacity:getComputedStyle(el).opacity},{opacity:0}],{duration:220,fill:'forwards'}));
-    const E='cubic-bezier(.65,0,.25,1)', D=RM?1:760;
+    const E='cubic-bezier(.6,0,.25,1)', D=RM?1:540;
     const done=()=>{ v.remove(); document.documentElement.classList.remove('locked');
       if(!quiet) card.querySelector('.s-cta').focus({preventScroll:true}); };
     if(RM||!onScreen){
       p.animate([{opacity:1},{opacity:0}],{duration:RM?1:300,fill:'forwards'});
       bg.animate([{opacity:getComputedStyle(bg).opacity},{opacity:0}],{duration:RM?1:420,fill:'forwards'}).finished.then(done,done); return; }
     // 1) the menu text and drawing lift off the page
-    [...p.children].forEach(c=>c.animate([{opacity:1},{opacity:0}],{duration:260,easing:'ease',fill:'forwards'}));
+    [...p.children].forEach(c=>c.animate([{opacity:1},{opacity:0}],{duration:180,easing:'ease',fill:'forwards'}));
     // 2) the page flies into the card's shape and place
     p.style.transform=''; sl.s.style.overflow='visible'; rail.style.overflow='visible';
     sl.s.scrollTop=0; const base=p.getBoundingClientRect();
@@ -1772,12 +1772,12 @@ function openMenu(card){
       {transform:startT,borderRadius:'4px',background:'#f2ecdf',boxShadow:'0 40px 90px -30px rgba(0,0,0,.85)',offset:0},
       {background:'#f2ecdf',offset:.45},
       {transform:`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${sx.toFixed(4)},${syy.toFixed(4)})`,borderRadius:`${(22/sx).toFixed(1)}px / ${(22/syy).toFixed(1)}px`,background:'#262b1f',boxShadow:'0 0 0 0 rgba(0,0,0,0)',offset:1}],
-      {duration:D,delay:120,easing:E,fill:'forwards'});
-    p.animate([{opacity:1,offset:0},{opacity:1,offset:.8},{opacity:0,offset:1}],{duration:D,delay:120,fill:'forwards'});
+      {duration:D,delay:60,easing:E,fill:'forwards'});
+    p.animate([{opacity:1,offset:0},{opacity:1,offset:.75},{opacity:0,offset:1}],{duration:D,delay:60,fill:'forwards'});
     // 3) the backdrop folds back into the card's outline
     bg.animate([{clipPath:'inset(0px 0px 0px 0px round 0px)',opacity:getComputedStyle(bg).opacity},{clipPath:cardClip(a),opacity:0}],{duration:D,delay:60,easing:E,fill:'forwards'});
     // 4) the card glows as the page lands back in it
-    setTimeout(()=>card.animate([{borderColor:'rgba(214,182,121,.9)',boxShadow:'0 0 0 1px rgba(214,182,121,.5),0 30px 60px -30px rgba(214,182,121,.35)'},{borderColor:'',boxShadow:'none'}],{duration:900,easing:'ease-out'}),D);
+    setTimeout(()=>card.animate([{borderColor:'rgba(214,182,121,.9)',boxShadow:'0 0 0 1px rgba(214,182,121,.5),0 30px 60px -30px rgba(214,182,121,.35)'},{borderColor:'',boxShadow:'none'}],{duration:700,easing:'ease-out'}),D);
     fly.finished.then(done,done);
   }
 }
