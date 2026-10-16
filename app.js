@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=12';
-import * as GAL from './gallery.js?v=12';
-import * as SEA from './seasons.js?v=12';
+import { I18N } from './i18n.js?v=13';
+import * as GAL from './gallery.js?v=13';
+import * as SEA from './seasons.js?v=13';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -1252,8 +1252,7 @@ const MENU_RATIO=1055/1491;
   .mp-d i{display:block;font:italic 400 clamp(14px,2.65cqw,17.5px)/1.35 var(--serif);color:#4a4e3c;margin-top:2px}
   .mp-f{margin-top:clamp(16px,4cqw,28px);font:italic 400 clamp(12px,2cqw,13.5px)/1.5 var(--serif);color:#4a4e3c}
   .mp-url{margin-top:8px;font:500 clamp(10px,1.8cqw,12px)/1 var(--serif);letter-spacing:.3em;color:#22261b}
-  .mv-fly,.mv-sheet{position:fixed;z-index:3;pointer-events:none;transform-origin:0 0}
-  .mv-fly{-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+  .mp-grow{position:absolute;left:0;top:50%;width:100%;aspect-ratio:900/1272;transform:translateY(-50%);opacity:.78;pointer-events:none}
   /* footer */
   .mv-foot{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 16px max(14px,calc(env(safe-area-inset-bottom) + 6px)) 20px;opacity:0}
   .mv-meta{display:grid;gap:6px;min-width:0}
@@ -1265,6 +1264,7 @@ const MENU_RATIO=1055/1491;
   .mv-plan i{font-style:normal;letter-spacing:0;font-size:13px;transition:transform .45s cubic-bezier(.16,1,.3,1)}
   @media(hover:hover){.mv-plan:hover{background:#e4c890}.mv-plan:hover i{transform:translateX(4px)}}
   @media(min-width:900px){.mv-foot{padding-left:32px;padding-right:32px}}
+  @media(max-width:480px){.mv-hint.solo{display:none}}
   /* date picker */
   .dp-f{position:relative}
   .dp-f.open{z-index:6}
@@ -1411,6 +1411,62 @@ function revealMenu(paper,delay=0){   // the text settles onto the page line by 
     } else el.animate([{opacity:0,transform:'translate3d(0,14px,0)'},{opacity:1,transform:'none'}],{duration:760,delay:d,easing:EZ,fill:'backwards'});
   });
 }
+/* ---- growing the drawing ----
+   Each menu's drawing is revealed the way the plant grows: along its stems from the ground or the
+   branch, leaves unfurling as the growth passes them, fruit swelling last. A path is a list of
+   points [x, y, size] (fractions of the drawing); points open one after another along the path.
+   Fruit points (4th value = 1) bloom with a soft overshoot. Anything the paths miss fades in at
+   the end, so the finished drawing is always exactly the menu's.                               */
+const GROW={
+  'art-summer.webp':[ // olive branch rises from the bottom left; peach branch reaches in from the top right
+    {at:0,   pts:[[.07,.88,.09],[.08,.79,.12],[.07,.69,.14],[.08,.59,.14],[.09,.49,.14],[.1,.39,.14],[.11,.29,.14],[.12,.2,.13],[.14,.12,.1]]},
+    {at:220, pts:[[.99,.3,.08],[.93,.34,.11],[.86,.38,.12],[.76,.34,.11],[.7,.42,.1],[.84,.47,.15,1],[.74,.61,.16,1],[.88,.72,.15,1],[.85,.82,.12]]}],
+  'art-summer-2.webp':[ // two peach branches grow in from either side, the peaches swell
+    {at:0,   pts:[[.01,.44,.09],[.09,.39,.12],[.16,.3,.13],[.2,.19,.12],[.24,.11,.1],[.3,.4,.12],[.42,.48,.1],[.08,.74,.12],[.12,.88,.1],[.22,.62,.21,1]]},
+    {at:240, pts:[[.99,.3,.08],[.9,.35,.12],[.8,.42,.12],[.72,.4,.1],[.76,.55,.17,1],[.83,.76,.16,1],[.8,.88,.1]]}],
+  'art-autumn.webp':[ // the squash grows up from the ground, its vine and tendrils curl out
+    {at:0,   pts:[[.26,.92,.12],[.27,.82,.14],[.28,.71,.15],[.28,.6,.15],[.27,.49,.14],[.26,.39,.13],[.26,.29,.12],[.24,.21,.1],[.16,.17,.08],[.06,.17,.08],[.06,.32,.11],[.09,.68,.13],[.06,.55,.1]]},
+    {at:260, pts:[[.72,.92,.12],[.72,.8,.16],[.72,.68,.19,1],[.8,.56,.12],[.7,.47,.1],[.88,.45,.1],[.94,.6,.1]]}],
+  'art-winter.webp':[
+    {at:0,   pts:[[.01,.44,.09],[.09,.39,.12],[.16,.3,.13],[.2,.19,.12],[.24,.11,.1],[.08,.74,.12],[.12,.88,.1],[.18,.62,.2,1]]},
+    {at:240, pts:[[.99,.3,.08],[.9,.35,.12],[.8,.42,.12],[.72,.4,.1],[.76,.55,.17,1],[.81,.76,.16,1],[.8,.88,.1]]}],
+  'art-spring.webp':[ // the artichoke rises up its stem, leaves open, then the head blooms
+    {at:0,   pts:[[.15,.99,.08],[.15,.9,.1],[.15,.81,.11],[.06,.8,.11],[.26,.82,.11],[.15,.71,.11],[.16,.6,.13],[.16,.44,.25,1],[.19,.27,.13,1]]},
+    {at:300, pts:[[.82,.92,.08],[.8,.8,.12],[.76,.72,.11],[.82,.65,.12],[.86,.55,.12],[.9,.45,.11]]}]
+};
+const artImgs={};
+function artImage(file){ if(!artImgs[file]){ const im=new Image(); im.decoding='async'; im.src='/'+file; artImgs[file]=im.decode?im.decode().then(()=>im,()=>im):Promise.resolve(im); } return artImgs[file]; }
+function growArt(paper,file,delay=0){
+  const art=paper.querySelector('.mp-art'), plan=GROW[file];
+  if(!art||RM||!plan) return Promise.resolve();
+  art.style.visibility='hidden';
+  const cv=document.createElement('canvas'); cv.className='mp-grow'; cv.setAttribute('aria-hidden','true'); paper.prepend(cv);
+  const show=()=>{ art.style.visibility=''; cv.remove(); };
+  return artImage(file).then(im=>new Promise(res=>{
+    const w=art.offsetWidth, h=art.offsetHeight, dpr=Math.min(2,devicePixelRatio||1);
+    if(!w||!h||!im.naturalWidth){ show(); return res(); }
+    cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+    const ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+    const STEP=95, DUR=620, BLOOM=900;
+    const spots=[]; plan.forEach(g=>g.pts.forEach((p,k)=>spots.push({x:p[0]*W,y:p[1]*H,r:p[2]*W,fruit:!!p[3],t:g.at+k*STEP})));
+    const end=Math.max(...spots.map(s=>s.t+(s.fruit?BLOOM:DUR))), t0=performance.now()+delay;
+    const back=t=>{ const c=1.5; return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2); };
+    const frame=now=>{
+      const t=now-t0; if(t<0){ requestAnimationFrame(frame); return; }
+      ctx.globalCompositeOperation='source-over'; ctx.clearRect(0,0,W,H);
+      for(const s of spots){ const p=clamp((t-s.t)/(s.fruit?BLOOM:DUR)); if(p<=0) continue;
+        const r=s.r*(s.fruit?back(p):1-Math.pow(1-p,3)); if(r<=1) continue;
+        const gr=ctx.createRadialGradient(s.x,s.y,r*.45,s.x,s.y,r); gr.addColorStop(0,'rgba(0,0,0,1)'); gr.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(s.x,s.y,r,0,Math.PI*2); ctx.fill(); }
+      const tail=clamp((t-end+260)/520);           // whatever the paths missed settles in at the end
+      if(tail>0){ ctx.globalAlpha=tail; ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H); ctx.globalAlpha=1; }
+      ctx.globalCompositeOperation='source-in'; ctx.drawImage(im,0,0,W,H);
+      ctx.fillStyle='#a9a487'; ctx.fillRect(0,0,W,H);
+      if(t<end+300) requestAnimationFrame(frame); else { show(); res(); }
+    };
+    requestAnimationFrame(frame);
+  }),()=>{ show(); });
+}
 function openMenu(card){
   if(menuV||viewer) return;
   const menus=card._menus, N=menus.length, key=card.dataset.season;
@@ -1433,7 +1489,7 @@ function openMenu(card){
   const dots=N>1?menus.map((m,k)=>{ const b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label',mTitle(m)); b.onclick=()=>go(k); dotsEl.append(b); return b; }):[];
   let cur=0;
   const setUI=()=>{ seasonEl.textContent=tr('sn.'+key); countEl.textContent=N>1?`${cur+1} / ${N}`:'';
-    hintEl.textContent=N>1?tr('mv.swipe'):tr('mv.note'); plan.querySelector('span').textContent=tr('mv.plan');
+    hintEl.textContent=N>1?tr('mv.swipe'):tr('mv.note'); hintEl.classList.toggle('solo',N<2); plan.querySelector('span').textContent=tr('mv.plan');
     dots.forEach((d,k)=>d.classList.toggle('on',k===cur)); if(prev){ prev.disabled=cur===0; next.disabled=cur===N-1; }
     slides.forEach((sl,k)=>sl.s.setAttribute('aria-hidden',String(k!==cur))); };
   /* paper size: on wide screens a full menu page that fits the height; on phones the full width,
@@ -1448,7 +1504,7 @@ function openMenu(card){
       if(anim&&!RM) sl.s.animate([{transform:sl.s.style.transform||'none'},{transform:to}],{duration:560,easing:'cubic-bezier(.16,1,.3,1)'});
       sl.s.style.transform=to; }); };
   function go(k){ k=clamp(k,0,N-1); const was=cur; cur=k; place(0,was!==k||dragX!==0); dragX=0; setUI();
-    const sl=slides[cur]; if(!sl.seen){ sl.seen=true; revealMenu(sl.paper,180); } }
+    const sl=slides[cur]; if(!sl.seen){ sl.seen=true; growArt(sl.paper,menus[cur].art,120); revealMenu(sl.paper,700); } }
   let ds=null, dragged=false;
   rail.addEventListener('pointerdown',e=>{ if(N<2||(e.pointerType==='mouse'&&e.button!==0)) return;
     ds={id:e.pointerId,x:e.clientX,y:e.clientY,t:performance.now(),mode:''}; dragged=false; });
@@ -1485,29 +1541,13 @@ function openMenu(card){
   else bg.animate([{clipPath:cardClip(cr),opacity:.6},{clipPath:'inset(0px 0px 0px 0px round 0px)',opacity:1}],{duration:700,easing:'cubic-bezier(.7,0,.2,1)',fill:'forwards'});
   [top,foot,prev,next].filter(Boolean).forEach(el=>el.animate([{opacity:0,transform:'translateY(10px)'},{opacity:1,transform:'none'}],{duration:RM?1:520,delay:RM?0:300,easing:'cubic-bezier(.16,1,.3,1)',fill:'forwards'}));
   // the opening: paper settles, the card's drawing lifts out and lands on it, then the menu is written in
+  // the opening: the card opens out, a sheet of menu paper settles, the season's produce grows on it
+  // from the ground or the branch, then the menu is written in
   const S0=SEAS&&SEAS.find(s=>s.card===card), srcM=S0&&S0.mask, first=slides[0];
-  const paperIn=()=>first.paper.animate([{opacity:0,transform:'translate3d(0,40px,0) scale(.97)'},{opacity:1,transform:'none'}],{duration:760,delay:220,easing:E1,fill:'backwards'});
-  if(!RM&&srcM&&first.art&&S0.A){
-    const mr=srcM.getBoundingClientRect(), br=S0.box.getBoundingClientRect(), ar=first.art.getBoundingClientRect();
-    const fly=document.createElement('div'); fly.className='mv-fly';
-    fly.style.webkitMaskImage=first.art.style.webkitMaskImage||first.art.style.maskImage; fly.style.maskImage=first.art.style.maskImage;
-    // clip the flying drawing to what's visible of the paper (on phones the page can be taller than the screen)
-    const vis=v.getBoundingClientRect();
-    Object.assign(fly.style,{left:ar.left+'px',top:ar.top+'px',width:ar.width+'px',height:ar.height+'px'});
-    v.append(fly); first.art.style.visibility='hidden'; srcM.style.visibility='hidden';
-    paperIn();
-    const k=mr.width/ar.width, ky=mr.height/ar.height;
-    const clip0=`inset(${(clamp((br.top-mr.top)/mr.height)*100).toFixed(2)}% ${(clamp((mr.right-br.right)/mr.width)*100).toFixed(2)}% ${(clamp((mr.bottom-br.bottom)/mr.height)*100).toFixed(2)}% ${(clamp((br.left-mr.left)/mr.width)*100).toFixed(2)}%)`;
-    const pr=first.paper.getBoundingClientRect();
-    const clip1=`inset(${(clamp((Math.max(pr.top,vis.top)-ar.top)/ar.height)*100).toFixed(2)}% 0% ${(clamp((ar.bottom-Math.min(pr.bottom,vis.bottom))/ar.height)*100).toFixed(2)}% 0%)`;
-    const D=1050;
-    const flyA=fly.animate([
-      {transform:`translate(${(mr.left-ar.left).toFixed(1)}px,${(mr.top-ar.top).toFixed(1)}px) scale(${k.toFixed(4)},${ky.toFixed(4)})`,clipPath:clip0,backgroundColor:'#d6b679',opacity:.7},
-      {transform:'none',clipPath:clip1,backgroundColor:'#a9a487',opacity:.78}],{duration:D,easing:'cubic-bezier(.65,0,.2,1)',fill:'forwards'});
-    revealMenu(first.paper,D-180);
-    const done=()=>{ first.art.style.visibility=''; srcM.style.visibility=''; fly.remove(); };
-    flyA.finished.then(done,done);
-  } else { paperIn(); revealMenu(first.paper,RM?0:520); }
+  first.paper.animate([{opacity:0,transform:'translate3d(0,40px,0) scale(.97)'},{opacity:1,transform:'none'}],{duration:RM?1:760,delay:RM?0:220,easing:E1,fill:'backwards'});
+  if(srcM&&!RM) srcM.animate([{opacity:.6},{opacity:0}],{duration:420,fill:'forwards'}).finished.then(()=>srcM.getAnimations().forEach(x=>x.cancel()),()=>{});
+  if(RM) revealMenu(first.paper,0);
+  else { growArt(first.paper,menus[0].art,560); revealMenu(first.paper,1350); }
   v.querySelector('.mv-x').focus({preventScroll:true});
 
   function close(quiet){
