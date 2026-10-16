@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=15';
-import * as GAL from './gallery.js?v=15';
-import * as SEA from './seasons.js?v=15';
+import { I18N } from './i18n.js?v=16';
+import * as GAL from './gallery.js?v=16';
+import * as SEA from './seasons.js?v=16';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -1493,11 +1493,14 @@ void main(){
       // unfurl: freshly grown ink is drawn slightly back along the direction of growth, then slides out
       vec2 g=vec2(T(uv+vec2(px.x,0.))-T(uv-vec2(px.x,0.)),(T(uv+vec2(0.,px.y))-T(uv-vec2(0.,px.y))));
       float gl=length(g);vec2 dir=gl>1e-5&&gl<1.?g/gl:vec2(0.);
-      float k=1.-smoothstep(0.,.09,e);
-      vec2 q=uv-dir*k*.018*vec2(1.,asp);
-      float a=texture2D(art,q).a*smoothstep(0.,.035,e);
-      float sap=1.-smoothstep(0.,.05,e);
-      col=mix(ink,gold*1.15,sap*.85);al=a;
+      // unfurl: new growth starts folded back towards where it joins the stem and slowly opens out,
+      // turning slightly as it opens, like a leaf uncurling from its bud
+      float k=1.-smoothstep(0.,.2,e); k=k*k;
+      float ang=k*.55; vec2 dr=vec2(cos(ang)*dir.x-sin(ang)*dir.y,sin(ang)*dir.x+cos(ang)*dir.y);
+      vec2 q=uv-dr*k*.045*vec2(1.,asp);
+      float a=texture2D(art,q).a*smoothstep(0.,.09,e);
+      float sap=1.-smoothstep(0.,.12,e);
+      col=mix(ink,gold,sap*.28);al=a;
     }
   }
   for(int i=0;i<6;i++){ if(i>=nf)break;
@@ -1508,8 +1511,8 @@ void main(){
     vec2 q=an+d*vec2(1.,1./asp);
     if(q.x<0.||q.y<0.||q.x>1.||q.y>1.)continue;
     if(abs(L(q)-float(i+1))>.5)continue;
-    float a=texture2D(art,q).a*smoothstep(0.,.25,f.x);
-    if(a>al){al=a;col=mix(ink,gold*1.1,f.w);}
+    float a=texture2D(art,q).a*smoothstep(0.,.3,f.x);
+    if(a>al){al=a;col=mix(ink,gold,f.w);}
   }
   gl_FragColor=vec4(col*al,al);
 }`;
@@ -1542,20 +1545,26 @@ function growArtGL(paper,file,delay=0){
     const F=G.fruits.slice(0,6); gl.uniform1i(U('nf'),F.length);
     gl.uniform2fv(U('fa'),new Float32Array(F.flatMap(f=>f.a)));
     gl.enable(gl.BLEND); gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
-    const GROW=3000, FRUIT=1250;                     // ms for the whole plant, ms for a fruit to swell
-    const elastic=q=>q<=0?0:q>=1?1:Math.pow(2,-9*q)*Math.sin((q*10-.75)*(2*Math.PI)/3.2)+1;
-    const end=Math.max(GROW*1.04,...F.map(f=>f.t*GROW+FRUIT))+120;
-    const t0=performance.now()+delay, fv=new Float32Array(24);
+    // a short time-lapse: the plant starts slowly, gathers pace and eases to rest; each fruit grows
+    // from a small bud on its stalk to full size once the growth reaches it
+    const GROW=4600, FRUIT=2600;
+    const ease=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2, eo=x=>1-Math.pow(1-x,3);
+    const t0=performance.now()+delay, fv=new Float32Array(24), fs=F.map(()=>-1);
+    let doneAt=0;
     const frame=now=>{
       const ms=now-t0; if(ms<0){ requestAnimationFrame(frame); return; }
-      gl.uniform1f(U('t'),Math.min(1.08,ms/GROW));
-      F.forEach((f,i)=>{ const q=clamp((ms-f.t*GROW)/FRUIT);
-        fv[i*4]=q; fv[i*4+1]=q<=0?0:.04+.96*elastic(q);
-        fv[i*4+2]=q<=0?0:(i%2?1:-1)*.22*Math.sin(q*13)*Math.exp(-q*4.2)*(1-q);
-        fv[i*4+3]=(1-smoothstepJS(.15,.85,q))*.9; });
+      const tt=ease(Math.min(1,ms/GROW))*1.12;
+      gl.uniform1f(U('t'),tt);
+      F.forEach((f,i)=>{ if(fs[i]<0&&tt>=f.t*.97) fs[i]=ms;
+        const q=fs[i]<0?0:clamp((ms-fs[i])/FRUIT), g=eo(q);
+        fv[i*4]=q; fv[i*4+1]=q<=0?0:.14+.86*g;
+        fv[i*4+2]=q<=0?0:(i%2?1:-1)*.06*(1-g);       // a gentle turn as it fills out on the stem
+        fv[i*4+3]=(1-g)*.22; });
       gl.uniform4fv(U('fr'),fv);
       gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT); gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
-      if(ms<end) requestAnimationFrame(frame); else { show(); res(); }
+      const allDone=ms>=GROW&&fs.every(s=>s>=0&&ms-s>=FRUIT);
+      if(allDone&&!doneAt) doneAt=ms;
+      if(!doneAt||ms-doneAt<120) requestAnimationFrame(frame); else { show(); res(); }
     };
     requestAnimationFrame(frame);
   })).catch(e=>{ console.warn('grow',e); show(); });
@@ -1599,7 +1608,7 @@ function openMenu(card){
       if(anim&&!RM) sl.s.animate([{transform:sl.s.style.transform||'none'},{transform:to}],{duration:560,easing:'cubic-bezier(.16,1,.3,1)'});
       sl.s.style.transform=to; }); };
   function go(k){ k=clamp(k,0,N-1); const was=cur; cur=k; place(0,was!==k||dragX!==0); dragX=0; setUI();
-    const sl=slides[cur]; if(!sl.seen){ sl.seen=true; growArtAny(sl.paper,menus[cur].art,120); revealMenu(sl.paper,1700); } }
+    const sl=slides[cur]; if(!sl.seen){ sl.seen=true; growArtAny(sl.paper,menus[cur].art,120); revealMenu(sl.paper,2400); } }
   let ds=null, dragged=false;
   rail.addEventListener('pointerdown',e=>{ if(N<2||(e.pointerType==='mouse'&&e.button!==0)) return;
     ds={id:e.pointerId,x:e.clientX,y:e.clientY,t:performance.now(),mode:''}; dragged=false; });
@@ -1642,7 +1651,7 @@ function openMenu(card){
   first.paper.animate([{opacity:0,transform:'translate3d(0,40px,0) scale(.97)'},{opacity:1,transform:'none'}],{duration:RM?1:760,delay:RM?0:220,easing:E1,fill:'backwards'});
   if(srcM&&!RM) srcM.animate([{opacity:.6},{opacity:0}],{duration:420,fill:'forwards'}).finished.then(()=>srcM.getAnimations().forEach(x=>x.cancel()),()=>{});
   if(RM) revealMenu(first.paper,0);
-  else { growArtAny(first.paper,menus[0].art,560); revealMenu(first.paper,2300); }
+  else { growArtAny(first.paper,menus[0].art,560); revealMenu(first.paper,3000); }
   v.querySelector('.mv-x').focus({preventScroll:true});
 
   function close(quiet){
