@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=25';
-import * as GAL from './gallery.js?v=25';
-import * as SEA from './seasons.js?v=25';
+import { I18N } from './i18n.js?v=29';
+import * as GAL from './gallery.js?v=29';
+import * as SEA from './seasons.js?v=29';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -1400,6 +1400,62 @@ $('#track').addEventListener('click',e=>{
 });
 
 let menuV=null;
+/* ---- the card ⇄ menu flip ----
+   The season card is the front of the menu, the menu its back. Keyframes for the page moving
+   between the card's rectangle and its own, turning over in 3D on the way: dark olive card face
+   while it faces away, cream paper once it has turned past edge-on (the switch happens exactly at
+   90°, where the page is invisible). */
+const CARD_FACE='#262b1f', PAGE_FACE='#f2ecdf';
+function flipKeys(cr,pr,from){
+  const cx=cr.left+cr.width/2-(pr.left+pr.width/2), cy=cr.top+cr.height/2-(pr.top+pr.height/2);
+  const sx=cr.width/pr.width, sy=cr.height/pr.height, ms=Math.sqrt(sx*sy);
+  const persp=`perspective(${Math.round(Math.max(pr.width,pr.height)*2.4)}px)`;
+  const T=(f,ry,rz,lift)=>{ const s=v=>v.toFixed(4);
+    const kx=1+(sx-1)*(1-f), ky=1+(sy-1)*(1-f), k=lift*(1-Math.abs(f-.5)*2);
+    return `${persp} translate3d(${(cx*(1-f)).toFixed(1)}px,${(cy*(1-f)-k*40).toFixed(1)}px,${(k*120).toFixed(1)}px) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${s(kx)},${s(ky)})`; };
+  const card={background:CARD_FACE,boxShadow:'0 0 0 1px rgba(214,182,121,.55),0 20px 40px -20px rgba(0,0,0,.6)'};
+  const page={background:PAGE_FACE,boxShadow:'0 40px 90px -30px rgba(0,0,0,.85),0 0 0 1px rgba(214,182,121,.14)'};
+  const rad=f=>{ const kx=1+(sx-1)*(1-f), ky=1+(sy-1)*(1-f); return `${(22/kx).toFixed(1)}px / ${(22/ky).toFixed(1)}px`; };
+  const keys=[
+    {transform:T(0,0,0,0),borderRadius:rad(0),...card,offset:0},
+    {transform:T(.32,-62,-2.5,1),borderRadius:rad(.32),...card,offset:.36},
+    {transform:T(.48,-90,-1.5,1),borderRadius:rad(.48),...card,offset:.5},
+    {transform:T(.48,-90,-1.5,1),borderRadius:rad(.48),...page,offset:.5001},
+    {transform:T(.7,-150,.8,1),borderRadius:rad(.7),...page,offset:.7},
+    {transform:T(1,-180,0,0),borderRadius:'4px',...page,offset:1}];
+  // the page's own face is the one that ends up towards the viewer: undo the final half-turn by
+  // mirroring the second half (rotateY -180 shows the page reversed), so use 180-θ after the switch
+  keys[3].transform=T(.48,90,1.5,1); keys[4].transform=T(.7,30,.8,1); keys[5].transform=T(1,0,0,0);
+  return from==='card'?keys:keys.slice().reverse().map(k=>({...k,offset:1-k.offset}));
+}
+/* the card's real face for the first half of the flip (its drawing and words turning away) */
+function cardFace(card,cr,pr,host,dir,dur,delay,E){
+  const f=card.cloneNode(true); f.setAttribute('aria-hidden','true'); f.removeAttribute('id');
+  f.querySelectorAll('[id]').forEach(n=>n.removeAttribute('id'));
+  Object.assign(f.style,{position:'fixed',left:cr.left+'px',top:cr.top+'px',width:cr.width+'px',height:cr.height+'px',margin:0,zIndex:3,pointerEvents:'none',
+    transform:'none',backfaceVisibility:'hidden',transformOrigin:'50% 50%'});
+  f.querySelectorAll('*').forEach(n=>{ if(n.style){ n.style.opacity=''; if(!n.classList.contains('s-mask')) n.style.transform=''; } });
+  f.querySelectorAll('.s-mask').forEach(n=>{ n.style.visibility=''; n.style.opacity='.6'; n.getAnimations&&n.getAnimations().forEach(x=>x.cancel()); });
+  if(dir==='open'){ const h=f.querySelector('h3'); if(h) h.style.visibility='hidden'; }   // the title flies on its own
+  host.append(f);
+  const dx=(pr.left+pr.width/2)-(cr.left+cr.width/2), dy=(pr.top+pr.height/2)-(cr.top+cr.height/2);
+  const sx=pr.width/cr.width, sy=pr.height/cr.height, persp=`perspective(${Math.round(Math.max(pr.width,pr.height)*2.4)}px)`;
+  const T=(g,ry,rz,lift)=>{ const kx=1+(sx-1)*g, ky=1+(sy-1)*g, k=lift*(1-Math.abs(g-.5)*2);
+    return `${persp} translate3d(${(dx*g).toFixed(1)}px,${(dy*g-k*40).toFixed(1)}px,${(k*120).toFixed(1)}px) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${kx.toFixed(4)},${ky.toFixed(4)})`; };
+  let keys=[{transform:T(0,0,0,0),opacity:1,offset:0},{transform:T(.32,-62,-2.5,1),opacity:1,offset:.36},{transform:T(.48,-90,-1.5,1),opacity:1,offset:.5},{transform:T(.48,-90,-1.5,1),opacity:0,offset:.5001},{transform:T(.48,-90,-1.5,1),opacity:0,offset:1}];
+  if(dir==='close') keys=keys.slice().reverse().map(k=>({...k,offset:1-k.offset}));
+  f.animate(keys,{duration:dur,delay,easing:E,fill:'both'}).finished.then(()=>f.remove(),()=>f.remove());
+  return f;
+}
+/* a ring of gold light riding the edge of the backdrop as it blooms out of (or back into) the card */
+function goldRing(host,cx,cy,r0,r1,dur,inward){
+  const ring=document.createElement('i'); ring.setAttribute('aria-hidden','true');
+  Object.assign(ring.style,{position:'absolute',left:(cx-r1)+'px',top:(cy-r1)+'px',width:(r1*2)+'px',height:(r1*2)+'px',borderRadius:'50%',
+    border:'1.5px solid rgba(214,182,121,.9)',boxShadow:'0 0 40px 6px rgba(214,182,121,.25), inset 0 0 40px 6px rgba(214,182,121,.18)',pointerEvents:'none',zIndex:1});
+  host.append(ring);
+  const a=[{transform:`scale(${(r0/r1).toFixed(4)})`,opacity:inward?0:.95},{transform:'scale(1)',opacity:inward?.95:0}];
+  ring.animate(inward?a.reverse().map((k,i)=>({...k,opacity:i?0:.95})):a,{duration:dur,easing:'cubic-bezier(.7,0,.2,1)',fill:'forwards'}).finished.then(()=>ring.remove(),()=>ring.remove());
+}
 const SPRIG='<svg viewBox="0 0 16 20" aria-hidden="true"><path d="M8 19V8" stroke="currentColor" stroke-width="1.1" fill="none"/><path d="M8 9C8 5 9.5 2.5 8 0.5C6.5 2.5 8 5 8 9Z" fill="currentColor"/><path d="M8 12C5.5 11 3 9 2.5 6C5 6.5 7 8.5 8 12Z" fill="currentColor"/><path d="M8 12C10.5 11 13 9 13.5 6C11 6.5 9 8.5 8 12Z" fill="currentColor"/></svg>';
 /* one menu, written out as text on a sheet of paper with its drawing behind */
 function menuHTML(m,key){
@@ -1588,7 +1644,7 @@ const smoothstepJS=(a,b,x)=>{ const t=clamp((x-a)/(b-a)); return t*t*(3-2*t); };
    sprout, first leaves, bud, full plant — each stage dissolving into the next like a time-lapse,
    standing on the same spot in the soil. The last stage then settles into the menu's own drawing,
    which rises up from the ground, so it ends exactly as the menu.                                 */
-const GROWSEQ={'art-spring.webp':{"sheet": "grow-spring.webp", "cell": [357, 367], "cols": 9, "n": 45, "anchor": [186.59122807017545, 357.0], "stage": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6, 6.25, 6.5, 6.75, 7, 7.25, 7.5, 7.75, 8, 8.25, 8.5, 8.75, 9, 9.25, 9.5, 9.75, 10, 10.25, 10.5, 10.75, 11], "ground": [0.27, 0.8239], "k": 0.002222, "end": {"sheet": "grow-spring-end.webp", "cell": [450, 636], "cols": 5, "n": 13, "ground": [0.3018, 0.9071], "k": 0.0026667}}};
+const GROWSEQ={'art-spring.webp':{"sheet": "grow-spring.webp", "cell": [357, 367], "cols": 9, "n": 45, "anchor": [186.59122807017545, 357.0], "stage": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6, 6.25, 6.5, 6.75, 7, 7.25, 7.5, 7.75, 8, 8.25, 8.5, 8.75, 9, 9.25, 9.5, 9.75, 10, 10.25, 10.5, 10.75, 11], "ground": [0.27, 0.8239], "k": 0.002222, "end": {"sheet": "grow-spring-end.webp", "cell": [450, 636], "cols": 5, "n": 13, "ground": [0.3018, 0.9071], "k": 0.0026667}},'art-autumn.webp':{"sheet": "grow-autumn.webp", "cell": [408, 403], "cols": 9, "n": 45, "anchor": [176.0, 365.0], "stage": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6, 6.25, 6.5, 6.75, 7, 7.25, 7.5, 7.75, 8, 8.25, 8.5, 8.75, 9, 9.25, 9.5, 9.75, 10, 10.25, 10.5, 10.75, 11], "ground": [0.42, 0.83], "k": 0.0021111, "end": {"sheet": "grow-autumn-end.webp", "cell": [450, 636], "cols": 5, "n": 13, "ground": [0.4307, 0.8656], "k": 0.0028889}}};
 /* one moment of the growth: the morph frames are blended, so the plant moves continuously */
 function seqDraw(ctx,sheet,S,f,gx,gy,k,alpha=1){
   const [cw,ch]=S.cell, i0=Math.floor(f), fr=f-i0;
@@ -1601,8 +1657,8 @@ function growSeq(paper,file,delay=0){
   if(!art||RM||!S) return null;
   const cv=document.createElement('canvas'); cv.className='mp-grow'; cv.setAttribute('aria-hidden','true');
   const ctx=cv.getContext('2d'); if(!ctx) return null;
-  art.style.opacity='0'; paper.prepend(cv);
-  const finish=()=>{ art.style.opacity=''; cv.remove(); };
+  art.style.visibility='hidden'; paper.prepend(cv);
+  const finish=()=>{ art.style.visibility=''; cv.remove(); };
   const E=S.end;
   return Promise.all([loadImg('/'+S.sheet),E?loadImg('/'+E.sheet):null]).then(([sheet,endSheet])=>new Promise(res=>{
     const w=art.offsetWidth, h=art.offsetHeight, dpr=Math.min(2,devicePixelRatio||1);
@@ -1630,7 +1686,7 @@ function growSeq(paper,file,delay=0){
           ctx.globalAlpha=al; ctx.drawImage(endSheet,c*cw,r*ch,cw,ch,0,0,W,H); };
         const fadeIn=sm(clamp((ms-GROW)/120)), handOut=sm(clamp((ms-GROW-MORPH)/HAND));
         ctx.save(); ctx.globalAlpha=1; one(i0,(1-fr)*fadeIn*(1-handOut)); one(i0+1,fr*fadeIn*(1-handOut)); ctx.restore();
-        if(ms>=GROW+MORPH&&art.style.opacity==='0'){ art.style.opacity=''; art.animate([{opacity:0},{opacity:.78}],{duration:HAND,easing:'ease'}); }
+        if(ms>=GROW+MORPH&&art.style.visibility==='hidden'){ art.style.visibility=''; art.animate([{opacity:0},{opacity:.78}],{duration:HAND,easing:'ease'}); }
       }
       if(ms<GROW+(E?MORPH+HAND:0)) requestAnimationFrame(frame); else { finish(); res(); }
     };
@@ -1688,7 +1744,7 @@ function openMenu(card){
     const p=document.createElement('div'); p.className='mv-page';
     const paper=document.createElement('article'); paper.className='mp'; paper.setAttribute('aria-label',mTitle(m)); paper.innerHTML=menuHTML(m,key);
     const art=paper.querySelector('.mp-art'), A=m.art&&okImg(m.art)?`url("/${m.art}")`:'';
-    if(A){ art.style.webkitMaskImage=A; art.style.maskImage=A; } else art.remove();
+    if(A){ art.style.webkitMaskImage=A; art.style.maskImage=A; if(!RM) art.style.visibility='hidden'; } else art.remove();
     p.append(paper); s.append(p); rail.append(s); return {s,p,paper,art:A?art:null,seen:k===0}; });
   const dots=N>1?menus.map((m,k)=>{ const b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label',mTitle(m)); b.onclick=()=>go(k); dotsEl.append(b); return b; }):[];
   let cur=0;
@@ -1731,11 +1787,13 @@ function openMenu(card){
      otherwise it springs back. Works when the menu is scrolled to its top. */
   let pullY=0;
   const pull=dy=>{ pullY=Math.max(0,dy); const r=pullY>0?pullY*(1-Math.min(.5,pullY/(innerHeight*2.2))):0, k=Math.min(1,r/(innerHeight*.6));
-    slides[cur].paper.style.transform=`translate3d(0,${r.toFixed(1)}px,0) scale(${(1-.12*k).toFixed(4)})`;
+    const P=slides[cur].paper; P.style.transformOrigin='50% 0%';
+    P.style.transform=`perspective(1400px) translate3d(0,${r.toFixed(1)}px,0) rotateX(${(k*22).toFixed(2)}deg) scale(${(1-.16*k).toFixed(4)})`;
+    P.style.boxShadow=`0 ${(40+k*60).toFixed(0)}px ${(90+k*60).toFixed(0)}px -30px rgba(0,0,0,${(.85).toFixed(2)})`;
     bg.style.opacity=(1-.55*k).toFixed(3); top.style.opacity=foot.style.opacity=(1-k*1.6).toFixed(3); };
   const release=vel=>{ const p=slides[cur].paper;
     if(pullY>Math.min(140,innerHeight*.18)||vel>.6&&pullY>40){ close(false,true); return; }
-    const from=p.style.transform||'none'; p.style.transform=''; bg.style.opacity=''; top.style.opacity=foot.style.opacity='';
+    const from=p.style.transform||'none'; p.style.transform=''; p.style.boxShadow=''; bg.style.opacity=''; top.style.opacity=foot.style.opacity='';
     if(!RM) p.animate([{transform:from},{transform:'none'}],{duration:520,easing:'cubic-bezier(.16,1,.3,1)'});
     pullY=0; };
   let ts=null;
@@ -1774,7 +1832,9 @@ function openMenu(card){
      4. a gold hairline draws around the page while the produce grows and the menu is written in. */
   const cx=cr.left+cr.width/2, cy=cr.top+cr.height/2, R=Math.hypot(Math.max(cx,innerWidth-cx),Math.max(cy,innerHeight-cy))+20;
   if(RM) bg.animate([{opacity:0},{opacity:1}],{duration:1,fill:'forwards'});
-  else bg.animate([{clipPath:`circle(${Math.min(cr.width,cr.height)*.42}px at ${cx}px ${cy}px)`,opacity:.85},{clipPath:`circle(${R}px at ${cx}px ${cy}px)`,opacity:1}],{duration:720,easing:'cubic-bezier(.7,0,.2,1)',fill:'forwards'});
+  else { const r0=Math.min(cr.width,cr.height)*.42;
+    bg.animate([{clipPath:`circle(${r0}px at ${cx}px ${cy}px)`,opacity:.85},{clipPath:`circle(${R}px at ${cx}px ${cy}px)`,opacity:1}],{duration:820,easing:'cubic-bezier(.7,0,.2,1)',fill:'forwards'});
+    goldRing(v,cx,cy,r0,R,820,false); }
   [foot,prev,next].filter(Boolean).forEach(el=>el.animate([{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:RM?1:520,delay:RM?0:560,easing:'cubic-bezier(.16,1,.3,1)',fill:'forwards'}));
   top.animate([{opacity:0},{opacity:1}],{duration:RM?1:300,delay:RM?0:420,fill:'forwards'});
   if(!RM){
@@ -1797,18 +1857,16 @@ function openMenu(card){
   const S0=SEAS&&SEAS.find(s=>s.card===card), srcM=S0&&S0.mask, first=slides[0];
   if(RM) first.paper.animate([{opacity:0},{opacity:1}],{duration:1});
   else {
-    // the card unfolds into the page (FLIP from the card's rectangle to the paper's)
+    // the card lifts, flies to the centre and turns over into the page
     const p=first.paper, pr=p.getBoundingClientRect();
-    const sx=cr.width/pr.width, sy2=cr.height/pr.height, tx=cr.left-pr.left, ty=cr.top-pr.top;
-    p.style.transformOrigin='0 0';
-    p.animate([
-      {transform:`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${sx.toFixed(4)},${sy2.toFixed(4)})`,borderRadius:`${(22/sx).toFixed(1)}px / ${(22/sy2).toFixed(1)}px`,background:'#262b1f',boxShadow:'0 0 0 1px rgba(214,182,121,.5)'},
-      {background:'#3a3d2c',offset:.35},
-      {background:'#e9e2d2',offset:.7},
-      {transform:'none',borderRadius:'4px',background:'#f2ecdf',boxShadow:'0 40px 90px -30px rgba(0,0,0,.85),0 0 0 1px rgba(214,182,121,.14)'}],
-      {duration:860,delay:40,easing:'cubic-bezier(.65,0,.15,1)',fill:'backwards'}).finished.then(()=>{ p.style.transformOrigin=''; },()=>{});
+    p.style.backfaceVisibility='hidden'; p.style.willChange='transform';
+    const EF='cubic-bezier(.55,0,.2,1)';
+    p.animate(flipKeys(cr,pr,'card'),{duration:1050,delay:30,easing:EF,fill:'backwards'})
+      .finished.then(()=>{ p.style.willChange=''; },()=>{});
+    p.animate([{opacity:0,offset:0},{opacity:0,offset:.5},{opacity:1,offset:.5001},{opacity:1,offset:1}],{duration:1050,delay:30,easing:EF,fill:'backwards'});
+    cardFace(card,cr,pr,v,'open',1050,30,EF);
     // the page's contents fade up as it opens, so the seed is there the moment the page is
-    [...p.children].forEach(c=>c.animate([{opacity:0},{opacity:1}],{duration:420,delay:560,easing:'ease',fill:'backwards'}));
+    [...p.children].filter(c=>!c.classList.contains('mp-art')&&!c.classList.contains('mp-grow')).forEach(c=>c.animate([{opacity:0},{opacity:1}],{duration:460,delay:640,easing:'ease',fill:'backwards'}));
     // a gold hairline draws around the page, then fades
     setTimeout(()=>{ if(!menuV) return; const r=pr, vr=rail.getBoundingClientRect();
       const ns='http://www.w3.org/2000/svg', s=document.createElementNS(ns,'svg'), rc=document.createElementNS(ns,'rect');
@@ -1818,47 +1876,54 @@ function openMenu(card){
       rc.style.strokeDasharray='1'; s.setAttribute('class','mv-line'); s.setAttribute('aria-hidden','true'); s.append(rc); v.append(s);
       rc.animate([{strokeDashoffset:1},{strokeDashoffset:0}],{duration:900,easing:'cubic-bezier(.65,0,.35,1)',fill:'forwards'});
       s.animate([{opacity:1,offset:0},{opacity:1,offset:.6},{opacity:0,offset:1}],{duration:1500,fill:'forwards'}).finished.then(()=>s.remove(),()=>s.remove());
-    },760);
+    },980);
   }
   if(srcM&&!RM) srcM.animate([{opacity:.6},{opacity:0}],{duration:260,fill:'forwards'}).finished.then(()=>srcM.getAnimations().forEach(x=>x.cancel()),()=>{});
   if(RM) revealMenu(first.paper,0);
-  else { growArtAny(first.paper,menus[0].art,520); revealMenu(first.paper,720); }
+  else { growArtAny(first.paper,menus[0].art,620); revealMenu(first.paper,820); }
   v.querySelector('.mv-x').focus({preventScroll:true});
 
   /* closing: the text lifts away, then the page itself glides back down into its card, shrinking
      to the card's shape as the dark backdrop folds back into the card's outline. The card's own
      drawing takes over as the page lands, and the card's border glows briefly. */
+  /* closing — the same move in reverse, whether from ✕, Esc or a swipe down: the menu text lifts
+     away, the page flies home turning back over into the dark card, the backdrop collapses into
+     the card with the gold ring closing in, and the card glows as it lands. */
   function close(quiet,fromPull){
     if(!menuV) return; menuV=null;
-    const sl=slides[cur], p=sl.paper, a=card.getBoundingClientRect(), r=p.getBoundingClientRect();
-    const onScreen=a.width&&a.bottom>0&&a.top<innerHeight;
+    const sl=slides[cur], p=sl.paper, a=card.getBoundingClientRect();
+    const onScreen=a.width&&a.bottom>0&&a.top<innerHeight&&a.right>0&&a.left<innerWidth;
     removeEventListener('keydown',key2); removeEventListener('resize',onResize);
+    v.style.pointerEvents='none';
     [top,foot,prev,next].filter(Boolean).forEach(el=>el.animate([{opacity:getComputedStyle(el).opacity},{opacity:0}],{duration:220,fill:'forwards'}));
-    const E='cubic-bezier(.6,0,.25,1)', D=RM?1:540;
     const done=()=>{ v.remove(); document.documentElement.classList.remove('locked');
       if(!quiet) card.querySelector('.s-cta').focus({preventScroll:true}); };
     if(RM||!onScreen){
       p.animate([{opacity:1},{opacity:0}],{duration:RM?1:300,fill:'forwards'});
       bg.animate([{opacity:getComputedStyle(bg).opacity},{opacity:0}],{duration:RM?1:420,fill:'forwards'}).finished.then(done,done); return; }
-    // 1) the menu text and drawing lift off the page
-    [...p.children].forEach(c=>c.animate([{opacity:1},{opacity:0}],{duration:180,easing:'ease',fill:'forwards'}));
-    // 2) the page flies into the card's shape and place
-    p.style.transform=''; sl.s.style.overflow='visible'; rail.style.overflow='visible';
-    sl.s.scrollTop=0; const base=p.getBoundingClientRect();
-    const sx=a.width/base.width, syy=a.height/base.height;
-    const tx=a.left-base.left, ty=a.top-base.top;
-    p.style.transformOrigin='0 0';
-    const startT=`translate(${(r.left-base.left).toFixed(1)}px,${(r.top-base.top).toFixed(1)}px) scale(${(r.width/base.width).toFixed(4)})`;
-    const fly=p.animate([
-      {transform:startT,borderRadius:'4px',background:'#f2ecdf',boxShadow:'0 40px 90px -30px rgba(0,0,0,.85)',offset:0},
-      {background:'#f2ecdf',offset:.45},
-      {transform:`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${sx.toFixed(4)},${syy.toFixed(4)})`,borderRadius:`${(22/sx).toFixed(1)}px / ${(22/syy).toFixed(1)}px`,background:'#262b1f',boxShadow:'0 0 0 0 rgba(0,0,0,0)',offset:1}],
-      {duration:D,delay:60,easing:E,fill:'forwards'});
-    p.animate([{opacity:1,offset:0},{opacity:1,offset:.75},{opacity:0,offset:1}],{duration:D,delay:60,fill:'forwards'});
-    // 3) the backdrop folds back into the card's outline
-    bg.animate([{clipPath:'inset(0px 0px 0px 0px round 0px)',opacity:getComputedStyle(bg).opacity},{clipPath:cardClip(a),opacity:0}],{duration:D,delay:60,easing:E,fill:'forwards'});
+    // 1) the writing lifts off the page
+    [...p.children].forEach(c=>c.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translate3d(0,-10px,0)'}],{duration:220,easing:'ease',fill:'forwards'}));
+    // 2) the page flies home and turns back into the card — from wherever it is (pulled down or not)
+    const now=p.getBoundingClientRect();
+    p.style.transform=''; p.style.boxShadow=''; p.style.transformOrigin='';
+    sl.s.style.overflow='visible'; rail.style.overflow='visible'; sl.s.scrollTop=0;
+    const base=p.getBoundingClientRect();
+    p.style.backfaceVisibility='hidden';
+    const keys=flipKeys(a,base,'page');
+    if(fromPull){ // start from where the finger left it
+      const dx=now.left+now.width/2-(base.left+base.width/2), dy=now.top+now.height/2-(base.top+base.height/2), ks=now.width/base.width;
+      keys[0]={...keys[0],transform:`perspective(1400px) translate3d(${dx.toFixed(1)}px,${dy.toFixed(1)}px,0) scale(${ks.toFixed(4)})`}; }
+    const D=900, E='cubic-bezier(.55,0,.2,1)';
+    const fly=p.animate(keys,{duration:D,delay:90,easing:E,fill:'forwards'});
+    p.animate([{opacity:1,offset:0},{opacity:1,offset:.4999},{opacity:0,offset:.5},{opacity:0,offset:1}],{duration:D,delay:90,easing:E,fill:'forwards'});
+    const face=cardFace(card,a,base,v,'close',D,90,E); face.getAnimations()[0].finished.then(()=>{},()=>{});
+    // 3) the backdrop collapses into the card, a gold ring closing in with it
+    const cx=a.left+a.width/2, cy=a.top+a.height/2, R=Math.hypot(Math.max(cx,innerWidth-cx),Math.max(cy,innerHeight-cy))+20, r0=Math.min(a.width,a.height)*.42;
+    bg.animate([{clipPath:`circle(${R}px at ${cx}px ${cy}px)`,opacity:getComputedStyle(bg).opacity},{clipPath:`circle(${r0}px at ${cx}px ${cy}px)`,opacity:.85,offset:.92},{clipPath:`circle(${r0}px at ${cx}px ${cy}px)`,opacity:0}],
+      {duration:D+60,delay:120,easing:'cubic-bezier(.6,0,.3,1)',fill:'forwards'});
+    goldRing(v,cx,cy,r0,R,D,true);
     // 4) the card glows as the page lands back in it
-    setTimeout(()=>card.animate([{borderColor:'rgba(214,182,121,.9)',boxShadow:'0 0 0 1px rgba(214,182,121,.5),0 30px 60px -30px rgba(214,182,121,.35)'},{borderColor:'',boxShadow:'none'}],{duration:700,easing:'ease-out'}),D);
+    setTimeout(()=>card.animate([{borderColor:'rgba(214,182,121,.95)',boxShadow:'0 0 0 1px rgba(214,182,121,.55),0 30px 70px -30px rgba(214,182,121,.45)'},{borderColor:'',boxShadow:'none'}],{duration:900,easing:'ease-out'}),D+40);
     fly.finished.then(done,done);
   }
 }
