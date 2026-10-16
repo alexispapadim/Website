@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=16';
-import * as GAL from './gallery.js?v=16';
-import * as SEA from './seasons.js?v=16';
+import { I18N } from './i18n.js?v=17';
+import * as GAL from './gallery.js?v=17';
+import * as SEA from './seasons.js?v=17';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -1570,7 +1570,61 @@ function growArtGL(paper,file,delay=0){
   })).catch(e=>{ console.warn('grow',e); show(); });
 }
 const smoothstepJS=(a,b,x)=>{ const t=clamp((x-a)/(b-a)); return t*t*(3-2*t); };
-function growArtAny(paper,file,delay){ return growArtGL(paper,file,delay)||growArt(paper,file,delay); }
+/* ---- grown from seed (frame-by-frame) ----
+   For menus that have a drawn growth sequence: the plant is drawn stage by stage — seed, root,
+   sprout, first leaves, bud, full plant — each stage dissolving into the next like a time-lapse,
+   standing on the same spot in the soil. The last stage then settles into the menu's own drawing,
+   which rises up from the ground, so it ends exactly as the menu.                                 */
+const GROWSEQ={'art-spring.webp':{"sheet": "grow-spring.webp", "frames": [[0, 78, 194, 32.3, 189], [82, 117, 194, 38.6, 192], [203, 94, 194, 34.7, 188], [301, 213, 194, 93.0, 189], [518, 199, 303, 102.2, 302], [721, 219, 303, 128.2, 301], [944, 270, 303, 123.8, 302], [1218, 225, 303, 76.7, 301], [1447, 296, 350, 146.8, 344], [1747, 272, 350, 118.2, 345], [2023, 298, 350, 135.9, 346], [2325, 329, 350, 178.6, 349]], "ground": [0.27, 0.8239], "k": 0.002222}};
+function growSeq(paper,file,delay=0){
+  const art=paper.querySelector('.mp-art'), S=GROWSEQ[file];
+  if(!art||RM||!S) return null;
+  const cv=document.createElement('canvas'); cv.className='mp-grow'; cv.setAttribute('aria-hidden','true');
+  const ctx=cv.getContext('2d'); if(!ctx) return null;
+  art.style.opacity='0'; paper.prepend(cv);
+  const finish=()=>{ art.style.opacity=''; cv.remove(); };
+  return Promise.all([loadImg('/'+S.sheet),loadImg('/'+file)]).then(([sheet,artImg])=>new Promise(res=>{
+    const w=art.offsetWidth, h=art.offsetHeight, dpr=Math.min(2,devicePixelRatio||1);
+    if(!w||!h){ finish(); return res(); }
+    cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+    const W=cv.width, H=cv.height, gx=S.ground[0]*W, gy=S.ground[1]*H, k=S.k*W;
+    const F=S.frames, n=F.length;
+    // timing: early stages pass a little quicker, the plant lingers as it matures
+    const hold=i=>300+i*22, fade=420;
+    const starts=[]; let acc=0; for(let i=0;i<n;i++){ starts.push(acc); acc+=hold(i)+fade; }
+    const GROW=acc-fade, SETTLE=1300, t0=performance.now()+delay;
+    const sm=x=>x*x*(3-2*x);
+    const draw=(i,alpha,breathe)=>{ if(alpha<=0) return; const [sx,fw,fh,ax,ay]=F[i], sc=k*(1+breathe);
+      ctx.globalAlpha=alpha; ctx.drawImage(sheet,sx,0,fw,fh,gx-ax*sc,gy-ay*sc,fw*sc,fh*sc); };
+    // the menu's own drawing, tinted like the page, for the final settle
+    const tint=document.createElement('canvas'); tint.width=W; tint.height=H;
+    const tc=tint.getContext('2d'); tc.drawImage(artImg,0,0,W,H); tc.globalCompositeOperation='source-in'; tc.fillStyle='#a9a487'; tc.fillRect(0,0,W,H);
+    const wash=document.createElement('canvas'); wash.width=W; wash.height=H; const wc=wash.getContext('2d');
+    const frame=now=>{
+      const ms=now-t0; if(ms<0){ requestAnimationFrame(frame); return; }
+      ctx.clearRect(0,0,W,H);
+      const fadeOut=ms>GROW?sm(clamp((ms-GROW)/SETTLE)):0;
+      for(let i=0;i<n;i++){
+        const s0=starts[i], e0=s0+hold(i)+fade;
+        const fin=i===0?1:sm(clamp((ms-s0)/fade)), fo=i===n-1?0:sm(clamp((ms-e0-fade*.35)/fade));
+        const a=fin*(1-fo)*(i===n-1?1-fadeOut:1); if(a<=.002) continue;
+        const life=clamp((ms-s0)/(hold(i)+fade*2));
+        draw(i,a,.035*sm(life));                  // each stage keeps swelling slightly while it's shown
+      }
+      ctx.globalAlpha=1;
+      if(fadeOut>0){   // the menu's own drawing washes up from the soil as the last stage dissolves into it
+        const p=fadeOut, edge=H*(1.15-1.5*p), band=H*.35;
+        wc.globalCompositeOperation='source-over'; wc.clearRect(0,0,W,H); wc.drawImage(tint,0,0);
+        const g=wc.createLinearGradient(0,edge,0,edge+band); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,1)');
+        wc.globalCompositeOperation='destination-in'; wc.fillStyle=g; wc.fillRect(0,0,W,H);
+        ctx.globalAlpha=Math.min(1,p*1.6); ctx.drawImage(wash,0,0); ctx.globalAlpha=1; }
+      if(ms<GROW+SETTLE) requestAnimationFrame(frame); else { finish(); res(); }
+    };
+    requestAnimationFrame(frame);
+  })).catch(e=>{ console.warn('grow',e); finish(); });
+}
+function growArtAny(paper,file,delay){ return growSeq(paper,file,delay)||growArtGL(paper,file,delay)||growArt(paper,file,delay); }
+const growLen=file=>{ const S=GROWSEQ[file]; if(!S) return 3000; let t=0; S.frames.forEach((_,i)=>t+=300+i*22+420); return t+600; };
 function openMenu(card){
   if(menuV||viewer) return;
   const menus=card._menus, N=menus.length, key=card.dataset.season;
@@ -1608,7 +1662,7 @@ function openMenu(card){
       if(anim&&!RM) sl.s.animate([{transform:sl.s.style.transform||'none'},{transform:to}],{duration:560,easing:'cubic-bezier(.16,1,.3,1)'});
       sl.s.style.transform=to; }); };
   function go(k){ k=clamp(k,0,N-1); const was=cur; cur=k; place(0,was!==k||dragX!==0); dragX=0; setUI();
-    const sl=slides[cur]; if(!sl.seen){ sl.seen=true; growArtAny(sl.paper,menus[cur].art,120); revealMenu(sl.paper,2400); } }
+    const sl=slides[cur]; if(!sl.seen){ sl.seen=true; growArtAny(sl.paper,menus[cur].art,120); revealMenu(sl.paper,120+growLen(menus[cur].art)-600); } }
   let ds=null, dragged=false;
   rail.addEventListener('pointerdown',e=>{ if(N<2||(e.pointerType==='mouse'&&e.button!==0)) return;
     ds={id:e.pointerId,x:e.clientX,y:e.clientY,t:performance.now(),mode:''}; dragged=false; });
@@ -1651,7 +1705,7 @@ function openMenu(card){
   first.paper.animate([{opacity:0,transform:'translate3d(0,40px,0) scale(.97)'},{opacity:1,transform:'none'}],{duration:RM?1:760,delay:RM?0:220,easing:E1,fill:'backwards'});
   if(srcM&&!RM) srcM.animate([{opacity:.6},{opacity:0}],{duration:420,fill:'forwards'}).finished.then(()=>srcM.getAnimations().forEach(x=>x.cancel()),()=>{});
   if(RM) revealMenu(first.paper,0);
-  else { growArtAny(first.paper,menus[0].art,560); revealMenu(first.paper,3000); }
+  else { growArtAny(first.paper,menus[0].art,560); revealMenu(first.paper,560+growLen(menus[0].art)); }
   v.querySelector('.mv-x').focus({preventScroll:true});
 
   function close(quiet){
