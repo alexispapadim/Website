@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=17';
-import * as GAL from './gallery.js?v=17';
-import * as SEA from './seasons.js?v=17';
+import { I18N } from './i18n.js?v=18';
+import * as GAL from './gallery.js?v=18';
+import * as SEA from './seasons.js?v=18';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -574,8 +574,18 @@ function animOff(target,dur=560){
   cancelAnimationFrame(offAnim);
   const from=off, t0=performance.now();
   const step=now=>{ const t=clamp((now-t0)/dur); off=from+(target-from)*easeOut(t); applyCards(sy);
-    offAnim=t<1?requestAnimationFrame(step):0; };
+    offAnim=t<1?requestAnimationFrame(step):0; if(!offAnim) bakeOff(); };
   offAnim=requestAnimationFrame(step);
+}
+/* After a swipe settles while the section is pinned, move the page's scroll position to the point
+   that shows the same card, and clear the swipe offset. The cards don't move, but from then on
+   scrolling carries on smoothly from where you swiped to (no tug-of-war between the two). */
+function bakeOff(){
+  if(RM||!off||sw||!hDist) return;
+  const y=scrollY, b=M.occ; if(y<b.top-2||y>b.top+b.span+2) return;
+  const ny=Math.round(b.top+clamp(curLeft/hDist)*b.span);
+  if(Math.abs(ny-y)<1){ off=0; return; }
+  stopAnim(); off=0; sy=ny; scrollTo(0,ny); applyCards(ny); tick();
 }
 const snapLeft=left=>clamp(Math.round(left/cardStep)*cardStep,0,hDist);
 let sw=null, lastDragEnd=0;
@@ -783,7 +793,8 @@ function frame(t){
   const ty=scrollY, k=1-Math.pow(1-.3,dt/16.7), prev=sy;
   sy+=(ty-sy)*k; if(Math.abs(ty-sy)<.35) sy=ty;
   // While the section is pinned, page scrolling gradually hands the cards back to the scroll.
-  if(off&&!sw&&!offAnim&&sy>M.occ.top&&sy<M.occ.top+M.occ.span) off*=Math.exp(-Math.abs(sy-prev)/420);
+  // outside the pinned stretch a leftover swipe offset eases out gently as you scroll
+  if(off&&!sw&&!offAnim&&!(sy>M.occ.top-2&&sy<M.occ.top+M.occ.span+2)) off*=Math.exp(-Math.abs(sy-prev)/600);
   render(sy,ty);
   if(sy!==ty) loop=requestAnimationFrame(frame); else { loop=0; lastT=0; }
 }
@@ -1664,17 +1675,42 @@ function openMenu(card){
   function go(k){ k=clamp(k,0,N-1); const was=cur; cur=k; place(0,was!==k||dragX!==0); dragX=0; setUI();
     const sl=slides[cur]; if(!sl.seen){ sl.seen=true; growArtAny(sl.paper,menus[cur].art,120); revealMenu(sl.paper,120+growLen(menus[cur].art)-600); } }
   let ds=null, dragged=false;
-  rail.addEventListener('pointerdown',e=>{ if(N<2||(e.pointerType==='mouse'&&e.button!==0)) return;
+  rail.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse'&&e.button!==0) return;
     ds={id:e.pointerId,x:e.clientX,y:e.clientY,t:performance.now(),mode:''}; dragged=false; });
   rail.addEventListener('pointermove',e=>{ if(!ds||e.pointerId!==ds.id) return;
     const dx=e.clientX-ds.x, dy=e.clientY-ds.y;
-    if(!ds.mode){ if(Math.abs(dx)<8&&Math.abs(dy)<8) return; ds.mode=Math.abs(dx)>Math.abs(dy)?'h':'v'; if(ds.mode==='h'){ try{rail.setPointerCapture(e.pointerId)}catch(_){} } }
+    if(!ds.mode){ if(Math.abs(dx)<8&&Math.abs(dy)<8) return; ds.mode=Math.abs(dx)>Math.abs(dy)?(N>1?'h':'x'):'v';
+      if(ds.mode==='v'&&e.pointerType==='mouse'&&dy>0&&slides[cur].s.scrollTop<=0) ds.mode='d';
+      if(ds.mode==='h'||ds.mode==='d'){ try{rail.setPointerCapture(e.pointerId)}catch(_){} } }
+    if(ds.mode==='d'){ dragged=true; pull(dy); return; }
     if(ds.mode!=='h') return;
     dragged=true; dragX=dx; if((cur===0&&dx>0)||(cur===N-1&&dx<0)) dragX=dx*.35; place(dragX,false); });
-  const endDrag=e=>{ if(!ds||(e&&e.pointerId!==ds.id)) return; const s=ds; ds=null; if(s.mode!=='h') return;
+  const endDrag=e=>{ if(!ds||(e&&e.pointerId!==ds.id)) return; const s=ds; ds=null;
+    if(s.mode==='d'){ release(pullY/Math.max(1,performance.now()-s.t)); setTimeout(()=>dragged=false,60); return; }
+    if(s.mode!=='h') return;
     const W=rail.clientWidth, vel=dragX/Math.max(1,performance.now()-s.t), fast=Math.abs(vel)>.45&&Math.abs(dragX)>30;
     go(cur+((dragX<-W*.2||(fast&&dragX<0))?1:(dragX>W*.2||(fast&&dragX>0))?-1:0)); setTimeout(()=>dragged=false,60); };
   rail.addEventListener('pointerup',endDrag); rail.addEventListener('pointercancel',endDrag);
+  /* swipe down to close: the menu follows your finger down, shrinking a touch, and the dark
+     backdrop thins so the page shows through; let go past the threshold (or flick) to close,
+     otherwise it springs back. Works when the menu is scrolled to its top. */
+  let pullY=0;
+  const pull=dy=>{ pullY=Math.max(0,dy); const r=pullY>0?pullY*(1-Math.min(.5,pullY/(innerHeight*2.2))):0, k=Math.min(1,r/(innerHeight*.6));
+    slides[cur].paper.style.transform=`translate3d(0,${r.toFixed(1)}px,0) scale(${(1-.12*k).toFixed(4)})`;
+    bg.style.opacity=(1-.55*k).toFixed(3); top.style.opacity=foot.style.opacity=(1-k*1.6).toFixed(3); };
+  const release=vel=>{ const p=slides[cur].paper;
+    if(pullY>Math.min(140,innerHeight*.18)||vel>.6&&pullY>40){ close(false,true); return; }
+    const from=p.style.transform||'none'; p.style.transform=''; bg.style.opacity=''; top.style.opacity=foot.style.opacity='';
+    if(!RM) p.animate([{transform:from},{transform:'none'}],{duration:520,easing:'cubic-bezier(.16,1,.3,1)'});
+    pullY=0; };
+  let ts=null;
+  rail.addEventListener('touchstart',e=>{ if(e.touches.length!==1) return; const t=e.touches[0];
+    ts={x:t.clientX,y:t.clientY,t:performance.now(),mode:'',top:slides[cur].s.scrollTop<=0}; },{passive:true});
+  rail.addEventListener('touchmove',e=>{ if(!ts) return; const t=e.touches[0], dx=t.clientX-ts.x, dy=t.clientY-ts.y;
+    if(!ts.mode){ if(Math.abs(dx)<8&&Math.abs(dy)<8) return; ts.mode=(dy>0&&dy>Math.abs(dx)*1.2&&ts.top&&slides[cur].s.scrollTop<=0)?'d':'-'; }
+    if(ts.mode!=='d') return; e.preventDefault(); dragged=true; pull(dy); },{passive:false});
+  const tEnd=()=>{ if(!ts) return; const s=ts; ts=null; if(s.mode==='d'){ release(pullY/Math.max(1,performance.now()-s.t)); setTimeout(()=>dragged=false,60); } };
+  rail.addEventListener('touchend',tEnd); rail.addEventListener('touchcancel',tEnd);
   rail.addEventListener('wheel',e=>{ if(N<2||Math.abs(e.deltaX)<=Math.abs(e.deltaY)||Math.abs(e.deltaX)<18) return; e.preventDefault();
     if(wheelT) return; wheelT=setTimeout(()=>wheelT=null,560); go(cur+(e.deltaX>0?1:-1)); },{passive:false});
   slides.forEach(sl=>sl.p.addEventListener('click',e=>{ if(e.target===sl.p&&!dragged) close(); }));
@@ -1708,17 +1744,41 @@ function openMenu(card){
   else { growArtAny(first.paper,menus[0].art,560); revealMenu(first.paper,560+growLen(menus[0].art)); }
   v.querySelector('.mv-x').focus({preventScroll:true});
 
-  function close(quiet){
+  /* closing: the text lifts away, then the page itself glides back down into its card, shrinking
+     to the card's shape as the dark backdrop folds back into the card's outline. The card's own
+     drawing takes over as the page lands, and the card's border glows briefly. */
+  function close(quiet,fromPull){
     if(!menuV) return; menuV=null;
-    const sl=slides[cur], a=card.getBoundingClientRect();
-    [top,foot,prev,next].filter(Boolean).forEach(el=>el.animate([{opacity:1},{opacity:0}],{duration:180,fill:'forwards'}));
-    sl.paper.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translate3d(0,40px,0) scale(.95)'}],{duration:RM?1:360,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'});
-    if(!RM&&a.width&&a.bottom>0&&a.top<innerHeight)
-      bg.animate([{clipPath:'inset(0px 0px 0px 0px round 0px)',opacity:1},{clipPath:cardClip(a),opacity:.4}],{duration:560,delay:120,easing:'cubic-bezier(.7,0,.2,1)',fill:'forwards'});
-    else bg.animate([{opacity:1},{opacity:0}],{duration:RM?1:460,fill:'forwards'});
-    setTimeout(()=>{ v.remove(); document.documentElement.classList.remove('locked');
-      removeEventListener('keydown',key2); removeEventListener('resize',onResize);
-      if(!quiet) card.querySelector('.s-cta').focus({preventScroll:true}); },RM?20:700);
+    const sl=slides[cur], p=sl.paper, a=card.getBoundingClientRect(), r=p.getBoundingClientRect();
+    const onScreen=a.width&&a.bottom>0&&a.top<innerHeight;
+    removeEventListener('keydown',key2); removeEventListener('resize',onResize);
+    [top,foot,prev,next].filter(Boolean).forEach(el=>el.animate([{opacity:getComputedStyle(el).opacity},{opacity:0}],{duration:220,fill:'forwards'}));
+    const E='cubic-bezier(.65,0,.25,1)', D=RM?1:760;
+    const done=()=>{ v.remove(); document.documentElement.classList.remove('locked');
+      if(!quiet) card.querySelector('.s-cta').focus({preventScroll:true}); };
+    if(RM||!onScreen){
+      p.animate([{opacity:1},{opacity:0}],{duration:RM?1:300,fill:'forwards'});
+      bg.animate([{opacity:getComputedStyle(bg).opacity},{opacity:0}],{duration:RM?1:420,fill:'forwards'}).finished.then(done,done); return; }
+    // 1) the menu text and drawing lift off the page
+    [...p.children].forEach(c=>c.animate([{opacity:1},{opacity:0}],{duration:260,easing:'ease',fill:'forwards'}));
+    // 2) the page flies into the card's shape and place
+    p.style.transform=''; sl.s.style.overflow='visible'; rail.style.overflow='visible';
+    sl.s.scrollTop=0; const base=p.getBoundingClientRect();
+    const sx=a.width/base.width, syy=a.height/base.height;
+    const tx=a.left-base.left, ty=a.top-base.top;
+    p.style.transformOrigin='0 0';
+    const startT=`translate(${(r.left-base.left).toFixed(1)}px,${(r.top-base.top).toFixed(1)}px) scale(${(r.width/base.width).toFixed(4)})`;
+    const fly=p.animate([
+      {transform:startT,borderRadius:'4px',background:'#f2ecdf',boxShadow:'0 40px 90px -30px rgba(0,0,0,.85)',offset:0},
+      {background:'#f2ecdf',offset:.45},
+      {transform:`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${sx.toFixed(4)},${syy.toFixed(4)})`,borderRadius:`${(22/sx).toFixed(1)}px / ${(22/syy).toFixed(1)}px`,background:'#262b1f',boxShadow:'0 0 0 0 rgba(0,0,0,0)',offset:1}],
+      {duration:D,delay:120,easing:E,fill:'forwards'});
+    p.animate([{opacity:1,offset:0},{opacity:1,offset:.8},{opacity:0,offset:1}],{duration:D,delay:120,fill:'forwards'});
+    // 3) the backdrop folds back into the card's outline
+    bg.animate([{clipPath:'inset(0px 0px 0px 0px round 0px)',opacity:getComputedStyle(bg).opacity},{clipPath:cardClip(a),opacity:0}],{duration:D,delay:60,easing:E,fill:'forwards'});
+    // 4) the card glows as the page lands back in it
+    setTimeout(()=>card.animate([{borderColor:'rgba(214,182,121,.9)',boxShadow:'0 0 0 1px rgba(214,182,121,.5),0 30px 60px -30px rgba(214,182,121,.35)'},{borderColor:'',boxShadow:'none'}],{duration:900,easing:'ease-out'}),D);
+    fly.finished.then(done,done);
   }
 }
 
