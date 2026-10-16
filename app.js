@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=31';
-import * as GAL from './gallery.js?v=31';
-import * as SEA from './seasons.js?v=31';
+import { I18N } from './i18n.js?v=32';
+import * as GAL from './gallery.js?v=32';
+import * as SEA from './seasons.js?v=32';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -581,6 +581,7 @@ function animOff(target,dur=560){
    that shows the same card, and clear the swipe offset. The cards don't move, but from then on
    scrolling carries on smoothly from where you swiped to (no tug-of-war between the two). */
 function bakeOff(){
+  return;   // (retired: moving the page scroll under the user's finger caused jumps)
   if(RM||!off||sw||!hDist) return;
   const y=scrollY, b=M.occ; if(y<b.top-2||y>b.top+b.span+2) return;
   const ny=Math.round(b.top+clamp(curLeft/hDist)*b.span);
@@ -1370,7 +1371,9 @@ function renderSeasons(){
   SEAS.forEach((s,i)=>{
     const x=M.hwL+s.l-curLeft;
     const vis=clamp((vw-x)/(s.w*.75));
-    const d=Math.min(seg(enter,.1+i*.06,.7+i*.06),vis), e=ease(d);
+    s.p=Math.max(s.p||0,Math.min(seg(enter,.1+i*.06,.7+i*.06),vis));      // latch: once shown, never fades back while swiping
+    if(enter<.02) s.p=0;                                                  // reset only when the section is fully off-screen below
+    const d=s.p, e=ease(d);
     const drift=((x+s.w/2)-vw/2)/vw;
     if(s.mask&&s.A){
       put('sc'+i,s.mask,'clipPath',e>=.999?'none':`circle(${(e*78).toFixed(2)}% at ${(s.A.fx*100).toFixed(1)}% ${(s.A.fy*100).toFixed(1)}%)`);
@@ -1737,6 +1740,7 @@ function growArtAny(paper,file,delay){ return growSprout(paper,file,delay)||grow
 const growLen=file=>{ const S=GROWSEQ[file]; if(!S) return 3000; let t=0; S.frames.forEach((_,i)=>t+=300+i*22+420); return t+600; };
 function openMenu(card){
   if(menuV||viewer) return;
+  cancelAnimationFrame(offAnim); offAnim=0;
   const menus=card._menus, N=menus.length, key=card.dataset.season;
   const v=document.createElement('div'); v.className='mv'; v.setAttribute('role','dialog'); v.setAttribute('aria-modal','true');
   v.setAttribute('aria-label',tr('sn.'+key));
@@ -1873,6 +1877,7 @@ function openMenu(card){
       .finished.then(()=>{ p.style.willChange=''; },()=>{});
     p.animate([{opacity:0,offset:0},{opacity:0,offset:.5},{opacity:1,offset:.5001},{opacity:1,offset:1}],{duration:1050,delay:30,easing:EF,fill:'backwards'});
     cardFace(card,cr,pr,v,'open',1050,30,EF);
+    card.style.visibility='hidden'; setTimeout(()=>{ if(menuV) card.style.visibility=''; },1100);
     // the page's contents fade up as it opens, so the seed is there the moment the page is
     [...p.children].filter(c=>!c.classList.contains('mp-art')&&!c.classList.contains('mp-grow')).forEach(c=>c.animate([{opacity:0},{opacity:1}],{duration:460,delay:640,easing:'ease',fill:'backwards'}));
     // a gold hairline draws around the page, then fades
@@ -1899,12 +1904,16 @@ function openMenu(card){
      the card with the gold ring closing in, and the card glows as it lands. */
   function close(quiet,fromPull){
     if(!menuV) return; menuV=null;
-    const sl=slides[cur], p=sl.paper, a=card.getBoundingClientRect();
+    v.querySelectorAll(':scope > .card').forEach(n=>n.remove());          // a stand-in still flying from the opening
+    const sl=slides[cur], p=sl.paper; card.style.visibility='';
+    slides.forEach(x=>x.paper.getAnimations().forEach(an=>{ if(an.effect&&an.effect.getKeyframes().some(k=>k.transform)) an.finish(); }));
+    bg.getAnimations().forEach(an=>an.finish());
+    const a=card.getBoundingClientRect();
     const onScreen=a.width&&a.bottom>0&&a.top<innerHeight&&a.right>0&&a.left<innerWidth;
     removeEventListener('keydown',key2); removeEventListener('resize',onResize);
     v.style.pointerEvents='none';
     [top,foot,prev,next].filter(Boolean).forEach(el=>el.animate([{opacity:getComputedStyle(el).opacity},{opacity:0}],{duration:220,fill:'forwards'}));
-    const done=()=>{ v.remove(); document.documentElement.classList.remove('locked');
+    const done=()=>{ v.remove(); card.style.visibility=''; document.documentElement.classList.remove('locked');
       if(!quiet) card.querySelector('.s-cta').focus({preventScroll:true}); };
     if(RM||!onScreen){
       p.animate([{opacity:1},{opacity:0}],{duration:RM?1:300,fill:'forwards'});
@@ -1924,7 +1933,7 @@ function openMenu(card){
     const D=900, E='cubic-bezier(.55,0,.2,1)';
     const fly=p.animate(keys,{duration:D,delay:90,easing:E,fill:'forwards'});
     p.animate([{opacity:1,offset:0},{opacity:1,offset:.4999},{opacity:0,offset:.5},{opacity:0,offset:1}],{duration:D,delay:90,easing:E,fill:'forwards'});
-    const face=cardFace(card,a,base,v,'close',D,90,E); face.getAnimations()[0].finished.then(()=>{},()=>{});
+    const face=cardFace(card,a,base,v,'close',D,90,E); card.style.visibility='hidden';
     // 3) the backdrop collapses into the card, a gold ring closing in with it
     const cx=a.left+a.width/2, cy=a.top+a.height/2, R=Math.hypot(Math.max(cx,innerWidth-cx),Math.max(cy,innerHeight-cy))+20, r0=Math.min(a.width,a.height)*.42;
     bg.animate([{clipPath:`circle(${R}px at ${cx}px ${cy}px)`,opacity:getComputedStyle(bg).opacity},{clipPath:`circle(${r0}px at ${cx}px ${cy}px)`,opacity:.85,offset:.92},{clipPath:`circle(${r0}px at ${cx}px ${cy}px)`,opacity:0}],
