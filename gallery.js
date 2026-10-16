@@ -44,7 +44,7 @@ export const PRODUCE = [
   { file: 'produce-21.jpg', w: 1000, h: 1328, en: 'Artichokes, the first of spring',      el: 'Αγκινάρες, οι πρώτες της άνοιξης' },
   { file: 'produce-2.jpg', w: 1200, h: 904,  en: 'Over the coals, bone-in steaks, sea salt',     el: 'Στα κάρβουνα, μπριζόλες με κόκαλο, αλάτι θαλάσσης' },
   { file: 'produce-16.jpg', w: 1000, h: 1328, en: 'Sea bass, whole and fresh',                  el: 'Λαβράκι, ολόκληρο και φρέσκο' },
-  { file: 'produce-20.jpg', w: 1200, h: 904,  en: 'Monkfish, whole and fresh',            el: 'Πεσκανδρίτσα, ολόκληρη και φρέσκια' },
+  { file: 'produce-20.jpg', w: 1200, h: 904,  en: 'Monkfish heads, nothing goes to waste', el: 'Κεφάλια πεσκανδρίτσας, τίποτα δεν πάει χαμένο' },
   { file: 'produce-17.jpg', w: 1000, h: 1328, en: 'Strawberries & cherries, at their peak',     el: 'Φράουλες και κεράσια, στην καλύτερη στιγμή τους' },
   { file: 'produce-3.jpg', w: 1200, h: 900,  en: 'Sirloin, trimmed and portioned',               el: 'Κόντρα φιλέτο, καθαρισμένο και μοιρασμένο' },
   { file: 'produce-4.jpg', w: 1000, h: 1250, en: 'Parmigiano Reggiano, the whole wheel',         el: 'Παρμιτζάνο Ρετζάνο, ολόκληρο κεφάλι' },

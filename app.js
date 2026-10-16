@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=13';
-import * as GAL from './gallery.js?v=13';
-import * as SEA from './seasons.js?v=13';
+import { I18N } from './i18n.js?v=14';
+import * as GAL from './gallery.js?v=14';
+import * as SEA from './seasons.js?v=14';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -1280,6 +1280,8 @@ const MENU_RATIO=1055/1491;
   .dp{position:absolute;top:calc(100% + 10px);left:0;z-index:40;width:328px;max-width:calc(100vw - 32px);box-sizing:border-box;background:var(--paper);color:var(--olive);
     border-radius:18px;padding:16px 14px 10px;box-shadow:0 34px 70px -24px rgba(20,23,15,.6),0 0 0 1px rgba(184,145,79,.28);transform-origin:top left}
   .dp.dp-r{left:auto;right:0;transform-origin:top right}
+  .dp.up{top:auto;bottom:calc(100% + 10px);transform-origin:bottom left}.dp.dp-r.up{transform-origin:bottom right}
+  .cs.up{top:auto;bottom:calc(100% + 10px);transform-origin:bottom center}
   .dp.dp-sheet{position:fixed;top:auto;left:0;right:0;bottom:0;width:auto;max-width:none;border-radius:24px 24px 0 0;padding:10px 18px max(16px,calc(env(safe-area-inset-bottom) + 8px));z-index:131}
   .dp-sheet::before{content:"";display:block;width:40px;height:4px;border-radius:2px;background:rgba(32,37,26,.18);margin:0 auto 12px}
   .dp-scrim{position:fixed;inset:0;z-index:130;background:rgba(20,23,15,.55)}
@@ -1525,7 +1527,7 @@ function openMenu(card){
   plan.onclick=()=>{
     const msg=$('#f-msg'), txt=tr('mv.msg',{t:mTitle(menus[cur]),s:tr('sn.'+key)});
     if(msg&&(!msg.value.trim()||msg.value===msg.dataset.auto)){ msg.value=txt; msg.dataset.auto=txt; }
-    close(true); setTimeout(()=>goTo('#contact'),RM?0:420);
+    close(true); setTimeout(()=>goTo('#contact'),RM?40:740);
   };
   function key2(e){ if(e.key==='Escape') close(); else if(e.key==='ArrowRight') go(cur+1); else if(e.key==='ArrowLeft') go(cur-1);
     else if(e.key==='Tab'){ const f=[...v.querySelectorAll('button:not([disabled])')].filter(b=>b.offsetParent); if(!f.length) return;
@@ -1585,6 +1587,20 @@ form.addEventListener('reset',()=>{ dpSet(null,false); const m=$('#f-msg'); if(m
 dpBtn.addEventListener('click',()=>dp?dpClose(true):dpOpen());
 dpBtn.addEventListener('keydown',e=>{ if(e.key==='ArrowDown'&&!dp){ e.preventDefault(); dpOpen(); } });
 
+/* A popup opens downwards, or upwards when there isn't room below it on screen. */
+function fitPopup(panel,field){
+  const fr=field.getBoundingClientRect(), ph=panel.offsetHeight, below=innerHeight-fr.bottom-12, above=fr.top-70;
+  if(ph>below&&above>below){ panel.classList.add('up'); return true; } return false;
+}
+/* Popups (dropdowns, date picker) close if the page is scrolled underneath them — after a small,
+   deliberate scroll, so a tiny nudge or the browser settling doesn't shut them. */
+const SCROLL_CLOSE=56;
+function closeOnScroll(close){
+  let y0=scrollY, armed=false; const arm=setTimeout(()=>{ armed=true; y0=scrollY; },300);
+  const on=()=>{ if(armed&&Math.abs(scrollY-y0)>SCROLL_CLOSE) close(); };
+  addEventListener('scroll',on,{passive:true});
+  return ()=>{ clearTimeout(arm); removeEventListener('scroll',on); };
+}
 function dpOpen(){
   if(dp) return;
   if(typeof CS!=='undefined') CS.forEach(o=>csClose(o,false));
@@ -1678,17 +1694,18 @@ function dpOpen(){
   w.addEventListener('keydown',onKey);
   setTimeout(()=>document.addEventListener('pointerdown',onDown,true),0);
   build(0);
+  const up=!sheet&&fitPopup(w,dpBtn);
   dpBtn.setAttribute('aria-expanded','true');
   const EZ='cubic-bezier(.16,1,.3,1)';
   if(!RM){
     if(sheet){ scrim.animate([{opacity:0},{opacity:1}],{duration:380,fill:'backwards'}); w.animate([{transform:'translateY(100%)'},{transform:'none'}],{duration:520,easing:EZ}); }
-    else w.animate([{opacity:0,transform:'translateY(-10px) scale(.96)'},{opacity:1,transform:'none'}],{duration:420,easing:EZ});
+    else w.animate([{opacity:0,transform:`translateY(${up?10:-10}px) scale(.96)`},{opacity:1,transform:'none'}],{duration:420,easing:EZ});
   }
   (rove()||pBtn).focus({preventScroll:true});
-  dp={w,scrim,sheet,onDown};
+  dp={w,scrim,sheet,onDown,unScroll:closeOnScroll(()=>dpClose(false))};
 }
 function dpClose(refocus){
-  if(!dp) return; const {w,scrim,sheet,onDown}=dp; dp=null;
+  if(!dp) return; const {w,scrim,sheet,onDown,unScroll}=dp; dp=null; unScroll&&unScroll();
   document.removeEventListener('pointerdown',onDown,true);
   dpBtn.setAttribute('aria-expanded','false');
   const done=()=>{ w.remove(); scrim&&scrim.remove(); dpField.classList.remove('open'); };
@@ -1753,18 +1770,20 @@ function csOpen(o){
   if(sheet){ o.scrim=document.createElement('div'); o.scrim.className='dp-scrim'; o.scrim.onclick=()=>csClose(o,true); document.body.append(o.scrim,ul); }
   else { f.append(ul); f.classList.add('open'); }
   o.panel=ul; btn.setAttribute('aria-expanded','true'); setAct(Math.max(0,sel.selectedIndex));
+  const up=!sheet&&fitPopup(ul,btn);
   const EZ='cubic-bezier(.16,1,.3,1)';
   if(!RM){
     if(sheet){ o.scrim.animate([{opacity:0},{opacity:1}],{duration:380}); ul.animate([{transform:'translateY(100%)'},{transform:'none'}],{duration:520,easing:EZ}); }
-    else ul.animate([{opacity:0,transform:'translateY(-10px) scale(.97)'},{opacity:1,transform:'none'}],{duration:420,easing:EZ});
+    else ul.animate([{opacity:0,transform:`translateY(${up?10:-10}px) scale(.97)`},{opacity:1,transform:'none'}],{duration:420,easing:EZ});
     items.forEach((li,k)=>li.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'none'}],{duration:420,delay:80+k*40,easing:EZ,fill:'backwards'}));
   }
   ul.focus({preventScroll:true});
   o.down=e=>{ if(!ul.contains(e.target)&&!btn.contains(e.target)) csClose(o,false); };
   setTimeout(()=>document.addEventListener('pointerdown',o.down,true),0);
+  o.unScroll=closeOnScroll(()=>csClose(o,false));
 }
 function csClose(o,refocus){
-  if(!o.panel) return; const ul=o.panel, scrim=o.scrim; o.panel=null; o.scrim=null;
+  if(!o.panel) return; const ul=o.panel, scrim=o.scrim; o.panel=null; o.scrim=null; if(o.unScroll){ o.unScroll(); o.unScroll=null; }
   document.removeEventListener('pointerdown',o.down,true); o.btn.setAttribute('aria-expanded','false');
   const done=()=>{ ul.remove(); scrim&&scrim.remove(); o.f.classList.remove('open'); };
   if(RM) done();
