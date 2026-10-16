@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=29';
-import * as GAL from './gallery.js?v=29';
-import * as SEA from './seasons.js?v=29';
+import { I18N } from './i18n.js?v=30';
+import * as GAL from './gallery.js?v=30';
+import * as SEA from './seasons.js?v=30';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -1391,7 +1391,12 @@ function refreshSeasons(){
   });
 }
 buildSeasons();
-setTimeout(()=>(window.requestIdleCallback||(f=>f()))(()=>{ try{ Object.values(GROWSEQ).forEach(s=>{ loadImg('/'+s.sheet); if(s.end) loadImg('/'+s.end.sheet); }); Object.keys(GROWMAP).forEach(f=>{ loadImg('/'+f); loadImg('/'+GROWMAP[f].map); }); }catch(_){} }),2500);
+(function(){ // fetch the growth frames once the seasonal menus come near, so the opening never waits
+  const go=()=>{ try{ const vals=Object.values(GROWSEQ); vals.forEach(s=>loadImg('/'+s.sheet)); Object.keys(GROWMAP).forEach(f=>loadImg('/'+f));
+    setTimeout(()=>vals.forEach(s=>{ if(s.end) loadImg('/'+s.end.sheet); }),1500); }catch(_){} };
+  const sec=$('#occasions'); if(!sec||!('IntersectionObserver' in window)){ setTimeout(go,3000); return; }
+  const io=new IntersectionObserver(es=>{ if(es.some(e=>e.isIntersecting)){ io.disconnect(); go(); } },{rootMargin:'1200px 0px'}); io.observe(sec);
+})();
 $('#track').addEventListener('click',e=>{
   if(e.target.closest('.s-more')) return;
   const card=e.target.closest('.card.season'); if(!card||!(card._menus&&card._menus.length)) return;
@@ -1644,7 +1649,7 @@ const smoothstepJS=(a,b,x)=>{ const t=clamp((x-a)/(b-a)); return t*t*(3-2*t); };
    sprout, first leaves, bud, full plant — each stage dissolving into the next like a time-lapse,
    standing on the same spot in the soil. The last stage then settles into the menu's own drawing,
    which rises up from the ground, so it ends exactly as the menu.                                 */
-const GROWSEQ={'art-spring.webp':{"sheet": "grow-spring.webp", "cell": [357, 367], "cols": 9, "n": 45, "anchor": [186.59122807017545, 357.0], "stage": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6, 6.25, 6.5, 6.75, 7, 7.25, 7.5, 7.75, 8, 8.25, 8.5, 8.75, 9, 9.25, 9.5, 9.75, 10, 10.25, 10.5, 10.75, 11], "ground": [0.27, 0.8239], "k": 0.002222, "end": {"sheet": "grow-spring-end.webp", "cell": [450, 636], "cols": 5, "n": 13, "ground": [0.3018, 0.9071], "k": 0.0026667}},'art-autumn.webp':{"sheet": "grow-autumn.webp", "cell": [408, 403], "cols": 9, "n": 45, "anchor": [176.0, 365.0], "stage": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6, 6.25, 6.5, 6.75, 7, 7.25, 7.5, 7.75, 8, 8.25, 8.5, 8.75, 9, 9.25, 9.5, 9.75, 10, 10.25, 10.5, 10.75, 11], "ground": [0.42, 0.83], "k": 0.0021111, "end": {"sheet": "grow-autumn-end.webp", "cell": [450, 636], "cols": 5, "n": 13, "ground": [0.4307, 0.8656], "k": 0.0028889}}};
+const GROWSEQ={'art-spring.webp':{"sheet": "grow-spring.webp", "cell": [357, 367], "cols": 9, "n": 45, "anchor": [186.59122807017545, 357.0], "stage": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6, 6.25, 6.5, 6.75, 7, 7.25, 7.5, 7.75, 8, 8.25, 8.5, 8.75, 9, 9.25, 9.5, 9.75, 10, 10.25, 10.5, 10.75, 11], "ground": [0.27, 0.8239], "k": 0.002222, "end": {"sheet": "grow-spring-end.webp", "cell": [450, 636], "cols": 5, "n": 13, "ground": [0.3018, 0.9071], "k": 0.0026667}},'art-autumn.webp':{"sheet": "grow-autumn.webp", "cell": [608, 607], "cols": 9, "n": 45, "anchor": [262.0, 545.5], "stage": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6, 6.25, 6.5, 6.75, 7, 7.25, 7.5, 7.75, 8, 8.25, 8.5, 8.75, 9, 9.25, 9.5, 9.75, 10, 10.25, 10.5, 10.75, 11], "end": {"sheet": "grow-autumn-end.webp", "cell": [450, 636], "cols": 5, "n": 13, "ground": [0.4307, 0.8656], "k": 0.0019259}, "ground": [0.42, 0.83], "k": 0.0014074},'art-winter.webp':{"sheet": "grow-peach.webp", "cell": [427, 507], "cols": 9, "n": 45, "anchor": [19.0, 442.0], "stage": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6, 6.25, 6.5, 6.75, 7, 7.25, 7.5, 7.75, 8, 8.25, 8.5, 8.75, 9, 9.25, 9.5, 9.75, 10, 10.25, 10.5, 10.75, 11], "end": {"sheet": "grow-peach-winter-end.webp", "cell": [450, 636], "cols": 5, "n": 13, "ground": [0.4776, 0.7322], "k": 0.0015222}, "ground": [0.4776, 0.7322], "k": 0.0012482},'art-summer-2.webp':{"sheet": "grow-peach.webp", "cell": [427, 507], "cols": 9, "n": 45, "anchor": [19.0, 442.0], "stage": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6, 6.25, 6.5, 6.75, 7, 7.25, 7.5, 7.75, 8, 8.25, 8.5, 8.75, 9, 9.25, 9.5, 9.75, 10, 10.25, 10.5, 10.75, 11], "end": {"sheet": "grow-peach-lunch-end.webp", "cell": [450, 637], "cols": 5, "n": 13, "ground": [0.4765, 0.7428], "k": 0.0015222}, "ground": [0.4765, 0.7428], "k": 0.0012482},'art-summer.webp':{"sheet": "grow-peach.webp", "cell": [427, 507], "cols": 9, "n": 45, "anchor": [19.0, 442.0], "stage": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6, 6.25, 6.5, 6.75, 7, 7.25, 7.5, 7.75, 8, 8.25, 8.5, 8.75, 9, 9.25, 9.5, 9.75, 10, 10.25, 10.5, 10.75, 11], "end": {"sheet": "grow-peach-aegean-end.webp", "cell": [450, 636], "cols": 5, "n": 13, "ground": [0.5076, 0.6827], "k": 0.0015222}, "ground": [0.5076, 0.6827], "k": 0.0012482}};
 /* one moment of the growth: the morph frames are blended, so the plant moves continuously */
 function seqDraw(ctx,sheet,S,f,gx,gy,k,alpha=1){
   const [cw,ch]=S.cell, i0=Math.floor(f), fr=f-i0;
