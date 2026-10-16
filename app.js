@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=20';
-import * as GAL from './gallery.js?v=20';
-import * as SEA from './seasons.js?v=20';
+import { I18N } from './i18n.js?v=22';
+import * as GAL from './gallery.js?v=22';
+import * as SEA from './seasons.js?v=22';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -1391,6 +1391,7 @@ function refreshSeasons(){
   });
 }
 buildSeasons();
+setTimeout(()=>(window.requestIdleCallback||(f=>f()))(()=>{ try{ Object.values(GROWSEQ).forEach(s=>loadImg('/'+s.sheet)); Object.keys(GROWMAP).forEach(f=>{ loadImg('/'+f); loadImg('/'+GROWMAP[f].map); }); }catch(_){} }),2500);
 $('#track').addEventListener('click',e=>{
   if(e.target.closest('.s-more')) return;
   const card=e.target.closest('.card.season'); if(!card||!(card._menus&&card._menus.length)) return;
@@ -1558,7 +1559,7 @@ function growArtGL(paper,file,delay=0,quick=false){
     gl.enable(gl.BLEND); gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
     // a short time-lapse: the plant starts slowly, gathers pace and eases to rest; each fruit grows
     // from a small bud on its stalk to full size once the growth reaches it
-    const GROW=1900, FRUIT=1000;
+    const GROW=quick?3200:1900, FRUIT=quick?1700:1000;
     const ease=quick?(x=>1-Math.pow(1-x,2.2)):(x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2), eo=x=>1-Math.pow(1-x,3);
     const t0=performance.now()+delay, fv=new Float32Array(24), fs=F.map(()=>-1);
     let doneAt=0;
@@ -1586,7 +1587,14 @@ const smoothstepJS=(a,b,x)=>{ const t=clamp((x-a)/(b-a)); return t*t*(3-2*t); };
    sprout, first leaves, bud, full plant — each stage dissolving into the next like a time-lapse,
    standing on the same spot in the soil. The last stage then settles into the menu's own drawing,
    which rises up from the ground, so it ends exactly as the menu.                                 */
-const GROWSEQ={'art-spring.webp':{"sheet": "grow-spring.webp", "frames": [[0, 78, 194, 32.3, 189], [82, 117, 194, 38.6, 192], [203, 94, 194, 34.7, 188], [301, 213, 194, 93.0, 189], [518, 199, 303, 102.2, 302], [721, 219, 303, 128.2, 301], [944, 270, 303, 123.8, 302], [1218, 225, 303, 76.7, 301], [1447, 296, 350, 146.8, 344], [1747, 272, 350, 118.2, 345], [2023, 298, 350, 135.9, 346], [2325, 329, 350, 178.6, 349]], "ground": [0.27, 0.8239], "k": 0.002222}};
+const GROWSEQ={'art-spring.webp':{"sheet": "grow-spring.webp", "cell": [357, 367], "cols": 9, "n": 45, "anchor": [186.59122807017545, 357.0], "stage": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6, 6.25, 6.5, 6.75, 7, 7.25, 7.5, 7.75, 8, 8.25, 8.5, 8.75, 9, 9.25, 9.5, 9.75, 10, 10.25, 10.5, 10.75, 11], "ground": [0.27, 0.8239], "k": 0.002222}};
+/* one moment of the growth: the morph frames are blended, so the plant moves continuously */
+function seqDraw(ctx,sheet,S,f,gx,gy,k,alpha=1){
+  const [cw,ch]=S.cell, i0=Math.floor(f), fr=f-i0;
+  const one=(i,al)=>{ if(al<=.003||i<0||i>=S.n) return; const r=Math.floor(i/S.cols), c=i%S.cols;
+    ctx.globalAlpha=al*alpha; ctx.drawImage(sheet,c*cw,r*ch,cw,ch,gx-S.anchor[0]*k,gy-S.anchor[1]*k,cw*k,ch*k); };
+  one(i0,1-fr); one(i0+1,fr); ctx.globalAlpha=1;
+}
 function growSeq(paper,file,delay=0){
   const art=paper.querySelector('.mp-art'), S=GROWSEQ[file];
   if(!art||RM||!S) return null;
@@ -1599,41 +1607,31 @@ function growSeq(paper,file,delay=0){
     if(!w||!h){ finish(); return res(); }
     cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
     const W=cv.width, H=cv.height, gx=S.ground[0]*W, gy=S.ground[1]*H, k=S.k*W;
-    const F=S.frames, n=F.length;
-    // timing: early stages pass a little quicker, the plant lingers as it matures
-    const hold=i=>55+i*6, fade=115;
-    const starts=[]; let acc=0; for(let i=0;i<n;i++){ starts.push(acc); acc+=hold(i)+fade; }
-    const GROW=acc-fade, SETTLE=520, t0=performance.now()+delay;
-    const sm=x=>x*x*(3-2*x);
-    const draw=(i,alpha,breathe)=>{ if(alpha<=0) return; const [sx,fw,fh,ax,ay]=F[i], sc=k*(1+breathe);
-      ctx.globalAlpha=alpha; ctx.drawImage(sheet,sx,0,fw,fh,gx-ax*sc,gy-ay*sc,fw*sc,fh*sc); };
-    // the menu's own drawing, tinted like the page, for the final settle
     const tint=document.createElement('canvas'); tint.width=W; tint.height=H;
     const tc=tint.getContext('2d'); tc.drawImage(artImg,0,0,W,H); tc.globalCompositeOperation='source-in'; tc.fillStyle='#a9a487'; tc.fillRect(0,0,W,H);
     const wash=document.createElement('canvas'); wash.width=W; wash.height=H; const wc=wash.getContext('2d');
+    // a calm time-lapse: ~5s from seed to full plant, then the menu's drawing settles in
+    const GROW=5000, SETTLE=900, last=S.n-1, t0=performance.now()+delay;
+    const pace=p=>1-Math.pow(1-p,1.25);           // even, unhurried growth that eases as the plant matures
+    const sm=x=>x*x*(3-2*x);
     const frame=now=>{
-      const ms=now-t0; if(ms<0){ requestAnimationFrame(frame); return; }
+      const ms=Math.max(0,now-t0);
       ctx.clearRect(0,0,W,H);
-      const fadeOut=ms>GROW?sm(clamp((ms-GROW)/SETTLE)):0;
-      for(let i=0;i<n;i++){
-        const s0=starts[i], e0=s0+hold(i)+fade;
-        const fin=i===0?1:sm(clamp((ms-s0)/fade)), fo=i===n-1?0:sm(clamp((ms-e0-fade*.35)/fade));
-        const a=fin*(1-fo)*(i===n-1?1-fadeOut:1); if(a<=.002) continue;
-        const life=clamp((ms-s0)/(hold(i)+fade*2));
-        draw(i,a,.035*sm(life));                  // each stage keeps swelling slightly while it's shown
-      }
-      ctx.globalAlpha=1;
-      if(fadeOut>0){   // the menu's own drawing washes up from the soil as the last stage dissolves into it
-        const p=fadeOut, edge=H*(1.15-1.5*p), band=H*.35;
+      const p=clamp(ms/GROW), f=pace(p)*last, settle=ms>GROW?sm(clamp((ms-GROW)/SETTLE)):0;
+      seqDraw(ctx,sheet,S,f,gx,gy,k*(1+.03*p),(ms<180?sm(ms/180):1)*(1-settle));
+      if(settle>0){
+        const edge=H*(1.15-1.5*settle), band=H*.35;
         wc.globalCompositeOperation='source-over'; wc.clearRect(0,0,W,H); wc.drawImage(tint,0,0);
         const g=wc.createLinearGradient(0,edge,0,edge+band); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,1)');
         wc.globalCompositeOperation='destination-in'; wc.fillStyle=g; wc.fillRect(0,0,W,H);
-        ctx.globalAlpha=Math.min(1,p*1.6); ctx.drawImage(wash,0,0); ctx.globalAlpha=1; }
+        ctx.globalAlpha=Math.min(1,settle*1.6); ctx.drawImage(wash,0,0); ctx.globalAlpha=1; }
       if(ms<GROW+SETTLE) requestAnimationFrame(frame); else { finish(); res(); }
     };
+    frame(performance.now());                        // first frame straight away: the seed is there as the menu opens
     requestAnimationFrame(frame);
   })).catch(e=>{ console.warn('grow',e); finish(); });
 }
+
 /* ---- seed to seedling, then the menu's own plant grows out of it ----
    For plants grown from seed (the squash): the seed, its root, the shoot and the first two seed
    leaves are drawn stage by stage (the same pencil stages as the artichoke), standing where the
@@ -1647,34 +1645,22 @@ function growSprout(paper,file,delay=0){
   const cv=document.createElement('canvas'); cv.className='mp-grow'; cv.setAttribute('aria-hidden','true');
   const ctx=cv.getContext('2d'); if(!ctx) return null;
   art.style.opacity='0'; paper.prepend(cv);
-  const STAGES=4, hold=i=>70+i*10, fade=130;
-  let lead=0; for(let i=0;i<STAGES;i++) lead+=hold(i)+fade; lead-=fade;
-  const OUT=700;                       // seedling dissolves as the plant takes over
+  const END=S.stage.indexOf(3);                  // seed → root → shoot → two seed leaves
+  const LEAD=2200, OUT=900, HAND=LEAD-500;
   return loadImg('/'+S.sheet).then(sheet=>new Promise(res=>{
     const w=art.offsetWidth, h=art.offsetHeight, dpr=Math.min(2,devicePixelRatio||1);
     if(!w||!h){ art.style.opacity=''; cv.remove(); return res(); }
     cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
-    const W=cv.width, H=cv.height, gx=P.ground[0]*W, gy=P.ground[1]*H, k=P.k*W, F=S.frames;
-    const starts=[]; let acc=0; for(let i=0;i<STAGES;i++){ starts.push(acc); acc+=hold(i)+fade; }
-    const sm=x=>x*x*(3-2*x), t0=performance.now()+delay;
-    let handed=false;
+    const W=cv.width, H=cv.height, gx=P.ground[0]*W, gy=P.ground[1]*H, k=P.k*W;
+    const sm=x=>x*x*(3-2*x), t0=performance.now()+delay; let handed=false;
     const frame=now=>{
-      const ms=now-t0; if(ms<0){ requestAnimationFrame(frame); return; }
-      ctx.clearRect(0,0,W,H);
-      const out=sm(clamp((ms-lead)/OUT));
-      for(let i=0;i<STAGES;i++){
-        const s0=starts[i], e0=s0+hold(i)+fade;
-        const fin=i===0?sm(clamp(ms/160)):sm(clamp((ms-s0)/fade)), fo=i===STAGES-1?out:sm(clamp((ms-e0-fade*.35)/fade));
-        const al=fin*(1-fo); if(al<=.002) continue;
-        const [sx,fw,fh,ax,ay]=F[i], sc=k*(1+.04*sm(clamp((ms-s0)/(hold(i)+fade*2))));
-        ctx.globalAlpha=al; ctx.drawImage(sheet,sx,0,fw,fh,gx-ax*sc,gy-ay*sc,fw*sc,fh*sc);
-      }
-      ctx.globalAlpha=1;
-      if(!handed&&ms>=lead-420){ handed=true; art.style.opacity='';
-        growArtGL(paper,file,0,true)||growArt(paper,file,0); }
-      if(ms<lead+OUT) requestAnimationFrame(frame); else { cv.remove(); res(); }
+      const ms=Math.max(0,now-t0); ctx.clearRect(0,0,W,H);
+      const p=clamp(ms/LEAD), out=sm(clamp((ms-HAND)/OUT));
+      seqDraw(ctx,sheet,S,(1-Math.pow(1-p,1.3))*END,gx,gy,k,(ms<180?sm(ms/180):1)*(1-out));
+      if(!handed&&ms>=HAND){ handed=true; art.style.opacity=''; growArtGL(paper,file,0,true)||growArt(paper,file,0); }
+      if(ms<HAND+OUT) requestAnimationFrame(frame); else { cv.remove(); res(); }
     };
-    requestAnimationFrame(frame);
+    frame(performance.now()); requestAnimationFrame(frame);
   })).catch(e=>{ console.warn('grow',e); art.style.opacity=''; cv.remove(); });
 }
 function growArtAny(paper,file,delay){ return growSprout(paper,file,delay)||growSeq(paper,file,delay)||growArtGL(paper,file,delay)||growArt(paper,file,delay); }
@@ -1716,7 +1702,7 @@ function openMenu(card){
       if(anim&&!RM) sl.s.animate([{transform:sl.s.style.transform||'none'},{transform:to}],{duration:560,easing:'cubic-bezier(.16,1,.3,1)'});
       sl.s.style.transform=to; }); };
   function go(k){ k=clamp(k,0,N-1); const was=cur; cur=k; place(0,was!==k||dragX!==0); dragX=0; setUI();
-    const sl=slides[cur]; if(!sl.seen){ sl.seen=true; growArtAny(sl.paper,menus[cur].art,80); revealMenu(sl.paper,120); } }
+    const sl=slides[cur]; if(!sl.seen){ sl.seen=true; growArtAny(sl.paper,menus[cur].art,0); revealMenu(sl.paper,120); } }
   let ds=null, dragged=false;
   rail.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse'&&e.button!==0) return;
     ds={id:e.pointerId,x:e.clientX,y:e.clientY,t:performance.now(),mode:''}; dragged=false; });
@@ -1784,7 +1770,7 @@ function openMenu(card){
   first.paper.animate([{opacity:0,transform:'translate3d(0,24px,0) scale(.98)'},{opacity:1,transform:'none'}],{duration:RM?1:480,delay:RM?0:140,easing:E1,fill:'backwards'});
   if(srcM&&!RM) srcM.animate([{opacity:.6},{opacity:0}],{duration:260,fill:'forwards'}).finished.then(()=>srcM.getAnimations().forEach(x=>x.cancel()),()=>{});
   if(RM) revealMenu(first.paper,0);
-  else { growArtAny(first.paper,menus[0].art,300); revealMenu(first.paper,360); }
+  else { growArtAny(first.paper,menus[0].art,0); revealMenu(first.paper,360); }
   v.querySelector('.mv-x').focus({preventScroll:true});
 
   /* closing: the text lifts away, then the page itself glides back down into its card, shrinking
