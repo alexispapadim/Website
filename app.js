@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=24';
-import * as GAL from './gallery.js?v=24';
-import * as SEA from './seasons.js?v=24';
+import { I18N } from './i18n.js?v=25';
+import * as GAL from './gallery.js?v=25';
+import * as SEA from './seasons.js?v=25';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -1391,7 +1391,7 @@ function refreshSeasons(){
   });
 }
 buildSeasons();
-setTimeout(()=>(window.requestIdleCallback||(f=>f()))(()=>{ try{ Object.values(GROWSEQ).forEach(s=>loadImg('/'+s.sheet)); Object.keys(GROWMAP).forEach(f=>{ loadImg('/'+f); loadImg('/'+GROWMAP[f].map); }); }catch(_){} }),2500);
+setTimeout(()=>(window.requestIdleCallback||(f=>f()))(()=>{ try{ Object.values(GROWSEQ).forEach(s=>{ loadImg('/'+s.sheet); if(s.end) loadImg('/'+s.end.sheet); }); Object.keys(GROWMAP).forEach(f=>{ loadImg('/'+f); loadImg('/'+GROWMAP[f].map); }); }catch(_){} }),2500);
 $('#track').addEventListener('click',e=>{
   if(e.target.closest('.s-more')) return;
   const card=e.target.closest('.card.season'); if(!card||!(card._menus&&card._menus.length)) return;
@@ -1559,7 +1559,8 @@ function growArtGL(paper,file,delay=0,quick=false){
     gl.enable(gl.BLEND); gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
     // a short time-lapse: the plant starts slowly, gathers pace and eases to rest; each fruit grows
     // from a small bud on its stalk to full size once the growth reaches it
-    const GROW=quick?3200:1900, FRUIT=quick?1700:1000;
+    const slow=quick||file==='art-autumn.webp';
+    const GROW=slow?3600:1900, FRUIT=slow?1900:1000;
     const ease=quick?(x=>1-Math.pow(1-x,2.2)):(x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2), eo=x=>1-Math.pow(1-x,3);
     const t0=performance.now()+delay, fv=new Float32Array(24), fs=F.map(()=>-1);
     let doneAt=0;
@@ -1587,7 +1588,7 @@ const smoothstepJS=(a,b,x)=>{ const t=clamp((x-a)/(b-a)); return t*t*(3-2*t); };
    sprout, first leaves, bud, full plant — each stage dissolving into the next like a time-lapse,
    standing on the same spot in the soil. The last stage then settles into the menu's own drawing,
    which rises up from the ground, so it ends exactly as the menu.                                 */
-const GROWSEQ={'art-spring.webp':{"sheet": "grow-spring.webp", "cell": [357, 367], "cols": 9, "n": 45, "anchor": [186.59122807017545, 357.0], "stage": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6, 6.25, 6.5, 6.75, 7, 7.25, 7.5, 7.75, 8, 8.25, 8.5, 8.75, 9, 9.25, 9.5, 9.75, 10, 10.25, 10.5, 10.75, 11], "ground": [0.27, 0.8239], "k": 0.002222}};
+const GROWSEQ={'art-spring.webp':{"sheet": "grow-spring.webp", "cell": [357, 367], "cols": 9, "n": 45, "anchor": [186.59122807017545, 357.0], "stage": [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5, 5.25, 5.5, 5.75, 6, 6.25, 6.5, 6.75, 7, 7.25, 7.5, 7.75, 8, 8.25, 8.5, 8.75, 9, 9.25, 9.5, 9.75, 10, 10.25, 10.5, 10.75, 11], "ground": [0.27, 0.8239], "k": 0.002222, "end": {"sheet": "grow-spring-end.webp", "cell": [450, 636], "cols": 5, "n": 13, "ground": [0.3018, 0.9071], "k": 0.0026667}}};
 /* one moment of the growth: the morph frames are blended, so the plant moves continuously */
 function seqDraw(ctx,sheet,S,f,gx,gy,k,alpha=1){
   const [cw,ch]=S.cell, i0=Math.floor(f), fr=f-i0;
@@ -1602,33 +1603,38 @@ function growSeq(paper,file,delay=0){
   const ctx=cv.getContext('2d'); if(!ctx) return null;
   art.style.opacity='0'; paper.prepend(cv);
   const finish=()=>{ art.style.opacity=''; cv.remove(); };
-  return Promise.all([loadImg('/'+S.sheet),loadImg('/'+file)]).then(([sheet,artImg])=>new Promise(res=>{
+  const E=S.end;
+  return Promise.all([loadImg('/'+S.sheet),E?loadImg('/'+E.sheet):null]).then(([sheet,endSheet])=>new Promise(res=>{
     const w=art.offsetWidth, h=art.offsetHeight, dpr=Math.min(2,devicePixelRatio||1);
     if(!w||!h){ finish(); return res(); }
     cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
-    const W=cv.width, H=cv.height, gx=S.ground[0]*W, gy=S.ground[1]*H, k=S.k*W;
-    const tint=document.createElement('canvas'); tint.width=W; tint.height=H;
-    const tc=tint.getContext('2d'); tc.drawImage(artImg,0,0,W,H); tc.globalCompositeOperation='source-in'; tc.fillStyle='#a9a487'; tc.fillRect(0,0,W,H);
-    const wash=document.createElement('canvas'); wash.width=W; wash.height=H; const wc=wash.getContext('2d');
-    // a calm time-lapse: ~5s from seed to full plant, then the menu's drawing settles in
-    const GROW=5000, SETTLE=900, last=S.n-1, t0=performance.now()+delay;
-    const pace=p=>1-Math.pow(1-p,1.25);           // even, unhurried growth that eases as the plant matures
-    const sm=x=>x*x*(3-2*x);
+    const W=cv.width, H=cv.height;
+    /* 1. seed → full plant (~5s), the camera easing in over the last stretch so the plant comes to
+          stand exactly where the menu's artichoke is;
+       2. the plant then reshapes, frame by frame, into the menu's own drawing (~1.6s);
+       3. the crisp menu drawing takes over invisibly. */
+    const GROW=5000, ZOOM=1500, MORPH=1600, HAND=320, last=S.n-1, t0=performance.now()+delay;
+    const pace=p=>1-Math.pow(1-p,1.25), sm=x=>x*x*(3-2*x), eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+    const g0=S.ground, k0=S.k, g1=E?E.ground:g0, k1=E?E.k:k0;
     const frame=now=>{
-      const ms=Math.max(0,now-t0);
-      ctx.clearRect(0,0,W,H);
-      const p=clamp(ms/GROW), f=pace(p)*last, settle=ms>GROW?sm(clamp((ms-GROW)/SETTLE)):0;
-      seqDraw(ctx,sheet,S,f,gx,gy,k*(1+.03*p),(ms<180?sm(ms/180):1)*(1-settle));
-      if(settle>0){
-        const edge=H*(1.15-1.5*settle), band=H*.35;
-        wc.globalCompositeOperation='source-over'; wc.clearRect(0,0,W,H); wc.drawImage(tint,0,0);
-        const g=wc.createLinearGradient(0,edge,0,edge+band); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,1)');
-        wc.globalCompositeOperation='destination-in'; wc.fillStyle=g; wc.fillRect(0,0,W,H);
-        ctx.globalAlpha=Math.min(1,settle*1.6); ctx.drawImage(wash,0,0); ctx.globalAlpha=1; }
-      if(ms<GROW+SETTLE) requestAnimationFrame(frame); else { finish(); res(); }
+      const ms=Math.max(0,now-t0); ctx.clearRect(0,0,W,H);
+      if(ms<GROW+120||!E){
+        const p=clamp(ms/GROW), z=eio(clamp((ms-(GROW-ZOOM))/ZOOM));
+        const gx=(g0[0]+(g1[0]-g0[0])*z)*W, gy=(g0[1]+(g1[1]-g0[1])*z)*H, k=(k0+(k1-k0)*z)*W;
+        const out=E?sm(clamp((ms-GROW)/120)):0;
+        seqDraw(ctx,sheet,S,pace(p)*last,gx,gy,k,(ms<180?sm(ms/180):1)*(1-out));
+      }
+      if(E&&ms>=GROW){
+        const q=clamp((ms-GROW)/MORPH), f=eio(q)*(E.n-1), i0=Math.floor(f), fr=f-i0, [cw,ch]=E.cell;
+        const one=(i,al)=>{ if(al<=.003||i>=E.n) return; const r=Math.floor(i/E.cols), c=i%E.cols;
+          ctx.globalAlpha=al; ctx.drawImage(endSheet,c*cw,r*ch,cw,ch,0,0,W,H); };
+        const fadeIn=sm(clamp((ms-GROW)/120)), handOut=sm(clamp((ms-GROW-MORPH)/HAND));
+        ctx.save(); ctx.globalAlpha=1; one(i0,(1-fr)*fadeIn*(1-handOut)); one(i0+1,fr*fadeIn*(1-handOut)); ctx.restore();
+        if(ms>=GROW+MORPH&&art.style.opacity==='0'){ art.style.opacity=''; art.animate([{opacity:0},{opacity:.78}],{duration:HAND,easing:'ease'}); }
+      }
+      if(ms<GROW+(E?MORPH+HAND:0)) requestAnimationFrame(frame); else { finish(); res(); }
     };
-    frame(performance.now());                        // first frame straight away: the seed is there as the menu opens
-    requestAnimationFrame(frame);
+    frame(performance.now()); requestAnimationFrame(frame);
   })).catch(e=>{ console.warn('grow',e); finish(); });
 }
 
@@ -1638,7 +1644,7 @@ function growSeq(paper,file,delay=0){
    plant meets the soil. As the seed leaves open, the menu's drawing takes over and grows up out of
    the seedling — vine, leaves and tendrils unfurling, the fruit swelling from the ground — ending
    exactly on the menu.                                                                             */
-const SPROUT={'art-autumn.webp':{ground:[.24,.865],k:1.5/900}};
+const SPROUT={};   // (the squash now grows from its own drawing; a drawn growth sheet can be added here later)
 function growSprout(paper,file,delay=0){
   const art=paper.querySelector('.mp-art'), P=SPROUT[file], S=GROWSEQ['art-spring.webp'];
   if(!art||RM||!P||!S||!GROWMAP[file]) return null;
