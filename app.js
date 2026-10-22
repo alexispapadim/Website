@@ -1,8 +1,8 @@
-import { I18N } from './i18n.js?v=42';
-import * as GAL from './gallery.js?v=42';
-import * as SEA from './seasons.js?v=42';
-import { CONFIG, LEGAL_KEYS } from './details.js?v=42';
-import * as CU from './curtain.js?v=42';
+import { I18N } from './i18n.js?v=43';
+import * as GAL from './gallery.js?v=43';
+import * as SEA from './seasons.js?v=43';
+import { CONFIG, LEGAL_KEYS } from './details.js?v=43';
+import * as CU from './curtain.js?v=43';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -94,7 +94,7 @@ function placeInd(){
         from one alphabet to the other, then the curtain lifts away and the new text cascades in ---- */
 const LNAME={en:'English',el:'Ελληνικά'};
 const EASE_OUT='cubic-bezier(.16,1,.3,1)', wait=CU.wait;
-function cascadeIn(){
+function cascadeIn(base=0){
   // Only animate text that is actually visible right now, and only up to its current opacity —
   // so things the scroll scenes are keeping hidden (e.g. the hero tagline) never flash.
   const effOpacity=el=>{ let o=1; for(let n=el;n&&n.nodeType===1;n=n.parentElement){ const cs=getComputedStyle(n);
@@ -110,14 +110,18 @@ function cascadeIn(){
     vis.push({el,o:parseFloat(getComputedStyle(el).opacity)||1});
   }
   vis.sort((a,b)=>a.el.getBoundingClientRect().top-b.el.getBoundingClientRect().top);
-  vis.forEach(({el,o},i)=>el.animate(
-    [{opacity:0,transform:'translate3d(0,34px,0)',filter:'blur(8px)'},{opacity:o,transform:'none',filter:'blur(0)'}],
-    {duration:850,delay:120+i*55,easing:EASE_OUT,fill:'backwards'}));
+  // hide them straight away with a plain style: a new animation can take a frame or two to apply,
+  // and with the curtain already lifting that would let the old text show for a moment
+  vis.forEach(({el,o},i)=>{ const prev=el.style.opacity; el.style.opacity='0';
+    const an=el.animate(
+      [{opacity:0,transform:'translate3d(0,34px,0)',filter:'blur(8px)'},{opacity:o,transform:'none',filter:'blur(0)'}],
+      {duration:850,delay:base+120+i*55,easing:EASE_OUT,fill:'backwards'});
+    an.ready.then(()=>{ if(el.style.opacity==='0') el.style.opacity=prev; }); });
 }
 function switchLang(l){
   if(l===lang||CU.busy) return;
   $$('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===l)); placeInd();
-  CU.swap({word:LNAME[lang],toWord:LNAME[l],from:LNAME[lang],to:LNAME[l],change:()=>setLang(l),onLift:cascadeIn});
+  CU.swap({word:LNAME[lang],toWord:LNAME[l],from:LNAME[lang],to:LNAME[l],change:()=>setLang(l),onLift:()=>cascadeIn(230)});
 }
 $$('.lang button').forEach(b=>b.addEventListener('click',()=>switchLang(b.dataset.lang)));
 
@@ -486,10 +490,10 @@ async function homecoming(link){
   await wait(520);
   wrapEl.remove(); homeBusy=false;
 }
-// His story lives on its own page: the dark veil closes over this page, and the About page opens out of it
+// His story lives on its own page: the curtain closes over this page, and the About page opens out of it
 document.addEventListener('click',e=>{
   const a=e.target.closest('a[data-about]'); if(!a||RM||e.defaultPrevented||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey) return;
-  e.preventDefault(); veil.classList.add('on'); setTimeout(()=>{ location.href=a.href; },520);
+  e.preventDefault(); const T=I18N[lang]; CU.leaveTo(a.href,{word:T['tr.story'],from:T['tr.home'],to:T['tr.story']});
 });
 addEventListener('pageshow',e=>{ if(e.persisted) veil.classList.remove('on'); });
 document.addEventListener('click',e=>{
@@ -2119,4 +2123,4 @@ if(landHash){history.scrollRestoration='manual';goTo(landHash,true)}
 if(landLegal){try{history.replaceState(null,'',location.pathname+location.search)}catch(_){} legal.open(initHash.slice(1))}
 const arrived=CU.arrival();   // came from the About page through the curtain: it lifts once we're in place
 const fontsIn=(document.fonts?document.fonts.ready:Promise.resolve()).then(()=>{layout();tick();if(landHash)goTo(landHash,true)});
-if(arrived) Promise.race([fontsIn,wait(2500)]).then(()=>wait(200)).then(()=>{ if(landHash) goTo(landHash,true); CU.lift(cascadeIn); });
+if(arrived) Promise.race([fontsIn,wait(2500)]).then(()=>wait(200)).then(()=>{ if(landHash) goTo(landHash,true); CU.lift(()=>cascadeIn(230)); });
