@@ -130,7 +130,7 @@ export const SEASONS = {
     ]},
   ]},
   events: { menus: [
-    { en: 'Canapés', el: 'Καναπεδάκια', courses: [
+    { art: 'art-events.webp', en: 'Canapés', el: 'Καναπεδάκια', courses: [
       course('', '',
         d('Lemon, ricotta and pea tart', 'Ταρτάκι λεμονιού, ρικότας και αρακά'),
         d('Courgette tart | bell pepper ragù and basil', 'Ταρτάκι κολοκυθιού | ραγού πιπεριάς και βασιλικός'),
@@ -141,7 +141,7 @@ export const SEASONS = {
         d('Lemon tart', 'Ταρτάκι λεμονιού'),
         d('Fig leaf custard tart', 'Ταρτάκι κρέμας με φύλλο συκιάς')),
     ]},
-    { en: 'A Japanese Supper', el: 'Ένα ιαπωνικό δείπνο', courses: [
+    { art: 'art-events.webp', en: 'A Japanese Supper', el: 'Ένα ιαπωνικό δείπνο', courses: [
       course('From past catering events', 'Από προηγούμενες εκδηλώσεις catering',
         d('Miso soup | tofu and spring onion', 'Σούπα μίσο | τόφου και φρέσκο κρεμμυδάκι'),
         d('Japanese Nobu salad', 'Ιαπωνική σαλάτα Nobu'),
