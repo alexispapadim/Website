@@ -15,6 +15,8 @@ The QR code on his business card brings people here to send an enquiry.
 | `i18n.js` | All the site text in English and Greek |
 | `gallery.js` | The list of food photos for the gallery |
 | `food-1.jpg` … `food-4.jpg` | The gallery photos |
+| `sm/` | Light, phone-sized copies of the gallery photos (made by `tools/small-photos.py`) |
+| `fonts/` | The site's fonts, served from the site itself (SIL Open Font License, see `fonts/OFL.txt`) |
 | `alexis.jpg` | His portrait (used for Google and as a fallback) |
 | `alexis-cut.webp` | His portrait cut out of the background (for the chef scene) |
 | `alexis-bg.jpg` | The studio backdrop behind him in the chef scene |
@@ -24,7 +26,7 @@ The QR code on his business card brings people here to send an enquiry.
 | `og.JPG`, `apple-touch-icon.PNG` | The image shown when the link is shared, and the phone home-screen icon |
 | `worker.js` | The enquiry backend (`/api/enquiry`), plus the pre-rendered Greek page at `/el/` |
 | `wrangler.jsonc` | Cloudflare settings: project name, domains and email addresses |
-| `_headers` | Security headers for the website |
+| `_headers` | Security headers and browser caching for the website |
 | `.assetsignore` | Keeps `worker.js`, `wrangler.jsonc` and this README from being published |
 
 ## What the site does
@@ -40,7 +42,7 @@ The QR code on his business card brings people here to send an enquiry.
   - `#cookies` — Cookies
   - `#terms` — Terms
   - `#legal` — Legal notice (business details, per Π.Δ. 131/2003)
-- **No tracking cookies, so no cookie banner.** Fonts come from Bunny Fonts, an EU host, instead of Google Fonts.
+- **No tracking cookies, so no cookie banner.** Fonts are served from the site itself (`/fonts`), so no third party sees visitors.
 - **Enquiry form:**
   - Alexis gets a designed enquiry email: a summary of the date, guests, location and occasion, their message, and one-tap Reply, WhatsApp and Call buttons.
   - The visitor gets a confirmation email from `alexis@papadimitriou.uk` in their language.
@@ -116,6 +118,14 @@ The settings now come from `wrangler.jsonc`.
    - The test email address should get the confirmation.
 3. If anything fails, check **Workers & Pages → website → Observability / Logs**.
 
+## Loading on slow connections
+
+- Fonts come from the site itself and the two used first are preloaded, so text appears without waiting on another server.
+- If the scripts take a while (slow mobile data), the home page shows the AP monogram with a travelling gold light until it is ready, and the About page keeps its opening veil closed until then.
+- Gallery photos load only as you scroll near them, as light phone-sized copies, with a soft band of light across each frame until the photo arrives. In the full-screen viewer each photo sharpens from the light copy to the full one.
+- The menu drawings load only when the menus come near. On a slow or data-saving connection (as reported by Chrome and Android), the frame-by-frame growth animations, several MB, are skipped and the lighter drawing animation is used.
+- Browsers keep fonts for a year and everything else for a day, refreshing it in the background. Bump `?v=N` after changing scripts or styles, as before.
+
 ## Adding food photos (the "From the kitchen" gallery)
 
 1. **Upload the photo to GitHub**, e.g. `food-1.jpg`.
@@ -128,6 +138,7 @@ The settings now come from `wrangler.jsonc`.
 3. **Commit.** The gallery section appears automatically once there's at least one photo.
    - It shows as a two-column grid on phones and three columns on desktop.
    - Tapping a photo opens it full screen; swipe or use the arrows to browse.
+4. **Optional, for speed:** run `python3 tools/small-photos.py` (or ask Claude to) to make the phone-sized copy in `sm/`. The grid loads those copies, which are about three times lighter. Without one, the photo still shows; it just loads the full file.
 
 His portrait is shown in the chef scene using `alexis-cut.webp` (him, cut out) and `alexis-bg.jpg` (the backdrop). To change the portrait, send a new photo to be cut out again.
 

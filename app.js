@@ -1,13 +1,15 @@
-import { I18N } from './i18n.js?v=41';
-import * as GAL from './gallery.js?v=41';
-import * as SEA from './seasons.js?v=41';
-import { CONFIG, LEGAL_KEYS } from './details.js?v=41';
-import * as CU from './curtain.js?v=41';
+import { I18N } from './i18n.js?v=42';
+import * as GAL from './gallery.js?v=42';
+import * as SEA from './seasons.js?v=42';
+import { CONFIG, LEGAL_KEYS } from './details.js?v=42';
+import * as CU from './curtain.js?v=42';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 if (RM) document.documentElement.classList.add('rm');
+// a slow or data-saving connection (Chrome and Android tell us; other browsers count as fast)
+const SLOW=(()=>{ try{ const c=navigator.connection; return !!c&&(!!c.saveData||/2g|3g/.test(c.effectiveType||'')); }catch(_){ return false; } })();
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
 const seg=(p,a,b)=>clamp((p-a)/(b-a));
 const ease=t=>1-Math.pow(1-t,3);
@@ -206,6 +208,15 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
   .sh-frame:focus-visible{outline:2px solid #d6b679;outline-offset:4px}
   .sh-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;will-change:transform}
   .sh-bw{filter:grayscale(1) contrast(.92) brightness(.5) sepia(.18)}
+  /* still loading (slow connection): a soft band of warm light drifts across the empty frame, then the photo fades in */
+  .sh-frame img{transition:opacity .9s ease}
+  .sh-frame.ld img{opacity:0}
+  .sh-frame::before,.vw-slide.ld img{background:linear-gradient(100deg,transparent 35%,rgba(214,182,121,.09) 50%,transparent 65%) 0 0/300% 100% no-repeat,#12140e}
+  .sh-frame::before{content:"";position:absolute;inset:0;opacity:0;transition:opacity .6s ease}
+  .sh-frame.ld::before{opacity:1;animation:shLight 1.9s cubic-bezier(.45,0,.55,1) infinite}
+  .vw-slide.ld img{animation:shLight 1.9s cubic-bezier(.45,0,.55,1) infinite}
+  @keyframes shLight{from{background-position:100% 0,0 0}to{background-position:0 0,0 0}}
+  .rm .sh-frame.ld::before,.rm .vw-slide.ld img{animation:none}
   .sh-col{clip-path:inset(0 0 100% 0);will-change:transform,clip-path}
   .rm .sh-col{clip-path:none}
   .sh-lamp{position:absolute;left:-10%;right:-10%;top:-12%;height:24%;pointer-events:none;opacity:0;will-change:transform,opacity;
@@ -232,7 +243,7 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
   .vw-bg{position:absolute;inset:0;background:#14170f;opacity:0}
   .vw-stage{position:relative;width:100%;flex:1;min-height:0;max-height:820px}
   .vw-slide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;will-change:transform,opacity;padding:0 16px}
-  .vw-slide img{max-width:min(100%,900px);max-height:100%;border-radius:6px;box-shadow:0 30px 80px -30px rgba(0,0,0,.7);-webkit-user-drag:none;user-select:none}
+  .vw-slide img{max-width:min(100%,900px);max-height:100%;object-fit:contain;border-radius:6px;box-shadow:0 30px 80px -30px rgba(0,0,0,.7);-webkit-user-drag:none;user-select:none}
   .vw-ui{position:relative;display:grid;justify-items:center;gap:16px;margin-top:18px;opacity:0;padding:0 16px;text-align:center;max-width:100%}
   .vw-cap{display:grid;gap:2px}
   .vw-cap .g-t{color:#f4eee5;font-size:clamp(22px,3vw,30px)}.vw-cap .g-p{color:rgba(236,228,216,.6)}
@@ -675,6 +686,15 @@ const SETS=[{sec:$('#produce'),el:$('#produce-gallery'),photos:okPhotos(typeof P
             {sec:kitchen,el:galleryEl,photos:PHOTOS,items:[]}].filter(s=>s.sec&&s.el);
 const capOf=g=>String((lang==='el'?g.el:g.en)||g.en||'');
 const srcOf=g=>'/'+encodeURIComponent(g.file);
+/* phone-sized copy of a photo (sm/<name>.webp, made by tools/small-photos.py). The grid and the
+   viewer's thumbnails use it, which is about three times lighter on a slow connection; a photo
+   without one simply falls back to the full file. */
+const smOf=g=>'/sm/'+encodeURIComponent(g.file.replace(/\.[^.]+$/,''))+'.webp';
+function smallImg(im,g,onFail){ im.src=smOf(g);
+  im.addEventListener('error',()=>{ if(im.src.includes('/sm/')){ im.src=srcOf(g); if(onFail) im.addEventListener('error',onFail,{once:true}); } else if(onFail) onFail(); },{once:true}); }
+/* a frame shows a soft travelling light until its photo has arrived, then the photo fades in */
+function whenLoaded(im,box){ if(im.complete&&im.naturalWidth) return; box.classList.add('ld');
+  const done=()=>box.classList.remove('ld'); im.addEventListener('load',done); im.addEventListener('error',done); }
 let GI=[], galCols=0, galT=0;
 
 /* ===================== food gallery: the drifting grid =====================
@@ -697,16 +717,20 @@ function renderMasonry(){
   SETS.forEach(set=>{
     set.el.textContent=''; set.items=[];
     set.el.className='gallery csheet';
+    // each frame is a few hundred pixels wide, so the phone-sized copies are sharp enough unless the screen is large
+    const small=((set.el.clientWidth||innerWidth)/n)*Math.min(2,devicePixelRatio||1)<=720;
     set.photos.forEach((g,li)=>{
       const fig=document.createElement('figure'); fig.className='sh-item';
       const btn=document.createElement('button'); btn.type='button'; btn.className='sh-frame';
-      const bw=document.createElement('img'); bw.className='sh-bw'; bw.src=srcOf(g); bw.alt=''; bw.decoding='async'; bw.loading=li<n*2?'eager':'lazy';
-      const img=document.createElement('img'); img.className='sh-col'; img.src=srcOf(g); img.alt=capOf(g); img.decoding='async'; img.loading=bw.loading;
+      const bw=document.createElement('img'); bw.className='sh-bw'; bw.alt=''; bw.decoding='async'; bw.loading='lazy';
+      const img=document.createElement('img'); img.className='sh-col'; img.alt=capOf(g); img.decoding='async'; img.loading='lazy';
+      const gone=()=>{ console.warn('Gallery photo not found:',g.file); it.gone=true; fig.remove(); clearTimeout(galT); galT=setTimeout(()=>{measure();tick();},80); };
+      if(small){ smallImg(bw,g); smallImg(img,g,gone); } else { bw.src=img.src=srcOf(g); img.addEventListener('error',gone,{once:true}); }
+      whenLoaded(img,btn);
       if(g.pos) bw.style.objectPosition=img.style.objectPosition=g.pos;
       const lamp=document.createElement('i'); lamp.className='sh-lamp';
       const corners=document.createElement('i'); corners.className='sh-corners';
       const it={el:fig,btn,img,bw,lamp,cap:null,g,i:li,set,gone:false};
-      img.addEventListener('error',()=>{ console.warn('Gallery photo not found:',g.file); it.gone=true; fig.remove(); clearTimeout(galT); galT=setTimeout(()=>{measure();tick();},80); },{once:true});
       btn.append(bw,img,lamp,corners); btn.setAttribute('aria-label',capOf(g)||('Photo '+(li+1)));
       btn.addEventListener('click',()=>openViewer(set,set.items.filter(x=>!x.gone).indexOf(it),img));
       const cap=document.createElement('figcaption'); it.cap=cap;
@@ -792,12 +816,20 @@ function openViewer(set,i,fromImg){
   const stage=v.querySelector('.vw-stage'), bg=v.querySelector('.vw-bg'), ui=v.querySelector('.vw-ui'), cnt=v.querySelector('.vw-count');
   const capN=v.querySelector('.vw-cap .g-n'), capT=v.querySelector('.vw-cap .g-t'), capP=v.querySelector('.vw-cap .g-p');
   const btns=[...v.querySelectorAll('.vw-btn')], thumbs=v.querySelector('.vw-thumbs');
+  /* photos load only as you reach them: the light copy first (usually already on screen in the grid),
+     then the full photo swaps in once it has arrived */
   const slides=P.map(g=>{ const s=document.createElement('div'); s.className='vw-slide';
-    const im=document.createElement('img'); im.src=srcOf(g); im.alt=capOf(g); im.decoding='async'; s.append(im); stage.append(s); return s; });
+    const im=document.createElement('img'); im.alt=capOf(g); im.decoding='async'; s.append(im); stage.append(s); return s; });
+  const want=k=>{ const s=slides[k]; if(!s||s._want) return; s._want=1; const im=s.firstChild, g=P[k];
+    smallImg(im,g); whenLoaded(im,s);
+    const full=new Image(); full.src=srcOf(g); (full.decode?full.decode():Promise.reject()).then(()=>{ im.src=full.src; s.classList.remove('ld'); },()=>{}); };
+  const fitImgs=()=>{ const mw=Math.min(stage.clientWidth-32,900), mh=stage.clientHeight;
+    slides.forEach((s,k)=>{ const g=P[k], im=s.firstChild; if(!(g.w&&g.h)||!mw||!mh) return; const sc=Math.min(mw/g.w,mh/g.h);
+      im.style.width=Math.round(g.w*sc)+'px'; im.style.height=Math.round(g.h*sc)+'px'; }); };
   const th=P.map((g,k)=>{ const b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label',capOf(g));
-    const im=document.createElement('img'); im.src=srcOf(g); im.alt=''; b.append(im); b.onclick=()=>go(k); thumbs.append(b); return b; });
+    const im=document.createElement('img'); im.alt=''; im.loading='lazy'; smallImg(im,g); b.append(im); b.onclick=()=>go(k); thumbs.append(b); return b; });
   let cur=i, W=stage.clientWidth, drag=0, capI=-1;
-  const place=anim=>slides.forEach((s,k)=>{ const off=(k-cur)*W*1.04+drag, d=Math.min(1,Math.abs(off)/W);
+  const place=anim=>slides.forEach((s,k)=>{ if(Math.abs(k-cur)<=1) want(k); const off=(k-cur)*W*1.04+drag, d=Math.min(1,Math.abs(off)/W);
     s.style.transition=anim?'transform .65s cubic-bezier(.16,1,.3,1),opacity .65s ease':'none';
     s.style.transform=`translate3d(${off.toFixed(1)}px,0,0) scale(${(1-.12*d).toFixed(4)})`;
     s.style.opacity=(1-.65*d).toFixed(3); s.style.visibility=(Math.abs(k-cur)<=1||anim)?'visible':'hidden'; });
@@ -807,7 +839,7 @@ function openViewer(set,i,fromImg){
   const update=anim=>{ place(anim); setCapV(); cnt.textContent=`${cur+1} / ${N}`;
     th.forEach((b,k)=>b.classList.toggle('on',k===cur)); try{ th[cur].scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'}); }catch(_){} };
   const go=k=>{ cur=clamp(k,0,N-1); drag=0; update(!RM); };
-  update(false);
+  update(false); fitImgs();              // sized once the caption is in, so the photo never changes size as it sharpens
   viewer={close};
   const target=slides[cur].querySelector('img');
   const flyIn=()=>{
@@ -834,7 +866,7 @@ function openViewer(set,i,fromImg){
   v.querySelector('.vw-prev').onclick=()=>go(cur-1); v.querySelector('.vw-next').onclick=()=>go(cur+1);
   bg.onclick=close;
   function key(e){ if(e.key==='Escape') close(); else if(e.key==='ArrowRight') go(cur+1); else if(e.key==='ArrowLeft') go(cur-1); }
-  function rs(){ W=stage.clientWidth; place(false); }
+  function rs(){ W=stage.clientWidth; fitImgs(); place(false); }
   addEventListener('keydown',key); addEventListener('resize',rs);
   let sx=null, sy0=0, t0=0;
   stage.addEventListener('pointerdown',e=>{ sx=e.clientX; sy0=e.clientY; t0=performance.now(); try{stage.setPointerCapture(e.pointerId)}catch(_){} });
@@ -1098,6 +1130,13 @@ const SEASON_ART={
   spring:{img:'art-spring.webp',fx:.30,fy:.42,s:1.5},
   events:{img:'art-events.webp',fx:.27,fy:.68,s:1.95}
 };
+/* the drawings are only fetched once the menus come near, so they never hold up the top of the page */
+const nearMenus=(()=>{ const q=[]; let near=false;
+  const sec=document.getElementById('occasions');
+  const go=()=>{ near=true; q.splice(0).forEach(f=>f()); };
+  if(!sec||!('IntersectionObserver' in window)) setTimeout(go,2500);
+  else { const io=new IntersectionObserver(es=>{ if(es.some(e=>e.isIntersecting)){ io.disconnect(); go(); } },{rootMargin:'1200px 0px'}); io.observe(sec); }
+  return f=>near?f():q.push(f); })();
 var SEAS=null;                          // set once the cards are built (render may run before that)
 function buildSeasons(){
   SEAS=seasonCards().map((card,i)=>{
@@ -1105,7 +1144,7 @@ function buildSeasons(){
     const menus=S&&Array.isArray(S.menus)?S.menus.filter(m=>m&&Array.isArray(m.courses)):[];
     card._menus=menus;
     const mask=card.querySelector('.s-mask');
-    if(mask&&A){ const u=`url("/${A.img}")`; mask.style.webkitMaskImage=u; mask.style.maskImage=u; }
+    if(mask&&A) nearMenus(()=>{ const u=`url("/${A.img}")`; mask.style.webkitMaskImage=u; mask.style.maskImage=u; });
     else if(mask&&!card.querySelector('.s-sprig')){ mask.style.display='none'; const sp=document.createElement('div'); sp.className='s-sprig'; sp.innerHTML=SPRIG; mask.after(sp); }
     card.classList.toggle('no-menu',!menus.length);
     card.querySelector('.s-cta').hidden=!menus.length;
@@ -1159,7 +1198,8 @@ function refreshSeasons(){
 }
 buildSeasons();
 (function(){ // fetch the growth frames once the seasonal menus come near, so the opening never waits
-  const go=()=>{ try{ const vals=Object.values(GROWSEQ); vals.forEach(s=>(s.parts||[s.sheet]).forEach(f=>loadImg('/'+f))); Object.keys(GROWMAP).forEach(f=>loadImg('/'+f));
+  // on a slow connection only the drawings are fetched; the frame-by-frame growth sheets (several MB) are skipped
+  const go=()=>{ try{ const vals=SLOW?[]:Object.values(GROWSEQ); vals.forEach(s=>(s.parts||[s.sheet]).forEach(f=>loadImg('/'+f))); Object.keys(GROWMAP).forEach(f=>loadImg('/'+f));
     setTimeout(()=>vals.forEach(s=>{ if(s.end) loadImg('/'+s.end.sheet); }),1500); }catch(_){} };
   const sec=$('#occasions'); if(!sec||!('IntersectionObserver' in window)){ setTimeout(go,3000); return; }
   const io=new IntersectionObserver(es=>{ if(es.some(e=>e.isIntersecting)){ io.disconnect(); go(); } },{rootMargin:'1200px 0px'}); io.observe(sec);
@@ -1532,7 +1572,7 @@ function growSprout(paper,file,delay=0){
     frame(performance.now()); requestAnimationFrame(frame);
   })).catch(e=>{ console.warn('grow',e); art.style.opacity=''; cv.remove(); });
 }
-function growArtAny(paper,file,delay){ return growSprout(paper,file,delay)||growSeq(paper,file,delay)||growArtGL(paper,file,delay)||growArt(paper,file,delay); }
+function growArtAny(paper,file,delay){ return (!SLOW&&(growSprout(paper,file,delay)||growSeq(paper,file,delay)))||growArtGL(paper,file,delay)||growArt(paper,file,delay); }
 const growLen=file=>{ const S=GROWSEQ[file]; if(!S) return 3000; let t=0; S.frames.forEach((_,i)=>t+=300+i*22+420); return t+600; };
 function openMenu(card){
   if(menuV||viewer) return;
@@ -2068,7 +2108,10 @@ if(!start && location.pathname.startsWith('/el')) start='el';
 if(!start){ try{start=localStorage.getItem('ap-lang')||''}catch(e){} }
 if(!start) start=(navigator.language||'').toLowerCase().startsWith('el')?'el':'en';
 setLang(start);
-requestAnimationFrame(()=>{document.body.classList.add('loaded'); placeInd(); requestAnimationFrame(()=>{ind.style.transition=''});});
+requestAnimationFrame(()=>{placeInd(); requestAnimationFrame(()=>{ind.style.transition=''});});
+// the opening waits briefly for the monogram's font, so on a slow connection the letters never rise in a stand-in face
+Promise.race([document.fonts?document.fonts.load('400 1em "Cormorant Garamond"'):0,new Promise(r=>setTimeout(r,1500))]).catch(()=>{})
+  .then(()=>requestAnimationFrame(()=>{ document.body.classList.add('loaded'); setTimeout(()=>{ const b=$('.boot'); if(b) b.remove(); },600); }));
 const initHash=location.hash;
 const landLegal=LEGAL_KEYS.includes(initHash.slice(1));
 const landHash=!landLegal&&elForHash(initHash)?initHash:'';
