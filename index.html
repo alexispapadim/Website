@@ -427,6 +427,100 @@ html.locked,html.locked body{overflow:hidden}
   .c-cap{margin-top:28px}
 }
 
+
+/* ---------- the journey ---------- */
+#journey{background:linear-gradient(180deg,var(--paper),var(--cream) 60%,var(--paper));overflow:hidden}
+.jy-head{max-width:1200px;margin:0 auto}
+.jy-quote{margin:28px 0 0;max-width:40ch;font:italic 400 clamp(19px,2.2vw,26px)/1.5 var(--serif);color:var(--olive-3);border-left:1px solid var(--gold);padding-left:22px}
+.jy-quote cite{display:block;margin-top:10px;font:500 10.5px var(--sans);font-style:normal;letter-spacing:.24em;text-transform:uppercase;color:var(--gold)}
+.jy-list{list-style:none;position:relative;max-width:1100px;margin:clamp(56px,9vh,96px) auto 0;padding:0 0 0 34px}
+.jy-line{position:absolute;left:5px;top:8px;bottom:8px;width:1px;background:rgba(32,37,26,.14)}
+.jy-line i{position:absolute;inset:0;background:var(--gold);transform-origin:top;transform:scaleY(0)}
+.rm .jy-line i{transform:none}
+.jy-i{position:relative;padding:0 0 clamp(34px,6vh,56px)}
+.jy-i:last-child{padding-bottom:0}
+.jy-dot{position:absolute;left:-34px;top:8px;width:11px;height:11px;border:1px solid var(--gold);background:var(--paper);transform:rotate(45deg) scale(.4);transition:transform .7s cubic-bezier(.16,1,.3,1),background .5s}
+.jy-i.in .jy-dot{transform:rotate(45deg) scale(1);background:var(--gold)}
+.jy-when{font:500 10.5px var(--sans);letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin:0 0 6px}
+.jy-place{font:400 clamp(28px,3.4vw,40px)/1.08 var(--serif);margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.jy-role{font:italic 400 clamp(18px,1.8vw,22px)/1.3 var(--serif);color:var(--gold);margin:6px 0 0}
+.jy-where{font-size:13px;letter-spacing:.04em;color:var(--leaf);margin:4px 0 0}
+.jy-note{font-size:15.5px;line-height:1.68;color:var(--olive-3);max-width:52ch;margin:10px 0 0}
+.jy-note:empty{display:none}
+.jy-stars{display:inline-flex;gap:4px}
+.jy-stars i{font-style:normal;font-size:.62em;color:var(--gold);display:inline-block;transform:scale(0) rotate(-90deg);transition:transform .9s cubic-bezier(.34,1.56,.64,1)}
+.jy-i.in .jy-stars i{transform:none;transition-delay:.45s}
+.jy-i.in .jy-stars i+i{transition-delay:.6s}
+.rm .jy-stars i{transform:none}
+.jy-i.now .jy-place{color:var(--olive)}
+.jy-i.now .jy-dot{width:15px;height:15px;left:-36px;top:6px;box-shadow:0 0 0 6px rgba(184,145,79,.14)}
+.jy-train{max-width:1100px;margin:clamp(64px,10vh,110px) auto 0}
+.jy-chips{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:14px}
+.jy-chips li{border:1px solid rgba(184,145,79,.35);border-radius:16px;padding:18px 20px;background:rgba(255,255,255,.35)}
+.jy-chips b{display:block;font:400 clamp(19px,1.7vw,22px)/1.25 var(--serif);color:var(--olive)}
+.jy-chips span{display:block;margin-top:4px;font-size:13px;line-height:1.5;color:var(--leaf)}
+@media(min-width:760px){.jy-chips{grid-template-columns:1fr 1fr}}
+@media(min-width:1024px){
+  .jy-head{max-width:var(--wrap)}
+  .jy-list{padding:0}
+  .jy-line{left:50%}
+  .jy-i{width:50%;box-sizing:border-box;padding-right:56px;text-align:right}
+  .jy-i:nth-child(odd){margin-left:50%;padding-right:0;padding-left:56px;text-align:left}
+  .jy-i .jy-dot{left:auto;right:-6px}
+  .jy-i:nth-child(odd) .jy-dot{right:auto;left:-6px}
+  .jy-i.now .jy-dot{right:-8px}.jy-i.now:nth-child(odd) .jy-dot{left:-8px}
+  .jy-i:not(:nth-child(odd)) .jy-place{justify-content:flex-end}
+  .jy-i:not(:nth-child(odd)) .jy-note{margin-left:auto}
+  .jy-i{margin-top:-2.5em}.jy-i:nth-child(2){margin-top:0}
+  .jy-chips{grid-template-columns:repeat(4,1fr)}
+}
+/* entries slide in from the line's side */
+.jy-i[data-reveal]{opacity:0;transform:translate3d(-18px,14px,0);transition:opacity .9s ease,transform 1.1s cubic-bezier(.16,1,.3,1)}
+@media(min-width:1024px){.jy-i[data-reveal]:not(:nth-child(odd)){transform:translate3d(18px,14px,0)}}
+.jy-i[data-reveal].in{opacity:1;transform:none}
+.rm .jy-i[data-reveal]{opacity:1;transform:none}
+
+/* ---------- photos in the story (about + journey) ----------
+   The frame wipes open from the bottom while the photo settles from a slow zoom,
+   then the gold outline slides out behind it and the caption rule draws in.
+   While scrolling, the photo drifts inside its frame (parallax, set in app.js). */
+.ph{position:relative;margin:52px 0 0;width:min(calc(100% - 16px),420px)}
+.ph::before{content:"";position:absolute;top:0;left:0;right:0;aspect-ratio:4/5;border:1px solid var(--gold);border-radius:2px;opacity:0;transition:transform 1.3s cubic-bezier(.16,1,.3,1) .85s,opacity .7s ease .85s;pointer-events:none}
+.ph.in::before{opacity:.75;transform:translate(14px,14px)}
+.ph-frame{position:relative;z-index:1;aspect-ratio:4/5;overflow:hidden;border-radius:2px;background:var(--cream-2);box-shadow:0 44px 70px -44px rgba(32,37,26,.55);clip-path:inset(100% 0 0 0);transition:clip-path 1.5s cubic-bezier(.77,0,.18,1)}
+.ph.in .ph-frame{clip-path:inset(0 0 0 0)}
+.ph-zoom{position:absolute;inset:0;transform:scale(1.32);transition:transform 2.4s cubic-bezier(.16,1,.3,1)}
+.ph.in .ph-zoom{transform:none}
+.ph img{position:absolute;left:0;top:-9%;width:100%;height:118%;object-fit:cover;display:block;will-change:transform}
+.ph-a img{object-position:50% 35%}
+.ph figcaption{display:flex;align-items:center;gap:14px;margin-top:24px;font:500 11px var(--sans);letter-spacing:.3em;text-transform:uppercase;color:var(--leaf);opacity:0;transform:translateY(8px);transition:opacity .8s ease 1.1s,transform .9s cubic-bezier(.16,1,.3,1) 1.1s}
+.ph-rule{display:block;width:40px;height:1px;background:var(--gold);transform-origin:left;transform:scaleX(0);transition:transform 1s cubic-bezier(.16,1,.3,1) 1.25s}
+.ph.in figcaption{opacity:1;transform:none}.ph.in .ph-rule{transform:none}
+.rm .ph-frame{clip-path:none}.rm .ph-zoom{transform:none}.rm .ph::before{opacity:.75;transform:translate(14px,14px)}.rm .ph figcaption{opacity:1;transform:none}.rm .ph-rule{transform:none}
+/* phones: the journey photo sits off-centre to the right, a counterweight to the about photo */
+.ph-j{width:min(74%,340px);margin-left:auto;margin-right:16px}
+.ph-j figcaption{justify-content:flex-end}
+.ph-j figcaption .ph-rule{order:1}
+/* tablets: photo beside the words instead of under them */
+@media(min-width:700px) and (max-width:1023px){
+  #about .about-text{display:grid;grid-template-columns:1.25fr .75fr;column-gap:44px;align-items:start}
+  #about .about-text .eyebrow,#about .about-text h2{grid-column:1/-1}
+  #about .about-text .about-body{grid-column:1}
+  .ph-a{grid-column:2;margin-top:34px;width:calc(100% - 14px)}
+  .jy-head{display:grid;grid-template-columns:1.25fr .75fr;grid-template-rows:1fr auto auto auto 1fr;column-gap:44px}
+  .jy-head>:not(.ph){grid-column:1}
+  .jy-head>.eyebrow{grid-row:2}.jy-head>h2{grid-row:3}.jy-head>.jy-quote{grid-row:4}
+  .ph-j{grid-column:2;grid-row:1/-1;width:calc(100% - 14px);margin:0}
+}
+@media(min-width:1024px){
+  #about .about-text .about-body{grid-row:2/span 2}
+  .ph-a{grid-column:1;grid-row:3;margin-top:clamp(56px,7vh,84px);width:min(calc(100% - 14px),440px)}
+  .jy-head{display:grid;grid-template-columns:1fr minmax(0,400px);grid-template-rows:1fr auto auto auto 1fr;column-gap:clamp(56px,7vw,120px)}
+  .jy-head>:not(.ph){grid-column:1}
+  .jy-head>.eyebrow{grid-row:2}.jy-head>h2{grid-row:3}.jy-head>.jy-quote{grid-row:4}
+  .ph-j{grid-column:2;grid-row:1/-1;width:calc(100% - 14px);margin:0 14px 0 0;justify-self:end}
+}
+
 /* ---------- large monitors ---------- */
 @media(min-width:1600px){
   :root{--wrap:min(1360px,80vw)}
@@ -523,12 +617,138 @@ html.locked,html.locked body{overflow:hidden}
           <p class="more" data-i18n="ab.p2">Drawing on my training — from the disciplined precision of Michelin fine-dining kitchens to the honest, real traditions of classic Italian, Greek and Japanese cooking — I focus entirely on bringing out the natural beauty of what is right in front of us.</p>
           <p class="more" data-i18n="ab.p3">But above all, my canvas is your vision. It is all about what the guest wants, and it is my job to make it happen — no matter the request, the cuisine or the dietary demand.</p>
         </div>
+        <figure class="ph ph-a" data-ph>
+          <div class="ph-frame"><div class="ph-zoom"><img src="/alexis-turbot.webp" width="1086" height="1448" loading="lazy" decoding="async" alt="Alexis in the kitchen, smiling, holding up a whole turbot" data-i18n-alt="ph.a.alt"></div></div>
+          <figcaption><span class="ph-rule" aria-hidden="true"></span><span data-i18n="ph.a.cap">In the kitchen</span></figcaption>
+        </figure>
       </div>
     </div>
     <div class="stats">
       <div class="stat" data-reveal style="--d:1"><b>2<sup>★</sup></b><span data-i18n="ab.s1">Michelin kitchen experience</span></div>
       <div class="stat" data-reveal style="--d:2"><b>2</b><span data-i18n="ab.s2">Cities — London &amp; Athens</span></div>
       <div class="stat" data-reveal style="--d:3"><b>1</b><span data-i18n="ab.s3">Menu, written only for you</span></div>
+    </div>
+  </section>
+
+
+  <!-- 3b. The journey (from Alexis's CV) -->
+  <section id="journey" class="plain light" data-theme="light">
+    <div class="jy-head">
+      <p class="eyebrow" data-reveal data-i18n="jy.eyebrow">The journey</p>
+      <h2 data-reveal-group><span class="mask" style="display:block"><span data-i18n="jy.h1">From a Skyros kitchen</span></span><span class="mask" style="display:block"><span data-i18n="jy.h2">to <em>two Michelin stars.</em></span></span></h2>
+      <blockquote class="jy-quote" data-reveal style="--d:2"><p data-i18n="jy.q">I am very passionate about what I do. I deeply care about the guest’s experience, and I will do everything in my power to make sure everyone is satisfied.</p><cite>Alexis</cite></blockquote>
+      <figure class="ph ph-j" data-ph>
+        <div class="ph-frame"><div class="ph-zoom"><img src="/alexis-prime-cut.webp" width="1086" height="1448" loading="lazy" decoding="async" alt="Alexis in his whites in a professional kitchen, holding up a prime cut of beef" data-i18n-alt="ph.j.alt"></div></div>
+        <figcaption><span class="ph-rule" aria-hidden="true"></span><span data-i18n="ph.j.cap">On the line</span></figcaption>
+      </figure>
+    </div>
+    <ol class="jy-list" id="jy">
+      <i class="jy-line" aria-hidden="true"><i id="jyl"></i></i>
+        <li class="jy-i" data-reveal>
+          <span class="jy-dot" aria-hidden="true"></span>
+          <p class="jy-when" data-i18n="j1.w">2021</p>
+          <h3 class="jy-place">Milos tou Balabani</h3>
+          <p class="jy-role" data-i18n="j1.r">First kitchen</p>
+          <p class="jy-where" data-i18n="j1.l">Skyros, Greece</p>
+          <p class="jy-note" data-i18n="j1.n"></p>
+        </li>
+        <li class="jy-i" data-reveal>
+          <span class="jy-dot" aria-hidden="true"></span>
+          <p class="jy-when" data-i18n="j2.w">2021 – 2022</p>
+          <h3 class="jy-place">Leiths School of Food and Wine</h3>
+          <p class="jy-role" data-i18n="j2.r">Diploma in Food &amp; Wine</p>
+          <p class="jy-where" data-i18n="j2.l">London</p>
+          <p class="jy-note" data-i18n="j2.n"></p>
+        </li>
+        <li class="jy-i" data-reveal>
+          <span class="jy-dot" aria-hidden="true"></span>
+          <p class="jy-when" data-i18n="j3.w">Spring 2022</p>
+          <h3 class="jy-place">The Hinds Head<span class="jy-stars" aria-label="1 Michelin star"><i>★</i></span></h3>
+          <p class="jy-role" data-i18n="j3.r">Work experience</p>
+          <p class="jy-where" data-i18n="j3.l">Heston Blumenthal · Maidenhead</p>
+          <p class="jy-note" data-i18n="j3.n"></p>
+        </li>
+        <li class="jy-i" data-reveal>
+          <span class="jy-dot" aria-hidden="true"></span>
+          <p class="jy-when" data-i18n="j4.w">Spring 2022</p>
+          <h3 class="jy-place">Sam’s Riverside</h3>
+          <p class="jy-role" data-i18n="j4.r">Chef de partie</p>
+          <p class="jy-where" data-i18n="j4.l">Hammersmith, London</p>
+          <p class="jy-note" data-i18n="j4.n"></p>
+        </li>
+        <li class="jy-i" data-reveal>
+          <span class="jy-dot" aria-hidden="true"></span>
+          <p class="jy-when" data-i18n="j5.w">October 2022</p>
+          <h3 class="jy-place">The Greek Embassy</h3>
+          <p class="jy-role" data-i18n="j5.r">Private catering</p>
+          <p class="jy-where" data-i18n="j5.l">London</p>
+          <p class="jy-note" data-i18n="j5.n"></p>
+        </li>
+        <li class="jy-i" data-reveal>
+          <span class="jy-dot" aria-hidden="true"></span>
+          <p class="jy-when" data-i18n="j6.w">September – March</p>
+          <h3 class="jy-place">Zuma</h3>
+          <p class="jy-role" data-i18n="j6.r">Demi chef de partie</p>
+          <p class="jy-where" data-i18n="j6.l">Knightsbridge, London</p>
+          <p class="jy-note" data-i18n="j6.n"></p>
+        </li>
+        <li class="jy-i" data-reveal>
+          <span class="jy-dot" aria-hidden="true"></span>
+          <p class="jy-when" data-i18n="j7.w">Summer 2023</p>
+          <h3 class="jy-place">Armonia Hotel</h3>
+          <p class="jy-role" data-i18n="j7.r">Head chef</p>
+          <p class="jy-where" data-i18n="j7.l">Nidri, Lefkada</p>
+          <p class="jy-note" data-i18n="j7.n"></p>
+        </li>
+        <li class="jy-i" data-reveal>
+          <span class="jy-dot" aria-hidden="true"></span>
+          <p class="jy-when" data-i18n="j8.w">One year</p>
+          <h3 class="jy-place">Private chef</h3>
+          <p class="jy-role" data-i18n="j8.r">For a private household</p>
+          <p class="jy-where" data-i18n="j8.l">London</p>
+          <p class="jy-note" data-i18n="j8.n"></p>
+        </li>
+        <li class="jy-i" data-reveal>
+          <span class="jy-dot" aria-hidden="true"></span>
+          <p class="jy-when" data-i18n="j9.w">Two years</p>
+          <h3 class="jy-place">Trullo</h3>
+          <p class="jy-role" data-i18n="j9.r">Senior sous chef</p>
+          <p class="jy-where" data-i18n="j9.l">Highbury &amp; Islington, London</p>
+          <p class="jy-note" data-i18n="j9.n"></p>
+        </li>
+        <li class="jy-i" data-reveal>
+          <span class="jy-dot" aria-hidden="true"></span>
+          <p class="jy-when" data-i18n="j10.w">Five months</p>
+          <h3 class="jy-place">Bonheur by Matt Abe<span class="jy-stars" aria-label="2 Michelin stars"><i>★</i><i>★</i></span></h3>
+          <p class="jy-role" data-i18n="j10.r">Commis chef</p>
+          <p class="jy-where" data-i18n="j10.l">London</p>
+          <p class="jy-note" data-i18n="j10.n"></p>
+        </li>
+        <li class="jy-i" data-reveal>
+          <span class="jy-dot" aria-hidden="true"></span>
+          <p class="jy-when" data-i18n="j11.w">One year</p>
+          <h3 class="jy-place">Burro</h3>
+          <p class="jy-role" data-i18n="j11.r">Sous chef</p>
+          <p class="jy-where" data-i18n="j11.l">Covent Garden, London</p>
+          <p class="jy-note" data-i18n="j11.n"></p>
+        </li>
+        <li class="jy-i now" data-reveal>
+          <span class="jy-dot" aria-hidden="true"></span>
+          <p class="jy-when" data-i18n="j12.w">Today</p>
+          <h3 class="jy-place">Alexis Papadimitriou</h3>
+          <p class="jy-role" data-i18n="j12.r">Private chef</p>
+          <p class="jy-where" data-i18n="j12.l">Athens · across Greece · London</p>
+          <p class="jy-note" data-i18n="j12.n"></p>
+        </li>
+    </ol>
+    <div class="jy-train">
+      <p class="eyebrow" data-reveal data-i18n="jt.eyebrow">Training</p>
+      <ul class="jy-chips">
+        <li data-reveal style="--d:1"><b data-i18n="jt.1">Leiths Diploma in Food &amp; Wine</b><span data-i18n="jt.1s">Leiths School of Food and Wine · 2021–2022</span></li>
+        <li data-reveal style="--d:2"><b data-i18n="jt.2">Level 4 Diploma in Professional Culinary Arts</b><span data-i18n="jt.2s">CTH · awarded Merit</span></li>
+        <li data-reveal style="--d:3"><b data-i18n="jt.3">WSET Level 2 Award in Wines</b><span data-i18n="jt.3s">Wine &amp; Spirit Education Trust</span></li>
+        <li data-reveal style="--d:4"><b data-i18n="jt.4">Food safety &amp; allergens</b><span data-i18n="jt.4s">Level 2 Food Safety for Catering · Food Allergen Awareness · COSHH · Health &amp; Safety</span></li>
+      </ul>
     </div>
   </section>
 
@@ -589,6 +809,19 @@ html.locked,html.locked body{overflow:hidden}
             <p class="s-menu"></p>
             <button type="button" class="s-more" aria-expanded="false" aria-controls="note-spring"><span class="s-more-t">Chef’s note</span><i aria-hidden="true"></i></button>
             <div class="s-note" id="note-spring"><div><p class="s-desc" data-i18n="sn.spring.p"></p></div></div>
+            <div class="s-actions">
+              <button type="button" class="s-cta"><span class="s-cta-t"></span><i aria-hidden="true"></i></button>
+            </div>
+          </div>
+        </article>
+        <article class="card season" data-season="events">
+          <div class="s-art" aria-hidden="true"><i class="s-mask"></i></div>
+          <span class="num">05</span><span class="s-rule" aria-hidden="true"></span>
+          <div class="s-copy">
+            <h3 data-i18n="sn.events">Events</h3>
+            <p class="s-menu"></p>
+            <button type="button" class="s-more" aria-expanded="false" aria-controls="note-events"><span class="s-more-t">Chef’s note</span><i aria-hidden="true"></i></button>
+            <div class="s-note" id="note-events"><div><p class="s-desc" data-i18n="sn.events.p"></p></div></div>
             <div class="s-actions">
               <button type="button" class="s-cta"><span class="s-cta-t"></span><i aria-hidden="true"></i></button>
             </div>
@@ -714,6 +947,6 @@ html.locked,html.locked body{overflow:hidden}
   <article class="sheet-body" id="sheet-body"></article>
 </div>
 
-<script type="module" src="/app.js?v=32"></script>
+<script type="module" src="/app.js?v=35"></script>
 </body>
 </html>

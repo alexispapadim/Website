@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=32';
-import * as GAL from './gallery.js?v=32';
-import * as SEA from './seasons.js?v=32';
+import { I18N } from './i18n.js?v=35';
+import * as GAL from './gallery.js?v=35';
+import * as SEA from './seasons.js?v=35';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -527,6 +527,8 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
 let disc=$('#disc');
 if(!disc){ disc=document.createElement('div'); disc.id='disc'; disc.className='disc'; back.prepend(disc); }
 const stmt=$('#statement'), occ=$('#occasions'), hw=$('#hw'), track=$('#track'), bar=$('#bar');
+const jyList=$('#jy'), jyLine=$('#jyl');
+const phs=$$('[data-ph]').map(el=>({el,img:el.querySelector('img')}));
 const steps=$('#steps'), pline=$('#pline'), wm=$('#wm'), about=$('#about'), hdr=$('#hdr');
 const themed=$$('[data-theme]');
 const docTop=el=>el.getBoundingClientRect().top+scrollY;
@@ -546,7 +548,8 @@ function measure(){
   if(!RM) occ.style.height=Math.round(M.vh+hDist*1.15)+'px'; else occ.style.height='auto';
   const box=el=>{const t=docTop(el);return{top:t,h:el.offsetHeight,span:Math.max(1,el.offsetHeight-M.vh)}};
   if(typeof measureSeasons==='function') measureSeasons();
-  M.hero=box(hero); M.stmt=box(stmt); M.occ=box(occ); M.steps=box(steps); M.about=box(about);
+  M.hero=box(hero); M.stmt=box(stmt); M.occ=box(occ); M.steps=box(steps); M.about=box(about); M.jy=jyList?box(jyList):null;
+  phs.forEach(p=>{ p.top=docTop(p.el); p.h=p.el.offsetHeight; });
   M.themes=themed.map(s=>{const b=box(s);return{top:b.top,bottom:b.top+b.h,dark:s.dataset.theme==='dark',hero:s===hero}});
   if(C.sec){ M.chef=box(C.sec); M.bh=C.box.offsetHeight; }
   M.gal=null;
@@ -775,6 +778,11 @@ function render(y,realY){
   for(let i=0;i<words.length;i++) put('w'+wGen+'_'+i,words[i],'opacity',(.14+.86*clamp(lit-i)).toFixed(3));
   if(!RM&&!(sw&&sw.mode==='h')) applyCards(y);
   if(!RM){
+    if(M.jy) put('jyl',jyLine,'transform',`scaleY(${clamp((y+M.vh*.6-M.jy.top)/M.jy.h).toFixed(4)})`);
+    // story photos: the photo drifts inside its frame, and on desktop the frame trails the text a little
+    phs.forEach((p,i)=>{ const t=clamp((y+M.vh-p.top)/(M.vh+p.h))-.5;
+      put('phi'+i,p.img,'transform',`translate3d(0,${(t*-14).toFixed(2)}%,0)`);
+      put('phf'+i,p.el,'transform',M.w>=1024?`translate3d(0,${(t*-56).toFixed(1)}px,0)`:'none'); });
     put('pline',pline,'transform',`scaleY(${clamp((y+M.vh*.62-M.steps.top)/M.steps.h).toFixed(4)})`);
     put('wm',wm,'transform',`translate3d(0,calc(-50% + ${((M.about.top-y)*-.18).toFixed(1)}px),0)`);
   }
@@ -829,7 +837,7 @@ addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{
 addEventListener('load',()=>{measure();tick()});
 
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.18,rootMargin:'0px 0px -6% 0px'});
-$$('[data-reveal],[data-reveal-group]').forEach(e=>io.observe(e));
+$$('[data-reveal],[data-reveal-group],[data-ph]').forEach(e=>io.observe(e));
 
 /* ===================== form ===================== */
 const form=$('#form'), status=$('#status'), send=$('#send');
@@ -953,6 +961,7 @@ function renderMasonry(){
       const btn=document.createElement('button'); btn.type='button'; btn.className='sh-frame';
       const bw=document.createElement('img'); bw.className='sh-bw'; bw.src=srcOf(g); bw.alt=''; bw.decoding='async'; bw.loading=li<n*2?'eager':'lazy';
       const img=document.createElement('img'); img.className='sh-col'; img.src=srcOf(g); img.alt=capOf(g); img.decoding='async'; img.loading=bw.loading;
+      if(g.pos) bw.style.objectPosition=img.style.objectPosition=g.pos;
       const lamp=document.createElement('i'); lamp.className='sh-lamp';
       const corners=document.createElement('i'); corners.className='sh-corners';
       const it={el:fig,btn,img,bw,lamp,cap:null,g,i:li,set,gone:false};
@@ -1101,6 +1110,7 @@ function openViewer(set,i,fromImg){
    Four season cards (photos and menus come from seasons.js). Tapping a card lifts its menu out of
    the card to full screen; tap the menu to zoom in, swipe between menus, and "Plan a menu like
    this" drops a note into the enquiry form.                                                    */
+const SPRIG='<svg viewBox="0 0 16 20" aria-hidden="true"><path d="M8 19V8" stroke="currentColor" stroke-width="1.1" fill="none"/><path d="M8 9C8 5 9.5 2.5 8 0.5C6.5 2.5 8 5 8 9Z" fill="currentColor"/><path d="M8 12C5.5 11 3 9 2.5 6C5 6.5 7 8.5 8 12Z" fill="currentColor"/><path d="M8 12C10.5 11 13 9 13.5 6C11 6.5 9 8.5 8 12Z" fill="currentColor"/></svg>';
 const SEASON_DATA=(SEA&&SEA.SEASONS)||{};
 const okImg=f=>typeof f==='string'&&/^[\w.\- ]+\.(jpe?g|png|webp|avif)$/i.test(f);
 const tr=(k,o={})=>String((I18N[lang]&&I18N[lang][k])??I18N.en[k]??'').replace(/\{(\w+)\}/g,(_,x)=>o[x]??'');
@@ -1129,6 +1139,7 @@ const MENU_RATIO=1055/1491;
     -webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
   .card.season > .num{position:absolute;top:clamp(20px,2.6vw,30px);left:clamp(22px,2.4vw,30px);z-index:2}
   .card.season > .s-rule{position:absolute;top:calc(clamp(20px,2.6vw,30px) + 34px);left:clamp(22px,2.4vw,30px);z-index:2}
+  .s-sprig{position:absolute;left:50%;top:44%;width:34%;transform:translate(-50%,-50%);color:#d6b679;opacity:.5}.s-sprig svg{width:100%;height:auto;display:block}
   .s-rule{display:block;height:1px;width:56px;background:linear-gradient(90deg,#d6b679,rgba(214,182,121,0));transform-origin:0 50%}
   .s-copy{position:absolute;left:0;right:0;bottom:0;z-index:1;display:flex;flex-direction:column;padding:56px clamp(22px,2.4vw,30px) clamp(18px,2.2vw,26px);
     background:linear-gradient(180deg,rgba(32,37,26,0) 0,rgba(32,37,26,.86) 48px,#20251a 100%)}
@@ -1260,6 +1271,9 @@ const MENU_RATIO=1055/1491;
   .mp-c h4{font:500 clamp(11px,2.3cqw,14.5px)/1.2 var(--serif);letter-spacing:.3em;text-transform:uppercase;margin:0;padding-left:.3em}
   .mp-d{margin:0 auto clamp(8px,2cqw,14px);max-width:92%}
   .mp-d:last-child{margin-bottom:0}
+  .mp-or{font:italic 400 clamp(13px,2.4cqw,16px)/1 var(--serif);color:#b8914f;margin:calc(-1 * clamp(2px,.8cqw,6px)) 0 clamp(6px,1.6cqw,11px);letter-spacing:.06em}
+  .mp-c.nohead{margin-top:clamp(8px,2cqw,14px)}
+  .mp-ch{margin-top:10px;font:italic 400 clamp(11px,1.8cqw,12.5px)/1.45 var(--serif);color:#6b6e57;max-width:46ch}
   .mp-d b{display:block;font:400 clamp(17px,3.5cqw,23px)/1.22 var(--serif);color:#1d2116}
   .mp-d i{display:block;font:italic 400 clamp(14px,2.65cqw,17.5px)/1.35 var(--serif);color:#4a4e3c;margin-top:2px}
   .mp-f{margin-top:clamp(16px,4cqw,28px);font:italic 400 clamp(12px,2cqw,13.5px)/1.5 var(--serif);color:#4a4e3c}
@@ -1343,6 +1357,7 @@ function buildSeasons(){
     card._menus=menus;
     const mask=card.querySelector('.s-mask');
     if(mask&&A){ const u=`url("/${A.img}")`; mask.style.webkitMaskImage=u; mask.style.maskImage=u; }
+    else if(mask&&!card.querySelector('.s-sprig')){ mask.style.display='none'; const sp=document.createElement('div'); sp.className='s-sprig'; sp.innerHTML=SPRIG; mask.after(sp); }
     card.classList.toggle('no-menu',!menus.length);
     card.querySelector('.s-cta').hidden=!menus.length;
     const more=card.querySelector('.s-more');
@@ -1464,19 +1479,21 @@ function goldRing(host,cx,cy,r0,r1,dur,inward){
   const a=[{transform:`scale(${(r0/r1).toFixed(4)})`,opacity:inward?0:.95},{transform:'scale(1)',opacity:inward?.95:0}];
   ring.animate(inward?a.reverse().map((k,i)=>({...k,opacity:i?0:.95})):a,{duration:dur,easing:'cubic-bezier(.7,0,.2,1)',fill:'forwards'}).finished.then(()=>ring.remove(),()=>ring.remove());
 }
-const SPRIG='<svg viewBox="0 0 16 20" aria-hidden="true"><path d="M8 19V8" stroke="currentColor" stroke-width="1.1" fill="none"/><path d="M8 9C8 5 9.5 2.5 8 0.5C6.5 2.5 8 5 8 9Z" fill="currentColor"/><path d="M8 12C5.5 11 3 9 2.5 6C5 6.5 7 8.5 8 12Z" fill="currentColor"/><path d="M8 12C10.5 11 13 9 13.5 6C11 6.5 9 8.5 8 12Z" fill="currentColor"/></svg>';
 /* one menu, written out as text on a sheet of paper with its drawing behind */
 function menuHTML(m,key){
   const orn=(sm)=>`<div class="mp-orn${sm?' sm':''} mp-a" aria-hidden="true">${SPRIG}</div>`;
   let h=`<div class="mp-art" aria-hidden="true"></div><div class="mp-in">`;
   h+=`<p class="mp-season mp-a">${esc(tr('sn.'+key))}</p>${orn()}<h3 class="mp-title mp-a">${esc(mTitle(m))}</h3>${orn()}`;
-  m.courses.forEach(c=>{
-    h+=`<section class="mp-c"><h4 class="mp-a">${esc(lang==='el'?(c.el||c.en):c.en)}</h4>${orn(1)}`;
-    (c.dishes||[]).forEach(d=>{ const n=lang==='el'?(d.el||d.en):d.en, ds=lang==='el'?(d.elD||d.enD):d.enD;
+  m.courses.forEach((c,ci)=>{
+    const head=lang==='el'?(c.el||c.en):c.en;
+    h+=`<section class="mp-c${head?'':' nohead'}">`+(head?`<h4 class="mp-a">${esc(head)}</h4>${orn(1)}`:(ci?orn(1):''));
+    (c.dishes||[]).forEach(d=>{
+      if(d.or){ h+=`<p class="mp-or mp-a">${esc(tr('mn.or'))}</p>`; return; }
+      const n=lang==='el'?(d.el||d.en):d.en, ds=lang==='el'?(d.elD||d.enD):d.enD;
       h+=`<div class="mp-d mp-a"><b>${esc(n)}</b>${ds?`<i>${esc(ds)}</i>`:''}</div>`; });
     h+=`</section>`;
   });
-  h+=`<p class="mp-f mp-a">${esc(tr('mn.f1'))}<br>${esc(tr('mn.f2'))}</p><p class="mp-url mp-a">papadimitriou.uk</p></div>`;
+  h+=`<p class="mp-f mp-a">${esc(tr('mn.f1'))}<br>${esc(tr('mn.f2'))}</p><p class="mp-ch mp-a">${esc(tr('mn.charity'))}</p><p class="mp-url mp-a">papadimitriou.uk</p></div>`;
   return h;
 }
 function revealMenu(paper,delay=0){   // the text settles onto the page line by line
@@ -1593,7 +1610,7 @@ void main(){
   gl_FragColor=vec4(col*al,al);
 }`;
 const imgCache={};
-function loadImg(src){ if(!imgCache[src]){ const im=new Image(); im.src=src; imgCache[src]=(im.decode?im.decode():new Promise((r,j)=>{im.onload=r;im.onerror=j;})).then(()=>im); } return imgCache[src]; }
+function loadImg(src){ if(!imgCache[src]){ const im=new Image(); im.decoding='async'; im.src=src; const p=(im.decode?im.decode():new Promise((r,j)=>{im.onload=r;im.onerror=j;})).then(()=>im,e=>{ delete imgCache[src]; throw e; }); p.catch(()=>{}); imgCache[src]=p; } return imgCache[src]; }
 function growArtGL(paper,file,delay=0,quick=false){
   const art=paper.querySelector('.mp-art'), G=GROWMAP[file];
   if(!art||RM||!G) return null;
