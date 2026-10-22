@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=35';
-import * as GAL from './gallery.js?v=35';
-import * as SEA from './seasons.js?v=35';
+import { I18N } from './i18n.js?v=36';
+import * as GAL from './gallery.js?v=36';
+import * as SEA from './seasons.js?v=36';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -340,7 +340,7 @@ if(C.box){
   C.cut=C.box.querySelector('.c-cut img'); C.line=C.box.querySelector('.c-line');
   C.front=C.box.querySelector('.c-word-front');
   C.words=[...C.box.querySelectorAll('.c-word span')];
-  C.cap=$('.c-cap'); C.rule=$('.c-rule');
+  C.cap=$('.c-cap'); C.rule=$('.c-rule'); C.badge=C.box.querySelector('.c-badge');
 }
 function renderChef(y){
   if(!C.box||!M.chef) return;
@@ -372,6 +372,10 @@ function renderChef(y){
   put('ccpO',C.cap,'opacity',cp.toFixed(3));
   put('ccpT',C.cap,'transform',`translate3d(0,${((1-cp)*12).toFixed(1)}px,0)`);
   put('crT',C.rule,'transform',`scaleX(${easeOutQ(seg(p,.68,.9)).toFixed(4)})`);
+  // the "meet the chef" seal pops onto the arch once he has stepped out
+  if(C.badge){ const bp=seg(p,.38,.6), bs=bp<1?.6+.4*(1-Math.pow(1-bp,3))*(1+.18*Math.sin(bp*Math.PI)):1;
+    put('cbgO',C.badge,'opacity',seg(bp,0,.5).toFixed(3));
+    put('cbgT',C.badge,'transform',`scale(${bs.toFixed(4)}) rotate(${((1-bp)*-40).toFixed(1)}deg)`); }
 }
 const easeOutQ=t=>1-Math.pow(1-t,3);
 
