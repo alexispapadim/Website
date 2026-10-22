@@ -2,7 +2,9 @@
    ABOUT PAGE: language, header and the scroll effects for his story.
    The text itself is in i18n.js (ab.*, jy.*, j1–j12, jt.*, ap.*).
    ============================================================ */
-import { I18N } from './i18n.js?v=39';
+import { I18N } from './i18n.js?v=40';
+import { LEGAL_KEYS } from './details.js?v=40';
+import * as CU from './curtain.js?v=40';
 
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -35,22 +37,35 @@ function setLang(l){
   $$('.lang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === lang));
   placeInd();
   try { localStorage.setItem('ap-lang', lang); } catch (e) {}
+  legal.refresh();
   measure(); tick();
 }
-let langBusy = false;
-async function switchLang(l){
-  if (l === lang || langBusy) return;
-  if (RM){ setLang(l); return; }
-  langBusy = true;
-  const html = document.documentElement;
+/* the same curtain as the home page: the language name morphs from one alphabet to the other */
+const LNAME = { en: 'English', el: 'Ελληνικά' };
+function switchLang(l){
+  if (l === lang || CU.busy) return;
   $$('.lang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === l)); placeInd();
-  html.classList.add('lang-out');
-  await new Promise(r => setTimeout(r, 240));
-  setLang(l);
-  html.classList.remove('lang-out'); html.classList.add('lang-in');
-  setTimeout(() => { html.classList.remove('lang-in'); langBusy = false; }, 700);
+  const html = document.documentElement;
+  CU.swap({ word: LNAME[lang], toWord: LNAME[l], from: LNAME[lang], to: LNAME[l], change: () => setLang(l),
+    onLift: () => { html.classList.add('lang-in'); setTimeout(() => html.classList.remove('lang-in'), 700); } });
 }
 $$('.lang button').forEach(b => b.addEventListener('click', () => switchLang(b.dataset.lang)));
+
+/* ---- links back to the home page close the curtain here, and the home page opens out of it;
+        the legal pages open over this page and close back to the same spot ---- */
+const T = k => I18N[lang][k];
+const legal = CU.legalSheet({ lang: () => lang, here: () => T('tr.story'),
+  words: () => ({ privacy: T('tr.privacy'), cookies: T('tr.cookies'), terms: T('tr.terms'), legal: T('tr.legal') }) });
+const DEST = { '': 'tr.home', '#contact': 'tr.dinner', '#occasions': 'tr.menus' };
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[data-home]');
+  if (!a || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  const h = a.dataset.home, k = h.slice(1);
+  if (LEGAL_KEYS.includes(k)){ e.preventDefault(); legal.open(k); return; }
+  if (!(h in DEST)) return;
+  e.preventDefault();
+  CU.leaveTo(a.href, { word: T(DEST[h]), from: T('tr.story'), to: T(DEST[h]) });
+});
 
 /* ---- scroll effects: measured once per layout, each frame only writes transforms ---- */
 const jyList = $('#jy'), jyLine = $('#jyl'), wm = $('#wm'), about = $('#about');
@@ -100,4 +115,5 @@ if (!start && location.pathname.startsWith('/el')) start = 'el';
 if (!start){ try { start = localStorage.getItem('ap-lang') || ''; } catch (e) {} }
 if (!start) start = (navigator.language || '').toLowerCase().startsWith('el') ? 'el' : 'en';
 setLang(start);
+{ const k = location.hash.slice(1); if (LEGAL_KEYS.includes(k)){ try { history.replaceState(null, '', location.pathname + location.search); } catch (_) {} legal.open(k); } }
 requestAnimationFrame(() => { document.body.classList.add('loaded'); placeInd(); requestAnimationFrame(() => { ind.style.transition = ''; }); });

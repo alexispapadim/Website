@@ -12,7 +12,7 @@ export const I18N = {
     'ab.alt':'Portrait of Alexis Papadimitriou, private chef','ab.cap':'Chef Alexis Papadimitriou',
     'ab.more':'Read his story','ap.title':'About Alexis Papadimitriou | Private Chef','ap.desc':'The story of private chef Alexis Papadimitriou: from his first kitchen on Skyros to Michelin-starred kitchens in London, and the training behind every dinner he cooks.','ap.h1':'About Alexis Papadimitriou',
     'ap.cta.e':'Your table','ap.cta.h':'Now, let me cook <em>for you.</em>','ap.cta.p':'Tell me the date, the guests and the evening you have in mind, and I’ll write a menu just for it.','ap.cta.b':'Plan your dinner','ap.cta.m':'See the menus',
-    'ab.link':'Meet Alexis: read his story','ab.discover':'Discover his story',
+    'ab.link':'Meet Alexis: read his story','ab.ring':'Meet the chef · his story ·',
     'ph.a.alt':'Alexis in the kitchen, smiling, holding up a whole turbot','ph.a.cap':'In the kitchen',
     'ph.j.alt':'Alexis in his whites in a professional kitchen, holding up a prime cut of beef','ph.j.cap':'On the line',
     'pd.eyebrow':'The produce','pd.h':'Where every plate <em>begins</em>','pd.hint':'Tap any photo to see it larger',
@@ -110,6 +110,7 @@ export const I18N = {
     's.err':'Something went wrong. Please email or call directly:','s.req':'Please check the highlighted fields.',
     's.captcha':'Please complete the security check above, then send again.','s.rate':'Please wait a moment before sending another enquiry.',
     'lg.privacy':'Privacy Policy','lg.cookies':'Cookies','lg.terms':'Terms','lg.legal':'Legal notice','lg.close':'Close',
+    'tr.home':'Home','tr.story':'His story','tr.menus':'The menus','tr.dinner':'Your dinner','tr.privacy':'Privacy','tr.cookies':'Cookies','tr.terms':'Terms','tr.legal':'Legal notice',
     'ft':'© 2026 Alexis Papadimitriou · Private Chef &amp; Catering',
     'title':'Private Chef in Athens & London | Alexis Papadimitriou',
     'meta.desc':'Michelin-trained private chef for dinners, celebrations, villas and events in Athens, across Greece and in London. Menus written for your guests — enquire for your date.'
@@ -125,7 +126,7 @@ export const I18N = {
     'ab.alt':'Πορτρέτο του Αλέξη Παπαδημητρίου, ιδιωτικού σεφ','ab.cap':'Σεφ Αλέξης Παπαδημητρίου',
     'ab.more':'Η ιστορία του','ap.title':'Ο Αλέξης Παπαδημητρίου | Ιδιωτικός Σεφ','ap.desc':'Η ιστορία του ιδιωτικού σεφ Αλέξη Παπαδημητρίου: από την πρώτη του κουζίνα στη Σκύρο έως κουζίνες με αστέρια Michelin στο Λονδίνο, και η εκπαίδευση πίσω από κάθε δείπνο που μαγειρεύει.','ap.h1':'Ο Αλέξης Παπαδημητρίου',
     'ap.cta.e':'Το τραπέζι σας','ap.cta.h':'Τώρα, αφήστε με να μαγειρέψω <em>για εσάς.</em>','ap.cta.p':'Πείτε μου την ημερομηνία, τους καλεσμένους και τη βραδιά που έχετε στο μυαλό σας, και θα γράψω ένα μενού ειδικά γι’ αυτήν.','ap.cta.b':'Σχεδιάστε το δείπνο σας','ap.cta.m':'Δείτε τα μενού',
-    'ab.link':'Γνωρίστε τον Αλέξη: η ιστορία του','ab.discover':'Ανακαλύψτε την ιστορία του',
+    'ab.link':'Γνωρίστε τον Αλέξη: η ιστορία του','ab.ring':'Γνωρίστε τον σεφ · η ιστορία του ·',
     'ph.a.alt':'Ο Αλέξης στην κουζίνα, χαμογελαστός, κρατά ένα ολόκληρο καλκάνι','ph.a.cap':'Στην κουζίνα',
     'ph.j.alt':'Ο Αλέξης με τη στολή του σε επαγγελματική κουζίνα, κρατά ένα εκλεκτό κομμάτι μοσχαριού','ph.j.cap':'Στη γραμμή',
     'pd.eyebrow':'Οι πρώτες ύλες','pd.h':'Εκεί όπου <em>ξεκινά</em> κάθε πιάτο','pd.hint':'Πατήστε μια φωτογραφία για να τη δείτε σε μεγέθυνση',
@@ -223,6 +224,7 @@ export const I18N = {
     's.err':'Κάτι πήγε στραβά. Παρακαλούμε στείλτε email ή καλέστε απευθείας:','s.req':'Ελέγξτε τα επισημασμένα πεδία.',
     's.captcha':'Ολοκληρώστε τον έλεγχο ασφαλείας παραπάνω και στείλτε ξανά.','s.rate':'Περιμένετε λίγο πριν στείλετε νέο αίτημα.',
     'lg.privacy':'Πολιτική Απορρήτου','lg.cookies':'Cookies','lg.terms':'Όροι','lg.legal':'Νομικές πληροφορίες','lg.close':'Κλείσιμο',
+    'tr.home':'Αρχική','tr.story':'Η ιστορία του','tr.menus':'Τα μενού','tr.dinner':'Το δείπνο σας','tr.privacy':'Απόρρητο','tr.cookies':'Cookies','tr.terms':'Όροι','tr.legal':'Νομικά',
     'ft':'© 2026 Alexis Papadimitriou · Ιδιωτικός Σεφ &amp; Catering',
     'title':'Ιδιωτικός Σεφ στην Αθήνα & στο Λονδίνο | Αλέξης Παπαδημητρίου',
     'meta.desc':'Ιδιωτικός σεφ με εμπειρία σε κουζίνες Michelin, για δείπνα, γιορτές, βίλες και εκδηλώσεις στην Αθήνα, σε όλη την Ελλάδα και στο Λονδίνο. Μενού φτιαγμένα για τους καλεσμένους σας.'
