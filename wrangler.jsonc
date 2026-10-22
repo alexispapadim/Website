@@ -20,6 +20,16 @@
     "SITE_URL": "https://papadimitriou.uk",
     "ALLOWED_ORIGINS": "https://papadimitriou.uk,https://www.papadimitriou.uk"
   },
+  // Pull request preview builds (npx wrangler preview) need their own vars.
+  // ALLOWED_ORIGINS stays on the live domains, so the enquiry form on a preview cannot send real emails.
+  "previews": {
+    "vars": {
+      "TO_EMAIL": "alexis@papadimitriou.uk",
+      "FROM_EMAIL": "alexis@papadimitriou.uk",
+      "SITE_URL": "https://papadimitriou.uk",
+      "ALLOWED_ORIGINS": "https://papadimitriou.uk,https://www.papadimitriou.uk"
+    }
+  },
   "observability": { "enabled": true }
   // Secrets (set in the dashboard, never in this file):
   //   RESEND_API_KEY, TURNSTILE_SECRET
