@@ -470,7 +470,7 @@ function json(obj, status = 200, extra = {}) {
 
 // Same security headers as the _headers file (that file only covers static files).
 const SECURITY_HEADERS = {
-  'Content-Security-Policy': "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.bunny.net; font-src https://fonts.bunny.net; img-src 'self' data:; connect-src 'self'; frame-src https://challenges.cloudflare.com; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests",
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src https://challenges.cloudflare.com; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests",
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
@@ -510,6 +510,8 @@ async function greekPage(env, url, src, path, titleKey, descKey) {
       const v = el[e.getAttribute('data-i18n-aria')];
       if (v != null) e.setAttribute('aria-label', v);
     } })
+    // preload the Greek cut of the body font instead of the Latin one
+    .on('link[data-el-href]', { element(e) { e.setAttribute('href', e.getAttribute('data-el-href')); } })
     // links between the pages stay in Greek
     .on('a[data-about]', setAttr('href', '/el/about/'))
     .on('a[data-home]', { element(e) { e.setAttribute('href', '/el/' + (e.getAttribute('data-home') || '')); } })

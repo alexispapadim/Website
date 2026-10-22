@@ -22,7 +22,7 @@ const LEGAL_INFO = {
   taxOffice: '',      // ΔΟΥ
   gemi: ''            // Αριθμός ΓΕΜΗ (if registered)
 };
-const POLICY_DATE = { en: '12 October 2026', el: '12 Οκτωβρίου 2026' };
+const POLICY_DATE = { en: '22 October 2026', el: '22 Οκτωβρίου 2026' };
 
 /* ===================== legal pages ===================== */
 export function legalPages(l){
@@ -58,8 +58,7 @@ export function legalPages(l){
 <h2>4. Αποδέκτες</h2><p>Πάροχοι που ενεργούν για λογαριασμό μας (εκτελούντες την επεξεργασία):</p><ul>
 <li><strong>Cloudflare, Inc.</strong> — φιλοξενία, ασφάλεια, έλεγχος Turnstile και προώθηση email.</li>
 <li><strong>Resend, Inc.</strong> — αποστολή των email του αιτήματος και της επιβεβαίωσης.</li>
-<li><strong>Google (Gmail)</strong> — το εισερχόμενο όπου λαμβάνουμε και απαντάμε στα αιτήματα.</li>
-<li><strong>BunnyWay d.o.o. (Bunny Fonts, ΕΕ)</strong> — παρέχει τις γραμματοσειρές του ιστότοπου και λαμβάνει τη διεύθυνση IP σας όταν φορτώνονται.</li></ul>
+<li><strong>Google (Gmail)</strong> — το εισερχόμενο όπου λαμβάνουμε και απαντάμε στα αιτήματα.</li></ul>
 <p>Δεν κοινοποιούμε τα δεδομένα σας σε άλλους, εκτός αν το απαιτεί ο νόμος.</p>
 <h2>5. Διαβιβάσεις εκτός ΕΟΧ</h2><p>Ορισμένοι πάροχοι (Cloudflare, Resend, Google) εδρεύουν στις ΗΠΑ και ενδέχεται να επεξεργάζονται δεδομένα εκτός ΕΟΧ/Ηνωμένου Βασιλείου. Στις περιπτώσεις αυτές, οι διαβιβάσεις βασίζονται σε κατάλληλες εγγυήσεις, όπως το Πλαίσιο Προστασίας Δεδομένων ΕΕ–ΗΠΑ ή οι Τυποποιημένες Συμβατικές Ρήτρες της Ευρωπαϊκής Επιτροπής.</p>
 <h2>6. Χρόνος διατήρησης</h2><ul>
@@ -77,7 +76,7 @@ export function legalPages(l){
 <h2>Τι αποθηκεύεται</h2><ul>
 <li><strong>Προτίμηση γλώσσας</strong> (<code>ap-lang</code>, στο localStorage του προγράμματος περιήγησης): θυμάται αν επιλέξατε Ελληνικά ή Αγγλικά. Παραμένει στη συσκευή σας και δεν μας αποστέλλεται.</li>
 <li><strong>Ασφάλεια Cloudflare:</strong> η Cloudflare ενδέχεται να ορίσει απολύτως απαραίτητα cookies ασφαλείας (π.χ. για τον εντοπισμό bots), και ο έλεγχος Turnstile εκτελείται όταν χρησιμοποιείτε τη φόρμα. Χρησιμοποιούνται μόνο για λόγους ασφαλείας.</li>
-<li><strong>Γραμματοσειρές:</strong> φορτώνονται από το Bunny Fonts (ΕΕ), χωρίς cookies.</li></ul>
+<li><strong>Γραμματοσειρές:</strong> φορτώνονται από τον ίδιο τον ιστότοπο, χωρίς cookies και χωρίς τρίτους.</li></ul>
 <p>Τα παραπάνω είναι απολύτως απαραίτητα για τη λειτουργία που ζητάτε και δεν απαιτούν συγκατάθεση (άρθρο 4 παρ. 5 ν. 3471/2006). Μπορείτε να τα διαγράψετε οποιαδήποτε στιγμή από τις ρυθμίσεις του προγράμματος περιήγησής σας.</p>`,
     terms:`<h1 id="sheet-title">Όροι χρήσης και κρατήσεων</h1>${upd}
 <h2>Πληροφορίες και προσφορές</h2><p>Οι πληροφορίες του ιστότοπου είναι γενικές. Τα μενού και οι τιμές δίνονται ξεχωριστά για κάθε εκδήλωση, με προσφορά.</p>
@@ -110,8 +109,7 @@ export function legalPages(l){
 <h2>4. Who receives your data</h2><p>Service providers acting on our behalf (processors):</p><ul>
 <li><strong>Cloudflare, Inc.</strong> — hosting, security, the Turnstile check and email forwarding.</li>
 <li><strong>Resend, Inc.</strong> — sending the enquiry and confirmation emails.</li>
-<li><strong>Google (Gmail)</strong> — the inbox where we receive and answer enquiries.</li>
-<li><strong>BunnyWay d.o.o. (Bunny Fonts, EU)</strong> — delivers the website’s fonts and receives your IP address when they load.</li></ul>
+<li><strong>Google (Gmail)</strong> — the inbox where we receive and answer enquiries.</li></ul>
 <p>We don’t share your data with anyone else unless the law requires it.</p>
 <h2>5. International transfers</h2><p>Some providers (Cloudflare, Resend, Google) are based in the US and may process data outside the EEA/UK. Where they do, transfers rely on appropriate safeguards such as the EU–US Data Privacy Framework (and its UK extension) or the European Commission’s Standard Contractual Clauses.</p>
 <h2>6. How long we keep it</h2><ul>
@@ -129,7 +127,7 @@ export function legalPages(l){
 <h2>What is stored</h2><ul>
 <li><strong>Language preference</strong> (<code>ap-lang</code>, in your browser’s localStorage): remembers whether you chose English or Greek. It stays on your device and is never sent to us.</li>
 <li><strong>Cloudflare security:</strong> Cloudflare may set strictly necessary security cookies (for example to detect bots), and the Turnstile check runs when you use the form. These are used only for security.</li>
-<li><strong>Fonts:</strong> loaded from Bunny Fonts (EU), without cookies.</li></ul>
+<li><strong>Fonts:</strong> served from this website itself, without cookies or third parties.</li></ul>
 <p>All of the above is strictly necessary for features you ask for, so no consent is required (Art. 5(3) ePrivacy Directive; Art. 4(5) Greek Law 3471/2006). You can clear it at any time in your browser settings.</p>`,
     terms:`<h1 id="sheet-title">Terms of use &amp; bookings</h1>${upd}
 <h2>Information and quotes</h2><p>Information on this website is general. Menus and prices are quoted individually for each event.</p>

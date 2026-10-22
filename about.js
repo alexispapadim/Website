@@ -2,9 +2,9 @@
    ABOUT PAGE: language, header and the scroll effects for his story.
    The text itself is in i18n.js (ab.*, jy.*, j1–j12, jt.*, ap.*).
    ============================================================ */
-import { I18N } from './i18n.js?v=40';
-import { LEGAL_KEYS } from './details.js?v=40';
-import * as CU from './curtain.js?v=40';
+import { I18N } from './i18n.js?v=41';
+import { LEGAL_KEYS } from './details.js?v=41';
+import * as CU from './curtain.js?v=41';
 
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -104,6 +104,13 @@ addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(() => { i
 addEventListener('load', () => { measure(); tick(); });
 (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { measure(); tick(); });
 
+/* ---- photos: a soft travelling light holds their place until they arrive, then they fade in ---- */
+$$('.ph-frame img').forEach(im => {
+  if (im.complete && im.naturalWidth) return;
+  const f = im.closest('.ph-frame'), done = () => f.classList.remove('ld');
+  f.classList.add('ld'); im.addEventListener('load', done); im.addEventListener('error', done);
+});
+
 /* ---- reveals start once the opening veil has lifted ---- */
 const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .18, rootMargin: '0px 0px -6% 0px' });
 setTimeout(() => $$('[data-reveal],[data-reveal-group],[data-ph],.jy-i').forEach(e => io.observe(e)), RM ? 0 : 650);
@@ -116,4 +123,7 @@ if (!start){ try { start = localStorage.getItem('ap-lang') || ''; } catch (e) {}
 if (!start) start = (navigator.language || '').toLowerCase().startsWith('el') ? 'el' : 'en';
 setLang(start);
 { const k = location.hash.slice(1); if (LEGAL_KEYS.includes(k)){ try { history.replaceState(null, '', location.pathname + location.search); } catch (_) {} legal.open(k); } }
-requestAnimationFrame(() => { document.body.classList.add('loaded'); placeInd(); requestAnimationFrame(() => { ind.style.transition = ''; }); });
+requestAnimationFrame(() => { placeInd(); requestAnimationFrame(() => { ind.style.transition = ''; }); });
+// the opening veil lifts once the headline font is in (or after a short wait), so the page never opens in a stand-in face
+Promise.race([document.fonts ? document.fonts.load('300 1em "Cormorant Garamond"') : 0, new Promise(r => setTimeout(r, 1500))]).catch(() => {})
+  .then(() => requestAnimationFrame(() => document.body.classList.add('loaded')));
