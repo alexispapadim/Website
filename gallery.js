@@ -34,17 +34,23 @@ export const GALLERY = [
    Same rules as above: file name, optional w/h, English and Greek
    caption. Text before the first comma is the title; the rest
    becomes the small line underneath.
+   pos (optional) moves the crop inside the frame, e.g. pos: '30% 50%'
+   keeps the left of a wide photo in view. Tapping shows the whole photo.
    ============================================================ */
 export const PRODUCE = [
   { file: 'produce-12.jpg', w: 1000, h: 1328, en: 'Pumpkins, the first of the autumn crop',      el: 'Κολοκύθες, η πρώτη φθινοπωρινή σοδειά' },
   { file: 'produce-13.jpg', w: 1000, h: 1328, en: 'Lobsters, straight off the boat',            el: 'Αστακοί, κατευθείαν από τη βάρκα' },
   { file: 'produce-1.jpg', w: 1000, h: 1250, en: 'Borlotti beans, podded by hand',               el: 'Φασόλια μπορλότι, καθαρισμένα στο χέρι' },
+  { file: 'produce-24.webp', w: 1000, h: 1333, en: 'Fennel, pulled straight from the garden',    el: 'Μάραθος, φρεσκοβγαλμένος από τον κήπο' },
+  { file: 'produce-23.webp', w: 1000, h: 1333, en: 'Turbot, whole on crushed ice',               el: 'Καλκάνι, ολόκληρο πάνω σε θρυμματισμένο πάγο' },
+  { file: 'produce-22.webp', w: 1000, h: 1333, en: 'Borlotti beans, slow-simmered with herbs',   el: 'Φασόλια μπορλότι, σιγοβρασμένα με μυρωδικά' },
   { file: 'produce-14.jpg', w: 1000, h: 1328, en: 'Langoustines, split and over the coals',     el: 'Καραβίδες, ανοιγμένες στα κάρβουνα' },
   { file: 'produce-15.jpg', w: 1000, h: 1328, en: 'Heirloom tomato, picked at its best',        el: 'Ντομάτα παλαιάς ποικιλίας, στο καλύτερό της' },
   { file: 'produce-21.jpg', w: 1000, h: 1328, en: 'Artichokes, the first of spring',      el: 'Αγκινάρες, οι πρώτες της άνοιξης' },
   { file: 'produce-2.jpg', w: 1200, h: 904,  en: 'Over the coals, bone-in steaks, sea salt',     el: 'Στα κάρβουνα, μπριζόλες με κόκαλο, αλάτι θαλάσσης' },
   { file: 'produce-16.jpg', w: 1000, h: 1328, en: 'Sea bass, whole and fresh',                  el: 'Λαβράκι, ολόκληρο και φρέσκο' },
   { file: 'produce-20.jpg', w: 1200, h: 904,  en: 'Monkfish heads, nothing goes to waste', el: 'Κεφάλια πεσκανδρίτσας, τίποτα δεν πάει χαμένο' },
+  { file: 'produce-25.webp', w: 1200, h: 904,  pos: '38% 50%', en: 'Monkfish tail, ready to fillet', el: 'Ουρά πεσκανδρίτσας, έτοιμη για φιλετάρισμα' },
   { file: 'produce-17.jpg', w: 1000, h: 1328, en: 'Strawberries & cherries, at their peak',     el: 'Φράουλες και κεράσια, στην καλύτερη στιγμή τους' },
   { file: 'produce-3.jpg', w: 1200, h: 900,  en: 'Sirloin, trimmed and portioned',               el: 'Κόντρα φιλέτο, καθαρισμένο και μοιρασμένο' },
   { file: 'produce-4.jpg', w: 1000, h: 1250, en: 'Parmigiano Reggiano, the whole wheel',         el: 'Παρμιτζάνο Ρετζάνο, ολόκληρο κεφάλι' },

@@ -15,6 +15,7 @@ The QR code on his business card brings people here to send an enquiry.
 | `alexis.jpg` | His portrait (used for Google and as a fallback) |
 | `alexis-cut.webp` | His portrait cut out of the background (for the chef scene) |
 | `alexis-bg.jpg` | The studio backdrop behind him in the chef scene |
+| `alexis-turbot.webp`, `alexis-prime-cut.webp` | Kitchen photos of him in the About and Journey sections |
 | `robots.txt`, `sitemap.xml` | Tell search engines what to index |
 | `og.JPG`, `apple-touch-icon.PNG` | The image shown when the link is shared, and the phone home-screen icon |
 | `worker.js` | The enquiry backend (`/api/enquiry`), plus the pre-rendered Greek page at `/el/` |

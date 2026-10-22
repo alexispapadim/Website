@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=34';
-import * as GAL from './gallery.js?v=34';
-import * as SEA from './seasons.js?v=34';
+import { I18N } from './i18n.js?v=35';
+import * as GAL from './gallery.js?v=35';
+import * as SEA from './seasons.js?v=35';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -528,6 +528,7 @@ let disc=$('#disc');
 if(!disc){ disc=document.createElement('div'); disc.id='disc'; disc.className='disc'; back.prepend(disc); }
 const stmt=$('#statement'), occ=$('#occasions'), hw=$('#hw'), track=$('#track'), bar=$('#bar');
 const jyList=$('#jy'), jyLine=$('#jyl');
+const phs=$$('[data-ph]').map(el=>({el,img:el.querySelector('img')}));
 const steps=$('#steps'), pline=$('#pline'), wm=$('#wm'), about=$('#about'), hdr=$('#hdr');
 const themed=$$('[data-theme]');
 const docTop=el=>el.getBoundingClientRect().top+scrollY;
@@ -548,6 +549,7 @@ function measure(){
   const box=el=>{const t=docTop(el);return{top:t,h:el.offsetHeight,span:Math.max(1,el.offsetHeight-M.vh)}};
   if(typeof measureSeasons==='function') measureSeasons();
   M.hero=box(hero); M.stmt=box(stmt); M.occ=box(occ); M.steps=box(steps); M.about=box(about); M.jy=jyList?box(jyList):null;
+  phs.forEach(p=>{ p.top=docTop(p.el); p.h=p.el.offsetHeight; });
   M.themes=themed.map(s=>{const b=box(s);return{top:b.top,bottom:b.top+b.h,dark:s.dataset.theme==='dark',hero:s===hero}});
   if(C.sec){ M.chef=box(C.sec); M.bh=C.box.offsetHeight; }
   M.gal=null;
@@ -777,6 +779,10 @@ function render(y,realY){
   if(!RM&&!(sw&&sw.mode==='h')) applyCards(y);
   if(!RM){
     if(M.jy) put('jyl',jyLine,'transform',`scaleY(${clamp((y+M.vh*.6-M.jy.top)/M.jy.h).toFixed(4)})`);
+    // story photos: the photo drifts inside its frame, and on desktop the frame trails the text a little
+    phs.forEach((p,i)=>{ const t=clamp((y+M.vh-p.top)/(M.vh+p.h))-.5;
+      put('phi'+i,p.img,'transform',`translate3d(0,${(t*-14).toFixed(2)}%,0)`);
+      put('phf'+i,p.el,'transform',M.w>=1024?`translate3d(0,${(t*-56).toFixed(1)}px,0)`:'none'); });
     put('pline',pline,'transform',`scaleY(${clamp((y+M.vh*.62-M.steps.top)/M.steps.h).toFixed(4)})`);
     put('wm',wm,'transform',`translate3d(0,calc(-50% + ${((M.about.top-y)*-.18).toFixed(1)}px),0)`);
   }
@@ -831,7 +837,7 @@ addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{
 addEventListener('load',()=>{measure();tick()});
 
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.18,rootMargin:'0px 0px -6% 0px'});
-$$('[data-reveal],[data-reveal-group]').forEach(e=>io.observe(e));
+$$('[data-reveal],[data-reveal-group],[data-ph]').forEach(e=>io.observe(e));
 
 /* ===================== form ===================== */
 const form=$('#form'), status=$('#status'), send=$('#send');
@@ -955,6 +961,7 @@ function renderMasonry(){
       const btn=document.createElement('button'); btn.type='button'; btn.className='sh-frame';
       const bw=document.createElement('img'); bw.className='sh-bw'; bw.src=srcOf(g); bw.alt=''; bw.decoding='async'; bw.loading=li<n*2?'eager':'lazy';
       const img=document.createElement('img'); img.className='sh-col'; img.src=srcOf(g); img.alt=capOf(g); img.decoding='async'; img.loading=bw.loading;
+      if(g.pos) bw.style.objectPosition=img.style.objectPosition=g.pos;
       const lamp=document.createElement('i'); lamp.className='sh-lamp';
       const corners=document.createElement('i'); corners.className='sh-corners';
       const it={el:fig,btn,img,bw,lamp,cap:null,g,i:li,set,gone:false};
