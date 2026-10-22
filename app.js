@@ -1,8 +1,8 @@
-import { I18N } from './i18n.js?v=40';
-import * as GAL from './gallery.js?v=40';
-import * as SEA from './seasons.js?v=40';
-import { CONFIG, LEGAL_KEYS } from './details.js?v=40';
-import * as CU from './curtain.js?v=40';
+import { I18N } from './i18n.js?v=41';
+import * as GAL from './gallery.js?v=41';
+import * as SEA from './seasons.js?v=41';
+import { CONFIG, LEGAL_KEYS } from './details.js?v=41';
+import * as CU from './curtain.js?v=41';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -1446,7 +1446,9 @@ function seqDraw(ctx,sheet,S,f,gx,gy,k,alpha=1){
     const per=S.per||S.n, img=Array.isArray(sheet)?sheet[Math.floor(i/per)]:sheet, j=i%per, r=Math.floor(j/S.cols), c=j%S.cols;
     if(!img) return;
     ctx.globalAlpha=al*alpha; ctx.drawImage(img,c*cw,r*ch,cw,ch,gx-S.anchor[0]*k,gy-S.anchor[1]*k,cw*k,ch*k); };
-  one(i0,1-fr); one(i0+1,fr); ctx.globalAlpha=1;
+  // frames are blended additively: a(1-t) + a·t = a, so the drawing never thins out between frames
+  const op=ctx.globalCompositeOperation; ctx.globalCompositeOperation='lighter';
+  one(i0,1-fr); one(i0+1,fr); ctx.globalAlpha=1; ctx.globalCompositeOperation=op;
 }
 function growSeq(paper,file,delay=0){
   const art=paper.querySelector('.mp-art'), S=GROWSEQ[file];
@@ -1457,11 +1459,14 @@ function growSeq(paper,file,delay=0){
   const finish=()=>{ art.style.visibility=''; cv.remove(); };
   const E=S.end;
   const sheets=Promise.all((S.parts||[S.sheet]).map(f=>loadImg('/'+f)));
-  return Promise.all([sheets,E?loadImg('/'+E.sheet):null]).then(([sheet,endSheet])=>new Promise(res=>{
+  return Promise.all([sheets,E?loadImg('/'+E.sheet):null,loadImg('/'+file)]).then(([sheet,endSheet,artIm])=>new Promise(res=>{
     const w=art.offsetWidth, h=art.offsetHeight, dpr=Math.min(2,devicePixelRatio||1);
     if(!w||!h){ finish(); return res(); }
     cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
     const W=cv.width, H=cv.height;
+    let tint=null;   // the menu's drawing in its ink colour, at this canvas's resolution
+    const tinted=()=>{ if(!tint){ tint=document.createElement('canvas'); tint.width=W; tint.height=H; const t=tint.getContext('2d'); t.imageSmoothingQuality='high';
+      t.drawImage(artIm,0,0,W,H); t.globalCompositeOperation='source-in'; t.fillStyle=getComputedStyle(art).backgroundColor||'#a9a487'; t.fillRect(0,0,W,H); } return tint; };
     /* 1. seed → full plant (~5s), the camera easing in over the last stretch so the plant comes to
           stand exactly where the menu's artichoke is;
        2. the plant then reshapes, frame by frame, into the menu's own drawing (~1.6s);
@@ -1482,8 +1487,13 @@ function growSeq(paper,file,delay=0){
         const one=(i,al)=>{ if(al<=.003||i>=E.n) return; const r=Math.floor(i/E.cols), c=i%E.cols;
           ctx.globalAlpha=al; ctx.drawImage(endSheet,c*cw,r*ch,cw,ch,0,0,W,H); };
         const fadeIn=sm(clamp((ms-GROW)/120)), handOut=sm(clamp((ms-GROW-MORPH)/HAND));
-        ctx.save(); ctx.globalAlpha=1; one(i0,(1-fr)*fadeIn*(1-handOut)); one(i0+1,fr*fadeIn*(1-handOut)); ctx.restore();
-        if(ms>=GROW+MORPH&&art.style.visibility==='hidden'){ art.style.visibility=''; art.animate([{opacity:0}],{duration:HAND,easing:'ease'}); }
+        // the last morph frame dissolves into the menu's own drawing inside this canvas (added, not
+        // layered, so nothing dips or doubles); the canvas then ends identical to the drawing and
+        // swaps for it without a visible change
+        ctx.save(); ctx.globalCompositeOperation='lighter';
+        one(i0,(1-fr)*fadeIn*(1-handOut)); one(i0+1,fr*fadeIn*(1-handOut));
+        if(handOut>0){ ctx.globalAlpha=handOut; ctx.drawImage(tinted(),0,0,W,H); }
+        ctx.restore();
       }
       if(ms<GROW+(E?MORPH+HAND:0)) requestAnimationFrame(frame); else { finish(); res(); }
     };
