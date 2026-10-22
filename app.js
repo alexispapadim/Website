@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=38';
-import * as GAL from './gallery.js?v=38';
-import * as SEA from './seasons.js?v=38';
+import { I18N } from './i18n.js?v=39';
+import * as GAL from './gallery.js?v=39';
+import * as SEA from './seasons.js?v=39';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
