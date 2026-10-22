@@ -182,7 +182,9 @@ function validate(b) {
   if (email.length > LIMITS.email || !EMAIL_RE.test(email) || email.includes('..')) bad.push('email');
 
   const phone = oneLine(b.phone, LIMITS.phone);
-  if (phone && !/^[+0-9 ()./-]{5,32}$/.test(phone)) bad.push('phone');
+  // the form sends one value with its country code, e.g. "+30 694 123 4567" (7–15 digits, as E.164 allows)
+  const phoneDigits = phone.replace(/\D/g, '').length;
+  if (phone && (!/^[+0-9 ()./-]{5,32}$/.test(phone) || phoneDigits < 7 || phoneDigits > 15)) bad.push('phone');
 
   let event_date = oneLine(b.event_date, 10);
   if (event_date) {

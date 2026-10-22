@@ -573,3 +573,14 @@ header{padding-top:max(12px,env(safe-area-inset-top))!important;padding-bottom:1
 .ap-go{padding:16px 26px;font-size:12px}
 .ab-more-l{margin-top:0;color:var(--cream)}
 .ab-more-l i{color:var(--gold-l);border-color:rgba(214,182,121,.6)}
+
+/* phone: country code + number on one line, like the guests stepper */
+.ph-wrap{display:flex;align-items:center;gap:14px;border-bottom:1px solid rgba(32,37,26,.25);transition:border-color .3s}
+.ph-wrap:focus-within,.ph-wrap:hover{border-bottom-color:var(--gold)}
+.f.bad .ph-wrap{border-bottom-color:#a3402a}
+.ph-wrap .cs-btn{width:auto;flex:none;gap:8px;border-bottom:0!important;box-shadow:none!important;padding-right:14px;position:relative;font-size:15px;letter-spacing:.02em}
+.ph-wrap .cs-btn::after{content:"";position:absolute;right:0;top:50%;height:20px;margin-top:-10px;width:1px;background:rgba(184,145,79,.45)}
+.ph-wrap .cs-btn:focus-visible .cs-val{text-decoration:underline;text-decoration-color:var(--gold);text-underline-offset:5px}
+.ph-wrap input{border-bottom:0!important;flex:1;min-width:0;letter-spacing:.03em;font-variant-numeric:tabular-nums}
+.cs-aux{white-space:nowrap;font-style:normal;color:var(--gold);font-size:.88em;letter-spacing:.04em;margin-left:6px}
+.ph-f .cs:not(.cs-sheet){min-width:280px;right:auto;width:100%}
