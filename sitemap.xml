@@ -14,4 +14,18 @@
     <xhtml:link rel="alternate" hreflang="el" href="https://papadimitriou.uk/el/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://papadimitriou.uk/"/>
   </url>
+  <url>
+    <loc>https://papadimitriou.uk/about</loc>
+    <lastmod>2026-10-22</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papadimitriou.uk/about"/>
+    <xhtml:link rel="alternate" hreflang="el" href="https://papadimitriou.uk/el/about/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papadimitriou.uk/about"/>
+  </url>
+  <url>
+    <loc>https://papadimitriou.uk/el/about/</loc>
+    <lastmod>2026-10-22</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://papadimitriou.uk/about"/>
+    <xhtml:link rel="alternate" hreflang="el" href="https://papadimitriou.uk/el/about/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://papadimitriou.uk/about"/>
+  </url>
 </urlset>

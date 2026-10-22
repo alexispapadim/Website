@@ -7,8 +7,11 @@ The QR code on his business card brings people here to send an enquiry.
 
 | File | What it is |
 |---|---|
-| `index.html` | Page layout and styles |
-| `app.js` | Animations, the legal pages, and the form |
+| `index.html` | The home page layout |
+| `about.html` | The About page: his story, career timeline and training (served at `/about`, Greek at `/el/about/`) |
+| `site.css` | Styles shared by both pages |
+| `app.js` | Home page animations, the legal pages, and the form |
+| `about.js` | The About page's language switch and scroll effects |
 | `i18n.js` | All the site text in English and Greek |
 | `gallery.js` | The list of food photos for the gallery |
 | `food-1.jpg` … `food-4.jpg` | The gallery photos |

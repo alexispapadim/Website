@@ -74,7 +74,14 @@ export default {
       return Response.redirect(url.origin + '/el/' + url.search, 301);
     }
     if (url.pathname === '/el/' && (request.method === 'GET' || request.method === 'HEAD')) {
-      return greekPage(env, url);
+      return greekPage(env, url, '/', '/el/', 'title', 'meta.desc');
+    }
+    // His story in Greek: /el/about/ (the English page is the static about.html, served at /about)
+    if (url.pathname === '/el/about' || url.pathname === '/el/about.html') {
+      return Response.redirect(url.origin + '/el/about/' + url.search, 301);
+    }
+    if (url.pathname === '/el/about/' && (request.method === 'GET' || request.method === 'HEAD')) {
+      return greekPage(env, url, '/about', '/el/about/', 'ap.title', 'ap.desc');
     }
     // Images uploaded from phones often get capitalised extensions (photo.JPG). If the exact
     // name isn't found, try the other case so both spellings work.
@@ -457,7 +464,7 @@ function json(obj, status = 200, extra = {}) {
   });
 }
 
-/* ---------------- Greek page (/el/) ---------------- */
+/* ---------------- Greek pages (/el/ and /el/about/) ---------------- */
 
 // Same security headers as the _headers file (that file only covers static files).
 const SECURITY_HEADERS = {
@@ -470,22 +477,22 @@ const SECURITY_HEADERS = {
   'Cross-Origin-Opener-Policy': 'same-origin'
 };
 
-async function greekPage(env, url) {
-  const base = await env.ASSETS.fetch(new Request(new URL('/', url)));
+async function greekPage(env, url, src, path, titleKey, descKey) {
+  const base = await env.ASSETS.fetch(new Request(new URL(src, url)));
   if (!base.ok) return base;
   const el = I18N.el;
   const site = (env.SITE_URL || url.origin).replace(/\/$/, '');
-  const pageUrl = site + '/el/';
+  const pageUrl = site + path;
   const setAttr = (name, value) => ({ element(e) { e.setAttribute(name, value); } });
 
   const out = new HTMLRewriter()
     .on('html', setAttr('lang', 'el'))
-    .on('title', { element(e) { e.setInnerContent(el.title); } })
-    .on('meta[name="description"]', setAttr('content', el['meta.desc']))
+    .on('title', { element(e) { e.setInnerContent(el[titleKey]); } })
+    .on('meta[name="description"]', setAttr('content', el[descKey]))
     .on('link[rel="canonical"]', setAttr('href', pageUrl))
     .on('meta[property="og:url"]', setAttr('content', pageUrl))
-    .on('meta[property="og:title"]', setAttr('content', el.title))
-    .on('meta[property="og:description"]', setAttr('content', el['meta.desc']))
+    .on('meta[property="og:title"]', setAttr('content', el[titleKey]))
+    .on('meta[property="og:description"]', setAttr('content', el[descKey]))
     .on('meta[property="og:locale"]', setAttr('content', 'el_GR'))
     .on('meta[property="og:locale:alternate"]', setAttr('content', 'en_GB'))
     // All visible text in Greek, so search engines index it without running scripts.
@@ -497,6 +504,13 @@ async function greekPage(env, url) {
       const v = el[e.getAttribute('data-i18n-alt')];
       if (v != null) e.setAttribute('alt', v);
     } })
+    .on('[data-i18n-aria]', { element(e) {
+      const v = el[e.getAttribute('data-i18n-aria')];
+      if (v != null) e.setAttribute('aria-label', v);
+    } })
+    // links between the pages stay in Greek
+    .on('a[data-about]', setAttr('href', '/el/about/'))
+    .on('a[data-home]', { element(e) { e.setAttribute('href', '/el/' + (e.getAttribute('data-home') || '')); } })
     .on('[data-i18n-ph]', { element(e) {
       const v = el[e.getAttribute('data-i18n-ph')];
       if (v != null) e.setAttribute('placeholder', v);
