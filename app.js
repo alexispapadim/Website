@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=37';
-import * as GAL from './gallery.js?v=37';
-import * as SEA from './seasons.js?v=37';
+import { I18N } from './i18n.js?v=38';
+import * as GAL from './gallery.js?v=38';
+import * as SEA from './seasons.js?v=38';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -1223,7 +1223,14 @@ const MENU_RATIO=1055/1491;
   .mp{position:relative;container-type:inline-size;width:var(--pw,360px);min-height:var(--ph,500px);margin:auto;box-sizing:border-box;overflow:hidden;border-radius:4px;
     background:radial-gradient(ellipse at 50% 42%,#f8f4ec 0%,#f2ecdf 70%,#ebe3d2 100%);color:#22261b;text-align:center;
     box-shadow:0 40px 90px -30px rgba(0,0,0,.85),0 0 0 1px rgba(214,182,121,.14);display:flex;flex-direction:column;justify-content:center;padding:clamp(28px,8cqw,56px) clamp(18px,7cqw,48px) clamp(20px,5cqw,36px)}
-  .mp-art{position:absolute;left:0;top:50%;width:100%;aspect-ratio:900/1272;transform:translateY(-50%);background:#a9a487;opacity:.78;pointer-events:none;
+  /* readability: the drawing stays at the edges of the page; behind the words a soft wash of paper
+     lifts the text clear of the lines, and every line of text carries a faint paper halo */
+  .mp{--art-o:.6;--paper:247,243,234}
+  .mp::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(ellipse 50% 56% at 50% 50%,rgba(var(--paper),.82) 0%,rgba(var(--paper),.66) 52%,rgba(var(--paper),0) 100%)}
+  .mp-in{text-shadow:0 0 1px rgba(var(--paper),1),0 0 4px rgba(var(--paper),1),0 0 10px rgba(var(--paper),.95),0 0 18px rgba(var(--paper),.8)}
+  @media(max-width:620px){.mp{--art-o:.66}.mp::after{background:linear-gradient(90deg,rgba(var(--paper),.12) 0%,rgba(var(--paper),.62) 16%,rgba(var(--paper),.7) 50%,rgba(var(--paper),.62) 84%,rgba(var(--paper),.12) 100%)}}
+  .mp-art{position:absolute;left:0;top:50%;width:100%;aspect-ratio:900/1272;transform:translateY(-50%);background:#a9a487;opacity:var(--art-o);pointer-events:none;
     -webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
   .mp-in{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center}
   .mp-season{font:500 clamp(11px,2.3cqw,15px)/1 var(--serif);letter-spacing:.34em;text-transform:uppercase;padding-left:.34em}
@@ -1238,14 +1245,14 @@ const MENU_RATIO=1055/1491;
   .mp-c h4{font:500 clamp(11px,2.3cqw,14.5px)/1.2 var(--serif);letter-spacing:.3em;text-transform:uppercase;margin:0;padding-left:.3em}
   .mp-d{margin:0 auto clamp(8px,2cqw,14px);max-width:92%}
   .mp-d:last-child{margin-bottom:0}
-  .mp-or{font:italic 400 clamp(13px,2.4cqw,16px)/1 var(--serif);color:#b8914f;margin:calc(-1 * clamp(2px,.8cqw,6px)) 0 clamp(6px,1.6cqw,11px);letter-spacing:.06em}
+  .mp-or{font:italic 400 clamp(13px,2.4cqw,16px)/1 var(--serif);color:#97733a;margin:calc(-1 * clamp(2px,.8cqw,6px)) 0 clamp(6px,1.6cqw,11px);letter-spacing:.06em}
   .mp-c.nohead{margin-top:clamp(8px,2cqw,14px)}
-  .mp-ch{margin-top:10px;font:italic 400 clamp(11px,1.8cqw,12.5px)/1.45 var(--serif);color:#6b6e57;max-width:46ch}
+  .mp-ch{margin-top:10px;font:italic 400 clamp(11px,1.8cqw,12.5px)/1.45 var(--serif);color:#55583f;max-width:46ch}
   .mp-d b{display:block;font:400 clamp(17px,3.5cqw,23px)/1.22 var(--serif);color:#1d2116}
-  .mp-d i{display:block;font:italic 400 clamp(14px,2.65cqw,17.5px)/1.35 var(--serif);color:#4a4e3c;margin-top:2px}
-  .mp-f{margin-top:clamp(16px,4cqw,28px);font:italic 400 clamp(12px,2cqw,13.5px)/1.5 var(--serif);color:#4a4e3c}
+  .mp-d i{display:block;font:italic 400 clamp(14px,2.65cqw,17.5px)/1.35 var(--serif);color:#3b3f2f;margin-top:2px}
+  .mp-f{margin-top:clamp(16px,4cqw,28px);font:italic 400 clamp(12px,2cqw,13.5px)/1.5 var(--serif);color:#3b3f2f}
   .mp-url{margin-top:8px;font:500 clamp(10px,1.8cqw,12px)/1 var(--serif);letter-spacing:.3em;color:#22261b}
-  .mp-grow{position:absolute;left:0;top:50%;width:100%;aspect-ratio:900/1272;transform:translateY(-50%);opacity:.78;pointer-events:none}
+  .mp-grow{position:absolute;left:0;top:50%;width:100%;aspect-ratio:900/1272;transform:translateY(-50%);opacity:var(--art-o);pointer-events:none}
   /* footer */
   .mv-foot{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 16px max(14px,calc(env(safe-area-inset-bottom) + 6px)) 20px;opacity:0}
   .mv-meta{display:grid;gap:6px;min-width:0}
@@ -1314,7 +1321,8 @@ const SEASON_ART={
   summer:{img:'art-summer.webp',fx:.80,fy:.66,s:2.0},
   autumn:{img:'art-autumn.webp',fx:.36,fy:.56,s:1.55},
   winter:{img:'art-winter.webp',fx:.82,fy:.68,s:2.0},
-  spring:{img:'art-spring.webp',fx:.30,fy:.42,s:1.5}
+  spring:{img:'art-spring.webp',fx:.30,fy:.42,s:1.5},
+  events:{img:'art-events.webp',fx:.27,fy:.68,s:1.95}
 };
 var SEAS=null;                          // set once the cards are built (render may run before that)
 function buildSeasons(){
@@ -1386,8 +1394,20 @@ $('#track').addEventListener('click',e=>{
   if(e.target.closest('.s-more')) return;
   const card=e.target.closest('.card.season'); if(!card||!(card._menus&&card._menus.length)) return;
   if(performance.now()-lastDragEnd<400) return;          // that was a swipe, not a tap
-  openMenu(card);
+  if(menuV||viewer||openT) return;
+  const shift=cardShift(card);
+  if(Math.abs(shift)<2||RM){ if(shift) nudgeCards(shift); openMenu(card); return; }
+  animOff(off+shift,380); openT=setTimeout(()=>{ openT=0; openMenu(card); },400);
 });
+/* how far the cards must slide for this one to sit wholly inside the strip (0 if it already does) */
+function cardShift(card){
+  const r=card.getBoundingClientRect(), h=hw.getBoundingClientRect(), pad=Math.min(16,Math.max(0,(h.width-r.width)/2));
+  const lo=h.left+pad, hi=h.right-pad;
+  const s=r.left<lo?r.left-lo:r.right>hi?r.right-hi:0;
+  return clamp(curLeft+s,0,hDist)-curLeft;
+}
+function nudgeCards(shift){ cancelAnimationFrame(offAnim); offAnim=0; off+=shift; applyCards(sy); }
+let openT=0;
 
 let menuV=null;
 /* ---- the card ⇄ menu flip ----
@@ -1396,13 +1416,13 @@ let menuV=null;
    while it faces away, cream paper once it has turned past edge-on (the switch happens exactly at
    90°, where the page is invisible). */
 const CARD_FACE='#262b1f', PAGE_FACE='#f2ecdf';
-function flipKeys(cr,pr,from){
+function flipKeys(cr,pr,from,start){
   const cx=cr.left+cr.width/2-(pr.left+pr.width/2), cy=cr.top+cr.height/2-(pr.top+pr.height/2);
   const sx=cr.width/pr.width, sy=cr.height/pr.height, ms=Math.sqrt(sx*sy);
   const persp=`perspective(${Math.round(Math.max(pr.width,pr.height)*2.4)}px)`;
   const T=(f,ry,rz,lift)=>{ const s=v=>v.toFixed(4);
     const kx=1+(sx-1)*(1-f), ky=1+(sy-1)*(1-f), k=lift*(1-Math.abs(f-.5)*2);
-    return `${persp} translate3d(${(cx*(1-f)).toFixed(1)}px,${(cy*(1-f)-k*40).toFixed(1)}px,${(k*120).toFixed(1)}px) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${s(kx)},${s(ky)})`; };
+    return `${persp} translate3d(${(cx*(1-f)).toFixed(1)}px,${(cy*(1-f)-k*40).toFixed(1)}px,${(k*120).toFixed(1)}px) rotateX(0deg) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${s(kx)},${s(ky)})`; };
   const card={background:CARD_FACE,boxShadow:'0 0 0 1px rgba(214,182,121,.55),0 20px 40px -20px rgba(0,0,0,.6)'};
   const page={background:PAGE_FACE,boxShadow:'0 40px 90px -30px rgba(0,0,0,.85),0 0 0 1px rgba(214,182,121,.14)'};
   const rad=f=>{ const kx=1+(sx-1)*(1-f), ky=1+(sy-1)*(1-f); return `${(22/kx).toFixed(1)}px / ${(22/ky).toFixed(1)}px`; };
@@ -1416,7 +1436,11 @@ function flipKeys(cr,pr,from){
   // the page's own face is the one that ends up towards the viewer: undo the final half-turn by
   // mirroring the second half (rotateY -180 shows the page reversed), so use 180-θ after the switch
   keys[3].transform=T(.48,90,1.5,1); keys[4].transform=T(.7,30,.8,1); keys[5].transform=T(1,0,0,0);
-  return from==='card'?keys:keys.slice().reverse().map(k=>({...k,offset:1-k.offset}));
+  if(from==='card') return keys;
+  const back=keys.slice().reverse().map(k=>({...k,offset:1-k.offset}));
+  // closing from wherever the page is now (scrolled down the menu, or pulled down by a finger)
+  if(start) back[0]={...back[0],transform:`${persp} translate3d(${start.dx.toFixed(1)}px,${start.dy.toFixed(1)}px,0) rotateX(${(start.rx||0).toFixed(2)}deg) rotateY(0deg) rotateZ(0deg) scale(${start.k.toFixed(4)},${start.k.toFixed(4)})`};
+  return back;
 }
 /* the card's real face for the first half of the flip (its drawing and words turning away) */
 function cardFace(card,cr,pr,host,dir,dur,delay,E){
@@ -1494,7 +1518,11 @@ const GROW={
     {at:240, pts:[[.99,.3,.08],[.9,.35,.12],[.8,.42,.12],[.72,.4,.1],[.76,.55,.17,1],[.81,.76,.16,1],[.8,.88,.1]]}],
   'art-spring.webp':[ // the artichoke rises up its stem, leaves open, then the head blooms
     {at:0,   pts:[[.15,.99,.08],[.15,.9,.1],[.15,.81,.11],[.06,.8,.11],[.26,.82,.11],[.15,.71,.11],[.16,.6,.13],[.16,.44,.25,1],[.19,.27,.13,1]]},
-    {at:300, pts:[[.82,.92,.08],[.8,.8,.12],[.76,.72,.11],[.82,.65,.12],[.86,.55,.12],[.9,.45,.11]]}]
+    {at:300, pts:[[.82,.92,.08],[.8,.8,.12],[.76,.72,.11],[.82,.65,.12],[.86,.55,.12],[.9,.45,.11]]}],
+  'art-events.webp':[ // the two glasses rise from their feet and meet; the vine reaches in and the grapes swell; an olive sprig
+    {at:0,   pts:[[.07,.92,.08],[.09,.84,.08],[.11,.75,.09],[.13,.67,.1],[.17,.6,.1],[.4,.82,.08],[.37,.74,.08],[.33,.67,.09],[.27,.62,.12],[.2,.55,.1,1]]},
+    {at:200, pts:[[.99,.18,.09],[.92,.12,.13],[.84,.17,.11],[.76,.2,.1],[.72,.27,.09],[.66,.31,.09],[.98,.3,.13],[.94,.36,.13],[.79,.38,.15,1],[.78,.47,.16,1],[.8,.56,.12,1]]},
+    {at:500, pts:[[.99,.95,.07],[.93,.92,.09],[.87,.89,.1],[.82,.85,.09]]}]
 };
 const artImgs={};
 function artImage(file){ if(!artImgs[file]){ const im=new Image(); im.decoding='async'; im.src='/'+file; artImgs[file]=im.decode?im.decode().then(()=>im,()=>im):Promise.resolve(im); } return artImgs[file]; }
@@ -1681,7 +1709,7 @@ function growSeq(paper,file,delay=0){
           ctx.globalAlpha=al; ctx.drawImage(endSheet,c*cw,r*ch,cw,ch,0,0,W,H); };
         const fadeIn=sm(clamp((ms-GROW)/120)), handOut=sm(clamp((ms-GROW-MORPH)/HAND));
         ctx.save(); ctx.globalAlpha=1; one(i0,(1-fr)*fadeIn*(1-handOut)); one(i0+1,fr*fadeIn*(1-handOut)); ctx.restore();
-        if(ms>=GROW+MORPH&&art.style.visibility==='hidden'){ art.style.visibility=''; art.animate([{opacity:0},{opacity:.78}],{duration:HAND,easing:'ease'}); }
+        if(ms>=GROW+MORPH&&art.style.visibility==='hidden'){ art.style.visibility=''; art.animate([{opacity:0}],{duration:HAND,easing:'ease'}); }
       }
       if(ms<GROW+(E?MORPH+HAND:0)) requestAnimationFrame(frame); else { finish(); res(); }
     };
@@ -1808,7 +1836,7 @@ function openMenu(card){
   plan.onclick=()=>{
     const msg=$('#f-msg'), txt=tr('mv.msg',{t:mTitle(menus[cur]),s:tr('sn.'+key)});
     if(msg&&(!msg.value.trim()||msg.value===msg.dataset.auto)){ msg.value=txt; msg.dataset.auto=txt; }
-    close(true); setTimeout(()=>goTo('#contact'),RM?40:740);
+    close(true,false,()=>goTo('#contact'));
   };
   function key2(e){ if(e.key==='Escape') close(); else if(e.key==='ArrowRight') go(cur+1); else if(e.key==='ArrowLeft') go(cur-1);
     else if(e.key==='Tab'){ const f=[...v.querySelectorAll('button:not([disabled])')].filter(b=>b.offsetParent); if(!f.length) return;
@@ -1886,37 +1914,39 @@ function openMenu(card){
   /* closing — the same move in reverse, whether from ✕, Esc or a swipe down: the menu text lifts
      away, the page flies home turning back over into the dark card, the backdrop collapses into
      the card with the gold ring closing in, and the card glows as it lands. */
-  function close(quiet,fromPull){
+  function close(quiet,fromPull,then){
+    const plan=!!then;
     if(!menuV) return; menuV=null;
     v.querySelectorAll(':scope > .card').forEach(n=>n.remove());          // a stand-in still flying from the opening
     const sl=slides[cur], p=sl.paper; card.style.visibility='';
     slides.forEach(x=>x.paper.getAnimations().forEach(an=>{ if(an.effect&&an.effect.getKeyframes().some(k=>k.transform)) an.finish(); }));
     bg.getAnimations().forEach(an=>an.finish());
-    const a=card.getBoundingClientRect();
-    const onScreen=a.width&&a.bottom>0&&a.top<innerHeight&&a.right>0&&a.left<innerWidth;
     removeEventListener('keydown',key2); removeEventListener('resize',onResize);
+    if(!RM){ const sh=cardShift(card); if(sh) nudgeCards(sh); }   // unseen: the backdrop still covers the page
+    const a=card.getBoundingClientRect();
+    const onScreen=!plan&&a.width&&a.top>-a.height*.25&&a.bottom<innerHeight+a.height*.25&&a.right>0&&a.left<innerWidth;
     v.style.pointerEvents='none';
     [top,foot,prev,next].filter(Boolean).forEach(el=>el.animate([{opacity:getComputedStyle(el).opacity},{opacity:0}],{duration:220,fill:'forwards'}));
     const done=()=>{ v.remove(); card.style.visibility=''; document.documentElement.classList.remove('locked');
-      if(!quiet) card.querySelector('.s-cta').focus({preventScroll:true}); };
+      if(!quiet) card.querySelector('.s-cta').focus({preventScroll:true}); if(then) then(); };
     if(RM||!onScreen){
       p.animate([{opacity:1},{opacity:0}],{duration:RM?1:300,fill:'forwards'});
       bg.animate([{opacity:getComputedStyle(bg).opacity},{opacity:0}],{duration:RM?1:420,fill:'forwards'}).finished.then(done,done); return; }
     // 1) the writing lifts off the page
     [...p.children].forEach(c=>c.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translate3d(0,-10px,0)'}],{duration:220,easing:'ease',fill:'forwards'}));
     // 2) the page flies home and turns back into the card — from wherever it is (pulled down or not)
+    const pulled=fromPull?pullY:0, rx=fromPull?Math.min(1,(pulled*(1-Math.min(.5,pulled/(innerHeight*2.2))))/(innerHeight*.6))*22:0;
     const now=p.getBoundingClientRect();
     p.style.transform=''; p.style.boxShadow=''; p.style.transformOrigin='';
     sl.s.style.overflow='visible'; rail.style.overflow='visible'; sl.s.scrollTop=0;
     const base=p.getBoundingClientRect();
     p.style.backfaceVisibility='hidden';
-    const keys=flipKeys(a,base,'page');
-    if(fromPull){ // start from where the finger left it
-      const dx=now.left+now.width/2-(base.left+base.width/2), dy=now.top+now.height/2-(base.top+base.height/2), ks=now.width/base.width;
-      keys[0]={...keys[0],transform:`perspective(1400px) translate3d(${dx.toFixed(1)}px,${dy.toFixed(1)}px,0) scale(${ks.toFixed(4)})`}; }
+    // start exactly where the page is on screen: scrolled down a long menu, or pulled down by a finger
+    const ks=now.width/base.width;
+    const keys=flipKeys(a,base,'page',{dx:now.left+now.width/2-(base.left+base.width/2),dy:now.top+now.height/2-(base.top+base.height/2),k:ks,rx});
     const D=900, E='cubic-bezier(.55,0,.2,1)';
-    const fly=p.animate(keys,{duration:D,delay:90,easing:E,fill:'forwards'});
-    p.animate([{opacity:1,offset:0},{opacity:1,offset:.4999},{opacity:0,offset:.5},{opacity:0,offset:1}],{duration:D,delay:90,easing:E,fill:'forwards'});
+    const fly=p.animate(keys,{duration:D,delay:90,easing:E,fill:'both'});
+    p.animate([{opacity:1,offset:0},{opacity:1,offset:.4999},{opacity:0,offset:.5},{opacity:0,offset:1}],{duration:D,delay:90,easing:E,fill:'both'});
     const face=cardFace(card,a,base,v,'close',D,90,E); card.style.visibility='hidden';
     // 3) the backdrop collapses into the card, a gold ring closing in with it
     const cx=a.left+a.width/2, cy=a.top+a.height/2, R=Math.hypot(Math.max(cx,innerWidth-cx),Math.max(cy,innerHeight-cy))+20, r0=Math.min(a.width,a.height)*.42;

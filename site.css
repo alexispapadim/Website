@@ -11,8 +11,8 @@
 }
 @supports (height:100svh){:root{--vh:100svh}}
 *{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-text-size-adjust:100%}
-body{background:var(--olive);color:var(--olive);font-family:var(--sans);font-weight:300;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+html{-webkit-text-size-adjust:100%;scrollbar-gutter:stable}
+body{background:var(--olive);color:var(--olive);font-family:var(--sans);font-weight:300;overflow-x:hidden;overflow-x:clip;-webkit-font-smoothing:antialiased}
 a{color:inherit}
 img,svg{display:block}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -233,7 +233,9 @@ footer p{margin-top:22px;font-size:12px;letter-spacing:.18em;text-transform:uppe
 .sheet-body dt{color:var(--leaf)}
 .sheet-body a{color:#8a6a35}
 .sheet-body code{font-size:.9em;background:rgba(32,37,26,.06);padding:1px 5px;border-radius:4px}
-html.locked,html.locked body{overflow:hidden}
+/* lock the page behind an overlay on the root only: overflow on body as well would make body its own
+   scroller, which unpins every sticky section underneath (the cards jumped while a menu was open) */
+html.locked{overflow:hidden;overscroll-behavior:none}
 .rm .sheet{animation:none}
 
 /* chef portrait */
