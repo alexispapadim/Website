@@ -1,6 +1,6 @@
-import { I18N } from './i18n.js?v=36';
-import * as GAL from './gallery.js?v=36';
-import * as SEA from './seasons.js?v=36';
+import { I18N } from './i18n.js?v=37';
+import * as GAL from './gallery.js?v=37';
+import * as SEA from './seasons.js?v=37';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 /* ===== Edit these if details change ===== */
@@ -227,6 +227,7 @@ function setLang(l){
   $$('[data-i18n-ph]').forEach(e=>e.placeholder=I18N[lang][e.dataset.i18nPh]);
   $$('[data-i18n-aria]').forEach(e=>e.setAttribute('aria-label',I18N[lang][e.dataset.i18nAria]));
   $$('[data-i18n-alt]').forEach(e=>e.setAttribute('alt',I18N[lang][e.dataset.i18nAlt]));
+  $$('a[data-about]').forEach(a=>a.setAttribute('href',lang==='el'?'/el/about/':'/about'));
   if(typeof renderGallery==='function') renderGallery();
   if(typeof langExtras==='function') langExtras();
   $$('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
@@ -394,42 +395,6 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
   html:not(.rm) #hw{overflow:hidden;touch-action:pan-y;-webkit-user-select:none;user-select:none}
   #track{will-change:transform;backface-visibility:hidden}
   .rm #disc{transform:none}
-  /* language pill: gold indicator slides between EN and ΕΛ */
-  .lang{position:relative}
-  .lang button{position:relative;z-index:1;background:transparent!important;transition:color .35s ease}
-  .lang-ind{position:absolute;top:3px;bottom:3px;left:3px;width:0;border-radius:999px;background:var(--gold);transition:transform .5s cubic-bezier(.16,1,.3,1),width .5s cubic-bezier(.16,1,.3,1)}
-  /* site-wide language change */
-  header{view-transition-name:site-header}
-  ::view-transition-group(site-header){animation-duration:.4s}
-  html.vt-lang::view-transition-old(root){animation:apLangOut .3s cubic-bezier(.4,0,1,1) both}
-  html.vt-lang::view-transition-new(root){animation:apLangIn .6s cubic-bezier(.16,1,.3,1) .1s both}
-  html.lang-out main,html.lang-out footer{opacity:0;filter:blur(4px);transition:opacity .22s ease,filter .22s ease}
-  html.lang-in main,html.lang-in footer{animation:apLangIn .6s cubic-bezier(.16,1,.3,1) both}
-  @keyframes apLangOut{to{opacity:0;filter:blur(4px)}}
-  @keyframes apLangIn{from{opacity:0;filter:blur(4px);transform:translateY(8px)}}
-  /* navigation veil */
-  #veil{position:fixed;inset:0;z-index:95;background:#20251a;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .5s cubic-bezier(.65,0,.35,1),visibility 0s linear .5s}
-  #veil.on{opacity:1;visibility:visible;transition:opacity .5s cubic-bezier(.65,0,.35,1),visibility 0s}
-  .veil-in{display:flex;flex-direction:column;align-items:center;gap:16px;transform:translateY(8px);opacity:0;transition:transform .7s cubic-bezier(.16,1,.3,1),opacity .4s ease}
-  #veil.on .veil-in{transform:none;opacity:1;transition-delay:.12s}
-  .veil-ap{font-family:'Cormorant Garamond','GFS Didot',Georgia,serif;font-size:54px;line-height:.8;color:#d6b679;display:flex;align-items:flex-end}
-  .veil-ap span{font-size:.7em;margin-left:-.36em;transform:translateY(.24em)}
-  #veil i{display:block;height:1px;width:0;background:#b8914f;transition:width .8s cubic-bezier(.16,1,.3,1)}
-  #veil.on i{width:110px;transition-delay:.15s}
-  html.rm #veil{display:none}
-  /* logo homecoming */
-  .hc{position:fixed;inset:0;z-index:98;pointer-events:none;overflow:hidden}
-  .hc-disc{position:absolute;border-radius:50%;background:radial-gradient(circle at 50% 50%,#f4eee5,#ece4d8 60%);transform:scale(0);will-change:transform,opacity}
-  .hc-ring{position:absolute;border-radius:50%;border:1px solid #b8914f;transform:scale(0);will-change:transform,opacity}
-  .hc-ap{position:absolute;display:flex;align-items:flex-end;font-family:'Cormorant Garamond','GFS Didot',Georgia,serif;line-height:.8;color:#20251a;white-space:nowrap;-webkit-font-smoothing:antialiased;backface-visibility:hidden}
-  .hc-ap span{font-size:.7em;margin-left:-.36em;transform:translateY(.24em)}
-  /* frosted menu bar once you scroll, so it stays readable over photos and text */
-  header::before{content:"";position:absolute;inset:0;z-index:-1;opacity:0;pointer-events:none;
-    background:rgba(240,233,222,.8);-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);
-    border-bottom:1px solid rgba(32,37,26,.08);box-shadow:0 10px 30px -22px rgba(32,37,26,.5);transition:opacity .45s ease,background-color .45s ease,border-color .45s ease}
-  header.scrolled::before{opacity:1}
-  header.dark::before{background:rgba(26,30,21,.78);border-bottom-color:rgba(214,182,121,.14)}
-  header{padding-top:max(12px,env(safe-area-inset-top))!important;padding-bottom:12px!important;transition:color .45s ease}
   /* the pass: contact-sheet gallery */
   #kitchen{background:radial-gradient(ellipse at 50% 0%,#2a3022 0%,#1a1e15 55%,#14170f 100%)!important;color:var(--cream)}
   :is(#kitchen,#produce) .kitchen-head{margin-bottom:clamp(36px,6vh,64px)}
@@ -531,8 +496,6 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
 let disc=$('#disc');
 if(!disc){ disc=document.createElement('div'); disc.id='disc'; disc.className='disc'; back.prepend(disc); }
 const stmt=$('#statement'), occ=$('#occasions'), hw=$('#hw'), track=$('#track'), bar=$('#bar');
-const jyList=$('#jy'), jyLine=$('#jyl');
-const phs=$$('[data-ph]').map(el=>({el,img:el.querySelector('img')}));
 const steps=$('#steps'), pline=$('#pline'), wm=$('#wm'), about=$('#about'), hdr=$('#hdr');
 const themed=$$('[data-theme]');
 const docTop=el=>el.getBoundingClientRect().top+scrollY;
@@ -552,8 +515,7 @@ function measure(){
   if(!RM) occ.style.height=Math.round(M.vh+hDist*1.15)+'px'; else occ.style.height='auto';
   const box=el=>{const t=docTop(el);return{top:t,h:el.offsetHeight,span:Math.max(1,el.offsetHeight-M.vh)}};
   if(typeof measureSeasons==='function') measureSeasons();
-  M.hero=box(hero); M.stmt=box(stmt); M.occ=box(occ); M.steps=box(steps); M.about=box(about); M.jy=jyList?box(jyList):null;
-  phs.forEach(p=>{ p.top=docTop(p.el); p.h=p.el.offsetHeight; });
+  M.hero=box(hero); M.stmt=box(stmt); M.occ=box(occ); M.steps=box(steps); M.about=box(about);
   M.themes=themed.map(s=>{const b=box(s);return{top:b.top,bottom:b.top+b.h,dark:s.dataset.theme==='dark',hero:s===hero}});
   if(C.sec){ M.chef=box(C.sec); M.bh=C.box.offsetHeight; }
   M.gal=null;
@@ -739,6 +701,12 @@ async function homecoming(link){
   await wait(520);
   wrapEl.remove(); homeBusy=false;
 }
+// His story lives on its own page: the dark veil closes over this page, and the About page opens out of it
+document.addEventListener('click',e=>{
+  const a=e.target.closest('a[data-about]'); if(!a||RM||e.defaultPrevented||e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey) return;
+  e.preventDefault(); veil.classList.add('on'); setTimeout(()=>{ location.href=a.href; },520);
+});
+addEventListener('pageshow',e=>{ if(e.persisted) veil.classList.remove('on'); });
 document.addEventListener('click',e=>{
   const a=e.target.closest('a[href^="#"]'); if(!a)return;
   const h=a.getAttribute('href'), key=h.slice(1);
@@ -782,11 +750,6 @@ function render(y,realY){
   for(let i=0;i<words.length;i++) put('w'+wGen+'_'+i,words[i],'opacity',(.14+.86*clamp(lit-i)).toFixed(3));
   if(!RM&&!(sw&&sw.mode==='h')) applyCards(y);
   if(!RM){
-    if(M.jy) put('jyl',jyLine,'transform',`scaleY(${clamp((y+M.vh*.6-M.jy.top)/M.jy.h).toFixed(4)})`);
-    // story photos: the photo drifts inside its frame, and on desktop the frame trails the text a little
-    phs.forEach((p,i)=>{ const t=clamp((y+M.vh-p.top)/(M.vh+p.h))-.5;
-      put('phi'+i,p.img,'transform',`translate3d(0,${(t*-14).toFixed(2)}%,0)`);
-      put('phf'+i,p.el,'transform',M.w>=1024?`translate3d(0,${(t*-56).toFixed(1)}px,0)`:'none'); });
     put('pline',pline,'transform',`scaleY(${clamp((y+M.vh*.62-M.steps.top)/M.steps.h).toFixed(4)})`);
     put('wm',wm,'transform',`translate3d(0,calc(-50% + ${((M.about.top-y)*-.18).toFixed(1)}px),0)`);
   }
