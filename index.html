@@ -282,7 +282,15 @@
         <div class="hp" aria-hidden="true"><label for="f-website">Website</label><input id="f-website" type="text" name="website" tabindex="-1" autocomplete="off"></div>
         <div class="f half"><label for="f-name" data-i18n="f.name">Full name</label><input id="f-name" name="name" required minlength="2" maxlength="80" autocomplete="name"></div>
         <div class="f half"><label for="f-email">Email</label><input id="f-email" name="email" type="email" required maxlength="254" autocomplete="email"></div>
-        <div class="f half"><label for="f-phone" data-i18n="f.phone">Phone</label><input id="f-phone" name="phone" type="tel" maxlength="32" autocomplete="tel"></div>
+        <div class="f half ph-f"><label for="f-phone" id="l-phone" data-i18n="f.phone">Phone</label>
+          <div class="ph-wrap">
+            <select id="f-cc" aria-label="Country code" data-i18n-aria="f.cc">
+              <option value="GR" data-code="+30" data-short="GR +30" data-i18n="cc.gr">Greece</option>
+              <option value="GB" data-code="+44" data-short="UK +44" data-i18n="cc.gb">United Kingdom</option>
+              <option value="XX" data-short-key="cc.othS" data-i18n="cc.oth">Other country</option>
+            </select>
+            <input id="f-phone" type="tel" inputmode="tel" maxlength="24" autocomplete="tel" placeholder="694 123 4567">
+          </div></div>
         <div class="f half dp-f"><label for="f-date" id="l-date" data-i18n="f.date">Event date</label><input type="hidden" name="event_date" id="f-date-v">
           <button type="button" id="f-date" class="dp-btn" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="l-date f-date"><span class="dp-val is-ph">Choose a date</span><svg class="dp-ico" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button></div>
         <div class="f half"><label for="f-guests" data-i18n="f.guests">Number of guests</label><input id="f-guests" name="guests" type="number" min="1" max="1000" step="1" inputmode="numeric"></div>

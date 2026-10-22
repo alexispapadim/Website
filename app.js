@@ -856,14 +856,14 @@ form.addEventListener('submit',async e=>{
   if(busy) return;
   const v=n=>(form.elements[n]?form.elements[n].value:'').trim();
   const data={
-    name:v('name'), email:v('email'), phone:v('phone'), event_date:v('event_date'),
+    name:v('name'), email:v('email'), phone:PHONE?PHONE.value():v('phone'), event_date:v('event_date'),
     guests:v('guests')===''?'':Number(v('guests')), location:v('location'), occasion:v('occasion'),
     message:v('message'), lang, website:v('website'), t:Date.now()-PAGE_START
   };
   const bad=[];
   if(data.name.length<2) bad.push('name');
   if(!EMAIL_RE.test(data.email)) bad.push('email');
-  if(data.phone && !/^[+0-9 ()./-]{5,32}$/.test(data.phone)) bad.push('phone');
+  if(data.phone && (!/^[+0-9 ()./-]{5,32}$/.test(data.phone) || (PHONE&&!PHONE.valid()))) bad.push('phone');
   if(data.guests!=='' && !(Number.isInteger(data.guests)&&data.guests>=1&&data.guests<=1000)) bad.push('guests');
   if(bad.length){ markBad(bad); setStatus('err','s.req'); return; }
   markBad([]);
@@ -2092,10 +2092,12 @@ function makeSelect(sel){
   btn.setAttribute('aria-haspopup','listbox'); btn.setAttribute('aria-expanded','false');
   btn.innerHTML='<span class="cs-val"></span><svg class="cs-chev" width="12" height="8" viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
   sel.after(btn);
-  const lab=f.querySelector('label'); if(lab){ lab.htmlFor=btn.id; if(!lab.id) lab.id=sel.id+'-lab'; btn.setAttribute('aria-labelledby',lab.id+' '+btn.id); }
+  // a select with its own aria-label (the phone's country code) leaves the field's label to the input beside it
+  const lab=sel.hasAttribute('aria-label')?null:f.querySelector('label'); if(lab){ lab.htmlFor=btn.id; if(!lab.id) lab.id=sel.id+'-lab'; btn.setAttribute('aria-labelledby',lab.id+' '+btn.id); }
   const val=btn.querySelector('.cs-val');
   const o={sel,btn,f,panel:null,scrim:null,act:0,
-    label(anim){ const op=sel.options[sel.selectedIndex]; val.textContent=op?op.textContent:'';
+    label(anim){ const op=sel.options[sel.selectedIndex]; val.textContent=op?(op.dataset.short||(op.dataset.shortKey&&tr(op.dataset.shortKey))||op.textContent):'';
+      if(!lab) btn.setAttribute('aria-label',sel.getAttribute('aria-label')+': '+(op?op.textContent:''));
       if(anim&&!RM) val.animate([{opacity:0,transform:'translateY(9px)'},{opacity:1,transform:'none'}],{duration:520,easing:'cubic-bezier(.16,1,.3,1)'}); }};
   o.label(false);
   btn.addEventListener('click',()=>o.panel?csClose(o,true):csOpen(o));
@@ -2108,11 +2110,11 @@ function csOpen(o){
   const sheet=innerWidth<600, {sel,btn,f}=o;
   const ul=document.createElement('ul'); ul.className='cs'+(sheet?' cs-sheet':''); ul.setAttribute('role','listbox'); ul.tabIndex=-1;
   ul.id=sel.id+'-list'; btn.setAttribute('aria-controls',ul.id);
-  const lab=f.querySelector('label'); if(lab) ul.setAttribute('aria-labelledby',lab.id);
-  if(sheet&&lab){ const t=document.createElement('li'); t.className='cs-title'; t.setAttribute('role','presentation'); t.textContent=lab.textContent; ul.append(t); }
+  const own=sel.getAttribute('aria-label'), lab=own?null:f.querySelector('label'); if(lab) ul.setAttribute('aria-labelledby',lab.id); else ul.setAttribute('aria-label',own);
+  if(sheet){ const t=document.createElement('li'); t.className='cs-title'; t.setAttribute('role','presentation'); t.textContent=lab?lab.textContent:own; ul.append(t); }
   const items=[...sel.options].map((op,i)=>{ const li=document.createElement('li'); li.className='cs-o'; li.setAttribute('role','option'); li.id=ul.id+'-'+i;
     li.setAttribute('aria-selected',String(i===sel.selectedIndex));
-    li.innerHTML=`<span>${esc(op.textContent)}</span><svg class="cs-tick" viewBox="0 0 18 18" aria-hidden="true"><path pathLength="1" d="M3.5 9.5l3.5 3.5 7.5-8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    li.innerHTML=`<span>${esc(op.textContent)}${op.dataset.code?` <em class="cs-aux">${esc(op.dataset.code)}</em>`:''}</span><svg class="cs-tick" viewBox="0 0 18 18" aria-hidden="true"><path pathLength="1" d="M3.5 9.5l3.5 3.5 7.5-8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     li.addEventListener('pointermove',()=>setAct(i));
     li.addEventListener('click',()=>pick(i));
     ul.append(li); return li; });
@@ -2171,6 +2173,78 @@ form.addEventListener('reset',()=>setTimeout(()=>CS.forEach(o=>o.label(false)),0
   const minus=mk(-1,'−'), plus=mk(1,'+');
   const sync=()=>{ const n=parseInt(inp.value,10); minus.disabled=!(n>1); plus.disabled=n>=1000; };
   inp.addEventListener('input',sync); form.addEventListener('reset',()=>setTimeout(sync,0)); sync();
+})();
+/* phone: a country-code dropdown (Greece, UK, other) beside the number. Greek and UK numbers are
+   spaced as you type (694 123 4567, 7700 900123); for any other country the number is written in
+   full with its own code (+61 412 345 678). The form sends one value, e.g. "+30 694 123 4567". */
+const PHONE=(function phone(){
+  const inp=$('#f-phone'), cc=$('#f-cc'); if(!inp||!cc) return null;
+  const f=inp.closest('.f');
+  const CODES={GR:'30',GB:'44'};
+  const PH={GR:'694 123 4567',GB:'7700 900123',XX:'+61 412 345 678'};
+  const group=(d,sizes)=>{ const out=[]; let i=0; for(const n of sizes){ if(i>=d.length) break; out.push(d.slice(i,i+n)); i+=n; } if(i<d.length) out.push(d.slice(i)); return out.join(' '); };
+  const fmt={
+    GR:d=>group(d.slice(0,10),[3,3,4]),
+    GB:d=>{ d=d.replace(/^0/,'').slice(0,10); return group(d,d[0]==='2'?[2,4,4]:/^[3589]/.test(d)?[3,3,4]:[4,6]); },
+    XX:t=>{ t=t.replace(/^\s*\+?\s*00/,'').replace(/[^\d ]/g,'').replace(/\s+/g,' ').replace(/^\s/,''); return t?'+'+t.slice(0,22):''; }
+  };
+  const country=()=>cc.value in fmt?cc.value:'GR';
+  let auto=false; // set while the number itself picks the country, so the change below leaves the number alone
+  const setCountry=k=>{ if(cc.value===k) return; cc.value=k; auto=true; cc.dispatchEvent(new Event('change')); auto=false; };
+  // A number typed or autofilled with its code (+44…, 0030…) picks its country. Returns the digits
+  // after the code, or null while a lone "+3" could still become +30 (left as typed until then).
+  function detect(t){
+    if(!/^\s*(\+|00)/.test(t)) return t;
+    const d=t.trim().replace(/^00/,'').replace(/\D/g,'');
+    for(const k in CODES){ const c=CODES[k];
+      if(d.startsWith(c)&&d.length>c.length){ setCountry(k); return d.slice(c.length); }
+      if(c.startsWith(d)) return null; }
+    setCountry('XX'); return t;
+  }
+  // re-space the number, keeping the caret after the same digit
+  function reformat(){
+    const k0=country(), cur=inp.value, at=inp.selectionStart??cur.length, nat=detect(cur), k=country();
+    let next;
+    if(nat===null) next=cur.replace(/[^\d+]/g,'');
+    else next=k==='XX'?fmt.XX(nat):fmt[k](nat.replace(/\D/g,''));
+    if(next===inp.value&&k===k0) return;
+    inp.value=next;
+    if(document.activeElement!==inp) return;
+    let p=next.length;
+    if(k===k0&&nat!==null){
+      let before=cur.slice(0,at).replace(/\D/g,'').length;
+      if(k==='GB'&&/^\s*0/.test(cur)) before=Math.max(0,before-1);
+      p=0; for(let n=0;p<next.length&&n<before;p++) if(/\d/.test(next[p])) n++;
+    }
+    try{ inp.setSelectionRange(p,p); }catch(_){}
+  }
+  inp.addEventListener('input',()=>{ f.classList.remove('bad'); reformat(); });
+  // backspace just after one of our spaces removes the digit before it, not only the space
+  inp.addEventListener('keydown',e=>{
+    if(e.key!=='Backspace'||country()==='XX') return;
+    const a=inp.selectionStart, z=inp.selectionEnd; if(a!==z||!a||inp.value[a-1]!==' ') return;
+    e.preventDefault(); inp.setRangeText('',a-2,a,'end'); reformat();
+  });
+  // switching country carries the number across: Greece → Other keeps "+30 …" so only the code needs changing
+  let last=country();
+  cc.addEventListener('change',()=>{
+    const k=country(), from=last; last=k; inp.placeholder=PH[k];
+    let d=inp.value.replace(/\D/g,'');
+    if(d&&!auto){
+      if(k==='XX') inp.value=from==='XX'?inp.value:'+'+CODES[from]+' '+inp.value;
+      else{ if(from==='XX'){ const c=Object.values(CODES).find(c=>d.startsWith(c)); if(c) d=d.slice(c.length); } inp.value=fmt[k](d); }
+    }
+    f.classList.remove('bad');
+  });
+  form.addEventListener('reset',()=>setTimeout(()=>{ cc.value='GR'; last='GR'; inp.placeholder=PH.GR; },0));
+  inp.placeholder=PH[country()];
+  return {
+    // the full number to send, '' when left empty
+    value(){ const k=country(), t=inp.value.trim(); if(!t.replace(/\D/g,'')) return '';
+      return k==='XX'?fmt.XX(t):'+'+CODES[k]+' '+fmt[k](t.replace(/\D/g,'')); },
+    valid(){ const k=country(), d=inp.value.replace(/\D/g,''); if(!d) return true;
+      return k==='GR'?d.length===10:k==='GB'?/^0?\d{9,10}$/.test(d)&&d.replace(/^0/,'').length>=9:d.length>=7&&d.length<=15; }
+  };
 })();
 function langExtras(){ refreshSeasons(); dpLabel(false); if(dp) dpClose(false); if(typeof CS!=='undefined') CS.forEach(o=>{ csClose(o,false); o.label(false); }); }
 
