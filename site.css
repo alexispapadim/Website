@@ -284,30 +284,41 @@ html.locked,html.locked body{overflow:hidden}
 @supports (height:1svh){.c-box{--bh:min(74svh,calc((100vw - 40px)*1.25),860px)}}
 .c-arch{position:absolute;left:0;right:0;bottom:2px;height:calc(70% - 2px);border-radius:999px 999px 16px 16px;overflow:hidden;transform-origin:50% 100%;will-change:transform;box-shadow:0 40px 80px -45px rgba(32,37,26,.6);background:#3a2b20}
 .c-arch img{position:absolute;left:0;bottom:0;width:100%;height:calc(100% / .70);object-fit:cover;will-change:transform}
-/* the portrait is a link to his story: the arch answers the pointer, and a quiet line beneath his name says where it leads */
+/* the portrait is a link to his story: a gold-lettered seal on the arch says so, and the arch answers the pointer */
 .c-link{position:absolute;left:0;right:0;bottom:0;top:6%;z-index:3;border-radius:999px 999px 16px 16px;-webkit-tap-highlight-color:transparent}
+.c-link:focus-visible{outline:none}
+.c-link:focus-visible .c-badge{box-shadow:0 0 0 3px var(--cream),0 0 0 4px var(--gold),0 22px 40px -18px rgba(20,16,10,.65)}
 .c-arch img{transition:filter .6s ease}
-.c-more{position:relative;display:inline-flex;align-items:center;gap:16px;margin-top:10px;padding:10px 2px;font-family:var(--serif);font-style:italic;font-weight:400;font-size:clamp(19px,1.5vw,23px);letter-spacing:.01em;line-height:1.1;color:var(--olive);text-decoration:none;opacity:0;pointer-events:none;-webkit-tap-highlight-color:transparent;will-change:transform,opacity}
-.c-more.in{pointer-events:auto}
-/* a slow glint of gold passes through the words now and then, like light catching a menu card */
-.c-more-t{position:relative;padding-bottom:5px;background:linear-gradient(100deg,var(--olive) 42%,#c9a560 50%,var(--olive) 58%) 100% 0/260% 100% no-repeat;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.c-more.in .c-more-t{animation:cGlint 7s cubic-bezier(.45,0,.2,1) 1.2s infinite}
-.c-more-t::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--gold);transform:scaleX(.22);transform-origin:left;transition:transform .7s cubic-bezier(.16,1,.3,1)}
-.c-more-a{width:30px;height:auto;color:var(--gold);overflow:visible;transition:transform .7s cubic-bezier(.16,1,.3,1)}
-.c-more-a path{stroke-dasharray:62;stroke-dashoffset:0;transition:stroke-dashoffset .7s cubic-bezier(.16,1,.3,1)}
-.c-more:focus-visible{outline:1px solid rgba(184,145,79,.55);outline-offset:6px;border-radius:2px}
-.c-more:focus-visible .c-more-t::after{transform:none}
-.c-more:focus-visible .c-more-a{transform:translateX(8px)}
-@keyframes cGlint{0%{background-position:100% 0}28%,100%{background-position:0 0}}
+/* the seal: deep olive with a soft light from the top left, a fine gold rim, a second hairline inside the lettering */
+.c-badge{position:absolute;right:-7%;bottom:9%;width:clamp(92px,26%,136px);aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 32% 26%,#3d4532 0%,#262c1e 48%,#1a1e14 100%);color:#d6b679;
+  box-shadow:inset 0 0 0 1px rgba(214,182,121,.55),inset 0 0 0 4px #20251a,inset 0 0 0 4.6px rgba(214,182,121,.22),0 22px 40px -18px rgba(20,16,10,.65),0 4px 10px -4px rgba(20,16,10,.35);
+  display:grid;place-items:center;opacity:0;transform:scale(.6);will-change:transform,opacity;transition:box-shadow .5s ease}
+.c-badge::after{content:"";position:absolute;inset:31%;border-radius:50%;border:1px solid rgba(214,182,121,.28)}
+/* a gold halo breathes out from the rim now and then, so the eye finds it */
+.c-halo{position:absolute;inset:-1px;border-radius:50%;border:1px solid rgba(184,145,79,.7);pointer-events:none;opacity:0}
+.c-badge.in .c-halo{animation:cHalo 3.4s cubic-bezier(.16,1,.3,1) .4s infinite}
+.c-ring{position:absolute;inset:0;width:100%;height:100%;animation:cSpin 32s linear infinite;overflow:visible}
+.c-ring text{font-family:var(--serif);font-weight:500;font-size:9.6px;letter-spacing:.24em;text-transform:uppercase;fill:currentColor}
+.c-dot{position:relative;width:30%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;overflow:hidden;color:#d6b679;transition:background .45s ease,color .45s ease,transform .6s cubic-bezier(.16,1,.3,1)}
+.c-dot svg{width:44%;height:44%;display:block;overflow:visible}
+.c-arr path{fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.c-arr{transition:transform .55s cubic-bezier(.65,0,.35,1)}
+.c-arr-2{transform:translate(-160%,160%)}
+@media(max-width:600px){.c-badge{right:-2%;bottom:7%;width:clamp(86px,27%,112px)}}
+@keyframes cSpin{to{transform:rotate(360deg)}}
+@keyframes cHalo{0%{transform:scale(1);opacity:.85}60%,100%{transform:scale(1.28);opacity:0}}
 @media(hover:hover){
   .c-link{cursor:pointer}
   .c-box:has(.c-link:hover) .c-arch img{filter:brightness(1.08) saturate(1.06)}
-  .c-more:hover .c-more-t::after,.cstage:has(.c-link:hover) .c-more-t::after{transform:none}
-  .c-more:hover .c-more-a,.cstage:has(.c-link:hover) .c-more-a{transform:translateX(8px)}
-  .c-more:hover .c-more-a path,.cstage:has(.c-link:hover) .c-more-a path{animation:cDraw .7s cubic-bezier(.16,1,.3,1)}
+  .c-link:hover .c-dot{background:#d6b679;color:#20251a;transform:scale(1.08)}
+  .c-link:hover .c-arr{transform:translate(160%,-160%)}
+  .c-link:hover .c-arr-2{transform:none}
+  .c-link:hover .c-ring{animation-duration:10s}
+  .c-link:hover .c-badge{box-shadow:inset 0 0 0 1px rgba(214,182,121,.85),inset 0 0 0 4px #20251a,inset 0 0 0 4.6px rgba(214,182,121,.35),0 28px 48px -18px rgba(20,16,10,.7),0 4px 10px -4px rgba(20,16,10,.35)}
 }
-@keyframes cDraw{from{stroke-dashoffset:62}}
-.rm .c-more{opacity:1;pointer-events:auto}.rm .c-more-t{animation:none!important;background:none;-webkit-text-fill-color:currentColor}
+.c-link:active .c-dot{transform:scale(.94)}
+.rm .c-badge{opacity:1;transform:none}.rm .c-ring,.rm .c-halo{animation:none}
 .c-line{position:absolute;left:0;right:0;bottom:0;height:70%;border:1px solid var(--gold);border-radius:999px 999px 18px 18px;will-change:transform,opacity;opacity:0}
 .c-cut{position:absolute;inset:0;clip-path:inset(-60% -60% 1px -60%);pointer-events:none}
 .c-cut img{position:absolute;inset:0;width:100%;height:100%;transform-origin:50% 100%;will-change:transform;filter:drop-shadow(0 -2px 22px rgba(20,16,10,.22))}
@@ -521,6 +532,27 @@ html.lang-out main,html.lang-out footer{opacity:0;filter:blur(4px);transition:op
 html.lang-in main,html.lang-in footer{animation:apLangIn .6s cubic-bezier(.16,1,.3,1) both}
 @keyframes apLangOut{to{opacity:0;filter:blur(4px)}}
 @keyframes apLangIn{from{opacity:0;filter:blur(4px);transform:translateY(8px)}}
+/* the curtain (curtain.js): language switch, moving between pages, legal pages */
+#lswap{position:fixed;inset:0;z-index:105;visibility:hidden;pointer-events:none;overflow:hidden}
+.ls-panel{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,#353c2b,#1b2016 75%);transform:translate3d(0,100%,0);will-change:transform;display:flex;align-items:center;justify-content:center}
+.ls-bulge{position:absolute;left:-25%;right:-25%;height:26vh;background:inherit;border-radius:50%;will-change:transform}
+.ls-top{top:-13vh;background:#2a3022;transform-origin:50% 100%}
+.ls-bot{bottom:-13vh;background:#1d2218;transform-origin:50% 0;transform:scaleY(0)}
+.ls-inner{position:relative;display:flex;flex-direction:column;align-items:center;gap:18px;color:#ece4d8;text-align:center;padding:0 20px}
+.ls-ap{font-family:'Cormorant Garamond','GFS Didot',Georgia,serif;font-size:40px;line-height:.8;color:#d6b679;display:flex;align-items:flex-end;opacity:0}
+.ls-ap span{font-size:.7em;margin-left:-.36em;transform:translateY(.24em)}
+.ls-word{font-family:'Cormorant Garamond','GFS Didot',Georgia,serif;font-style:italic;font-weight:300;font-size:clamp(58px,15vw,150px);line-height:1.1;color:#f1e7d6;min-height:1.1em;white-space:nowrap;opacity:0}
+.ls-word.long{font-size:clamp(42px,10.5vw,124px)}
+.ls-rule{display:block;width:min(260px,60vw);height:1px;background:#b8914f;transform:scaleX(0)}
+.ls-sub{display:flex;align-items:center;gap:14px;font:500 11px 'Commissioner',system-ui,sans-serif;letter-spacing:.32em;text-transform:uppercase;opacity:0}
+.ls-sub b{font-weight:500;color:rgba(236,228,216,.45);transition:color .5s}
+.ls-sub b.on{color:#d6b679}
+.ls-sub em{width:5px;height:5px;background:#b8914f;transform:rotate(45deg)}
+/* arriving through the curtain from the other page: the page stays hidden behind it until curtain.js takes over
+   (and shows itself anyway after a few seconds if the scripts never arrive) */
+html.arriving body::after{content:"";position:fixed;inset:0;z-index:104;background:radial-gradient(ellipse at 50% 40%,#353c2b,#1b2016 75%);animation:arriveSafe 0s linear 8s forwards}
+@keyframes arriveSafe{to{visibility:hidden}}
+.sheet.quiet{animation:none}
 /* navigation veil */
 #veil{position:fixed;inset:0;z-index:95;background:#20251a;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .5s cubic-bezier(.65,0,.35,1),visibility 0s linear .5s}
 #veil.on{opacity:1;visibility:visible;transition:opacity .5s cubic-bezier(.65,0,.35,1),visibility 0s}

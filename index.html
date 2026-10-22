@@ -55,7 +55,8 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2320251a'/%3E%3Ctext x='32' y='43' font-family='Georgia,serif' font-size='30' fill='%23d6b679' text-anchor='middle'%3EAP%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
 <link href="https://fonts.bunny.net/css?family=commissioner:300,400,500|cormorant-garamond:300,300i,400,400i,500|gfs-didot:400|pinyon-script:400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/site.css?v=38">
+<link rel="stylesheet" href="/site.css?v=39">
+<script src="/arrive.js?v=39"></script>
 </head>
 <body>
 
@@ -119,10 +120,15 @@
         <div class="c-arch"><img src="/alexis-bg.jpg" alt="" width="900" height="1125" decoding="async"></div>
         <div class="c-word c-word-front" aria-hidden="true"><span>ALEXIS</span></div>
         <div class="c-cut"><img src="/alexis-cut.webp" width="900" height="1125" decoding="async" alt="Portrait of Alexis Papadimitriou, private chef" data-i18n-alt="ab.alt"></div>
-        <a class="c-link" href="/about" data-about tabindex="-1" aria-hidden="true" aria-label="Meet Alexis: read his story" data-i18n-aria="ab.link"></a>
+        <a class="c-link" href="/about" data-about aria-label="Meet Alexis: read his story" data-i18n-aria="ab.link">
+          <span class="c-badge" aria-hidden="true">
+            <span class="c-halo"></span>
+            <svg class="c-ring" viewBox="0 0 100 100"><defs><path id="c-ring-p" d="M50 50m-36 0a36 36 0 1 1 72 0a36 36 0 1 1-72 0"/></defs><text><textPath href="#c-ring-p" textLength="222" data-i18n="ab.ring">Meet the chef · his story ·</textPath></text></svg>
+            <span class="c-dot"><svg viewBox="0 0 16 16"><g class="c-arr"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6"/></g><g class="c-arr c-arr-2"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6"/></g></svg></span>
+          </span>
+        </a>
       </div>
       <p class="c-cap" id="chef-cap"><span class="c-rule"></span><span data-i18n="ab.cap">Chef Alexis Papadimitriou</span><span class="c-rule"></span></p>
-      <a class="c-more" href="/about" data-about><span class="c-more-t" data-i18n="ab.discover">Discover his story</span><svg class="c-more-a" viewBox="0 0 48 12" aria-hidden="true"><path d="M0 6h46M41 1.5 46.5 6 41 10.5" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     </div>
   </section>
 
@@ -348,6 +354,6 @@
   <article class="sheet-body" id="sheet-body"></article>
 </div>
 
-<script type="module" src="/app.js?v=38"></script>
+<script type="module" src="/app.js?v=39"></script>
 </body>
 </html>

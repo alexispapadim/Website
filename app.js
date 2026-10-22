@@ -1,28 +1,9 @@
-import { I18N } from './i18n.js?v=38';
-import * as GAL from './gallery.js?v=38';
-import * as SEA from './seasons.js?v=38';
+import { I18N } from './i18n.js?v=39';
+import * as GAL from './gallery.js?v=39';
+import * as SEA from './seasons.js?v=39';
+import { CONFIG, LEGAL_KEYS } from './details.js?v=39';
+import * as CU from './curtain.js?v=39';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
-
-/* ===== Edit these if details change ===== */
-const CONFIG = {
-  email: 'alexis@papadimitriou.uk',
-  phone: '+306945009919',            // Greek number: call link + shown on the site
-  phoneDisplay: '+30 694 500 9919',
-  whatsapp: '+447856779459',         // WhatsApp link (UK number)
-  turnstileSiteKey: '0x4AAAAAAFUZ8kLv46CVO1UJ', // Cloudflare → Turnstile → your widget → Site key (public)
-  api: '/api/enquiry'
-};
-
-/* Business details shown in the Legal notice — fill in before launch.
-   Lines left empty are simply not shown. */
-const LEGAL_INFO = {
-  legalName: '',      // e.g. registered name of the business
-  address: '',        // business address
-  vat: '',            // ΑΦΜ / VAT number
-  taxOffice: '',      // ΔΟΥ
-  gemi: ''            // Αριθμός ΓΕΜΗ (if registered)
-};
-const POLICY_DATE = { en: '12 October 2026', el: '12 Οκτωβρίου 2026' };
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -54,147 +35,10 @@ $('#lnk-tel').href='tel:'+CONFIG.phone; $('#tel-txt').textContent=CONFIG.phoneDi
 $('#lnk-wa').href='https://wa.me/'+CONFIG.whatsapp.replace(/\D/g,'');
 $('#lnk-mail').href='mailto:'+CONFIG.email; $('#mail-txt').textContent=CONFIG.email;
 
-/* ===================== legal pages ===================== */
-function legalPages(l){
-  const E=esc(CONFIG.email), P=esc(CONFIG.phoneDisplay), mail=`<a href="mailto:${E}">${E}</a>`;
-  const addr=LEGAL_INFO.address?` · ${esc(LEGAL_INFO.address)}`:'';
-  const upd=`<p class="upd">${l==='el'?'Τελευταία ενημέρωση':'Last updated'}: ${POLICY_DATE[l]}</p>`;
-  const info=[
-    [l==='el'?'Διακριτικός τίτλος':'Trading name','Alexis Papadimitriou — Private Chef &amp; Catering'],
-    [l==='el'?'Επωνυμία':'Legal name',LEGAL_INFO.legalName&&esc(LEGAL_INFO.legalName)],
-    [l==='el'?'Διεύθυνση':'Address',LEGAL_INFO.address&&esc(LEGAL_INFO.address)],
-    ['Email',mail],
-    [l==='el'?'Τηλέφωνο':'Phone',P],
-    [l==='el'?'ΑΦΜ':'VAT / Tax no. (ΑΦΜ)',LEGAL_INFO.vat&&esc(LEGAL_INFO.vat)],
-    [l==='el'?'ΔΟΥ':'Tax office (ΔΟΥ)',LEGAL_INFO.taxOffice&&esc(LEGAL_INFO.taxOffice)],
-    [l==='el'?'Αριθμός ΓΕΜΗ':'GEMI no.',LEGAL_INFO.gemi&&esc(LEGAL_INFO.gemi)]
-  ].filter(r=>r[1]).map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('');
-
-  if(l==='el') return {
-    privacy:`<h1 id="sheet-title">Πολιτική Απορρήτου</h1>${upd}
-<h2>1. Ποιοι είμαστε</h2><p>Υπεύθυνος επεξεργασίας των προσωπικών δεδομένων που περιγράφονται εδώ είναι ο Αλέξης Παπαδημητρίου, ιδιωτικός σεφ και catering («εμείς»). Επικοινωνία: ${mail} · ${P}${addr}.</p>
-<h2>2. Ποια δεδομένα συλλέγουμε</h2><ul>
-<li><strong>Φόρμα επικοινωνίας:</strong> ονοματεπώνυμο, email, τηλέφωνο (προαιρετικά), ημερομηνία εκδήλωσης, αριθμός ατόμων, τοποθεσία, περίσταση και ό,τι γράψετε στο μήνυμά σας.</li>
-<li><strong>Αλλεργίες ή διατροφικές ανάγκες</strong>, εφόσον μας τις αναφέρετε.</li>
-<li><strong>Email, τηλέφωνο ή WhatsApp:</strong> τα στοιχεία που μας δίνετε όταν επικοινωνείτε μαζί μας.</li>
-<li><strong>Τεχνικά δεδομένα:</strong> ο πάροχος φιλοξενίας μας (Cloudflare) επεξεργάζεται τη διεύθυνση IP σας και στοιχεία του προγράμματος περιήγησης και του αιτήματος, για να παραδώσει και να προστατεύσει τον ιστότοπο. Ο έλεγχος ασφαλείας της φόρμας (Cloudflare Turnstile) επεξεργάζεται σήματα του προγράμματος περιήγησης/συσκευής για να ξεχωρίζει ανθρώπους από bots.</li>
-<li><strong>Προτίμηση γλώσσας</strong>, αποθηκευμένη στη συσκευή σας (βλ. <a href="#cookies">Cookies</a>).</li></ul>
-<h2>3. Γιατί τα χρησιμοποιούμε και νομική βάση</h2><ul>
-<li>Απάντηση στο αίτημά σας, προετοιμασία προσφοράς και αποστολή αυτόματου email επιβεβαίωσης — ενέργειες κατόπιν αιτήματός σας πριν από τη σύναψη σύμβασης (άρθρο 6 παρ. 1 στοιχ. β΄ ΓΚΠΔ).</li>
-<li>Αλλεργίες και διατροφικές πληροφορίες — η ρητή συγκατάθεσή σας (άρθρο 9 παρ. 2 στοιχ. α΄ ΓΚΠΔ), την οποία μπορείτε να ανακαλέσετε οποιαδήποτε στιγμή.</li>
-<li>Ασφάλεια του ιστότοπου και πρόληψη spam και κατάχρησης — έννομο συμφέρον μας (άρθρο 6 παρ. 1 στοιχ. στ΄).</li>
-<li>Τήρηση αρχείων που απαιτεί ο νόμος, π.χ. παραστατικά κρατήσεων — νομική υποχρέωση (άρθρο 6 παρ. 1 στοιχ. γ΄).</li></ul>
-<p>Δεν στέλνουμε διαφημιστικά email, δεν πουλάμε δεδομένα και δεν προβαίνουμε σε αυτοματοποιημένη λήψη αποφάσεων ή κατάρτιση προφίλ.</p>
-<h2>4. Αποδέκτες</h2><p>Πάροχοι που ενεργούν για λογαριασμό μας (εκτελούντες την επεξεργασία):</p><ul>
-<li><strong>Cloudflare, Inc.</strong> — φιλοξενία, ασφάλεια, έλεγχος Turnstile και προώθηση email.</li>
-<li><strong>Resend, Inc.</strong> — αποστολή των email του αιτήματος και της επιβεβαίωσης.</li>
-<li><strong>Google (Gmail)</strong> — το εισερχόμενο όπου λαμβάνουμε και απαντάμε στα αιτήματα.</li>
-<li><strong>BunnyWay d.o.o. (Bunny Fonts, ΕΕ)</strong> — παρέχει τις γραμματοσειρές του ιστότοπου και λαμβάνει τη διεύθυνση IP σας όταν φορτώνονται.</li></ul>
-<p>Δεν κοινοποιούμε τα δεδομένα σας σε άλλους, εκτός αν το απαιτεί ο νόμος.</p>
-<h2>5. Διαβιβάσεις εκτός ΕΟΧ</h2><p>Ορισμένοι πάροχοι (Cloudflare, Resend, Google) εδρεύουν στις ΗΠΑ και ενδέχεται να επεξεργάζονται δεδομένα εκτός ΕΟΧ/Ηνωμένου Βασιλείου. Στις περιπτώσεις αυτές, οι διαβιβάσεις βασίζονται σε κατάλληλες εγγυήσεις, όπως το Πλαίσιο Προστασίας Δεδομένων ΕΕ–ΗΠΑ ή οι Τυποποιημένες Συμβατικές Ρήτρες της Ευρωπαϊκής Επιτροπής.</p>
-<h2>6. Χρόνος διατήρησης</h2><ul>
-<li>Αιτήματα που δεν καταλήγουν σε κράτηση: διαγράφονται εντός 24 μηνών από την τελευταία επικοινωνία μας.</li>
-<li>Κρατήσεις: για όσο χρειάζεται για την παροχή της υπηρεσίας και για όσο απαιτεί η ελληνική φορολογική και λογιστική νομοθεσία.</li>
-<li>Αλλεργίες και διατροφικές πληροφορίες: διαγράφονται μετά την εκδήλωση, εκτός αν μας ζητήσετε να τις κρατήσουμε για μελλοντικές κρατήσεις.</li>
-<li>Αρχεία ασφαλείας: για το σύντομο διάστημα που ορίζει η Cloudflare.</li></ul>
-<h2>7. Τα δικαιώματά σας</h2><p>Σύμφωνα με τον ΓΚΠΔ (και τον UK GDPR) έχετε δικαίωμα πρόσβασης, διόρθωσης, διαγραφής, περιορισμού, φορητότητας και εναντίωσης στην επεξεργασία που βασίζεται σε έννομο συμφέρον, καθώς και δικαίωμα να ανακαλέσετε τη συγκατάθεσή σας οποιαδήποτε στιγμή. Γράψτε μας στο ${mail}· απαντάμε εντός ενός μηνός.</p>
-<p>Μπορείτε να υποβάλετε καταγγελία στην Αρχή Προστασίας Δεδομένων Προσωπικού Χαρακτήρα (Κηφισίας 1–3, 115 23 Αθήνα, <a href="https://www.dpa.gr" rel="noopener" target="_blank">www.dpa.gr</a>), στην αντίστοιχη αρχή της χώρας της ΕΕ όπου διαμένετε, ή — στο Ηνωμένο Βασίλειο — στο Information Commissioner’s Office (<a href="https://ico.org.uk" rel="noopener" target="_blank">ico.org.uk</a>).</p>
-<h2>8. Είναι υποχρεωτικό;</h2><p>Το ονοματεπώνυμο και το email χρειάζονται για να σας απαντήσουμε· όλα τα υπόλοιπα είναι προαιρετικά.</p>
-<h2>9. Παιδιά</h2><p>Οι υπηρεσίες μας απευθύνονται σε ενήλικες. Δεν συλλέγουμε εν γνώσει μας δεδομένα παιδιών.</p>
-<h2>10. Αλλαγές</h2><p>Ενδέχεται να ενημερώνουμε αυτή την πολιτική· η τρέχουσα έκδοση βρίσκεται πάντα σε αυτή τη σελίδα.</p>`,
-    cookies:`<h1 id="sheet-title">Cookies και αποθήκευση</h1>${upd}
-<p>Δεν χρησιμοποιούμε cookies διαφήμισης, στατιστικών ή παρακολούθησης — γι’ αυτό δεν εμφανίζουμε μήνυμα συγκατάθεσης για cookies.</p>
-<h2>Τι αποθηκεύεται</h2><ul>
-<li><strong>Προτίμηση γλώσσας</strong> (<code>ap-lang</code>, στο localStorage του προγράμματος περιήγησης): θυμάται αν επιλέξατε Ελληνικά ή Αγγλικά. Παραμένει στη συσκευή σας και δεν μας αποστέλλεται.</li>
-<li><strong>Ασφάλεια Cloudflare:</strong> η Cloudflare ενδέχεται να ορίσει απολύτως απαραίτητα cookies ασφαλείας (π.χ. για τον εντοπισμό bots), και ο έλεγχος Turnstile εκτελείται όταν χρησιμοποιείτε τη φόρμα. Χρησιμοποιούνται μόνο για λόγους ασφαλείας.</li>
-<li><strong>Γραμματοσειρές:</strong> φορτώνονται από το Bunny Fonts (ΕΕ), χωρίς cookies.</li></ul>
-<p>Τα παραπάνω είναι απολύτως απαραίτητα για τη λειτουργία που ζητάτε και δεν απαιτούν συγκατάθεση (άρθρο 4 παρ. 5 ν. 3471/2006). Μπορείτε να τα διαγράψετε οποιαδήποτε στιγμή από τις ρυθμίσεις του προγράμματος περιήγησής σας.</p>`,
-    terms:`<h1 id="sheet-title">Όροι χρήσης και κρατήσεων</h1>${upd}
-<h2>Πληροφορίες και προσφορές</h2><p>Οι πληροφορίες του ιστότοπου είναι γενικές. Τα μενού και οι τιμές δίνονται ξεχωριστά για κάθε εκδήλωση, με προσφορά.</p>
-<h2>Κρατήσεις</h2><p>Η αποστολή αιτήματος δεν αποτελεί κράτηση. Η κράτηση επιβεβαιώνεται μόνο όταν την επιβεβαιώσουμε γραπτώς και καταβληθεί τυχόν συμφωνημένη προκαταβολή. Οι ειδικοί όροι (προκαταβολή, ακύρωση, τελικός αριθμός ατόμων) περιγράφονται στην προσφορά σας.</p>
-<h2>Αλλεργίες και διατροφικές ανάγκες</h2><p>Ενημερώστε μας εκ των προτέρων. Λαμβάνουμε κάθε μέριμνα, αλλά οι κουζίνες — και η δική σας — ενδέχεται να περιέχουν αλλεργιογόνα. Κατόπιν αιτήματος, παρέχουμε πληροφορίες για τα 14 κύρια αλλεργιογόνα κάθε πιάτου (Κανονισμός (ΕΕ) 1169/2011).</p>
-<h2>Δικαίωμα υπαναχώρησης</h2><p>Επειδή πρόκειται για υπηρεσίες εστίασης για συγκεκριμένη ημερομηνία, δεν ισχύει το 14ήμερο δικαίωμα υπαναχώρησης των συμβάσεων από απόσταση (άρθρο 16 στοιχ. ιβ΄ της Οδηγίας 2011/83/ΕΕ, όπως ενσωματώθηκε στο ελληνικό δίκαιο). Οι όροι ακύρωσης ορίζονται στην προσφορά σας.</p>
-<h2>Πνευματική ιδιοκτησία</h2><p>Το περιεχόμενο, οι φωτογραφίες και το λογότυπο του ιστότοπου ανήκουν στον Αλέξη Παπαδημητρίου και δεν επιτρέπεται η αναπαραγωγή τους χωρίς άδεια.</p>
-<h2>Εφαρμοστέο δίκαιο</h2><p>Εφαρμόζεται το ελληνικό δίκαιο. Οι καταναλωτές διατηρούν την προστασία που τους παρέχει το δίκαιο της χώρας διαμονής τους.</p>`,
-    legal:`<h1 id="sheet-title">Νομικές πληροφορίες</h1>${upd}
-<h2>Στοιχεία επιχείρησης</h2><dl>${info}</dl>
-<h2>Φιλοξενία</h2><p>Ο ιστότοπος φιλοξενείται από την Cloudflare, Inc.</p>
-<h2>Παράπονα και επίλυση διαφορών</h2><p>Αν έχετε κάποιο παράπονο, επικοινωνήστε πρώτα μαζί μας στο ${mail}. Οι καταναλωτές μπορούν επίσης να απευθυνθούν στον Συνήγορο του Καταναλωτή (<a href="https://www.synigoroskatanaloti.gr" rel="noopener" target="_blank">www.synigoroskatanaloti.gr</a>).</p>`
-  };
-
-  return {
-    privacy:`<h1 id="sheet-title">Privacy Policy</h1>${upd}
-<h2>1. Who we are</h2><p>Alexis Papadimitriou, private chef and catering (“we”, “us”), is the controller of the personal data described here. Contact: ${mail} · ${P}${addr}.</p>
-<h2>2. What we collect</h2><ul>
-<li><strong>Enquiry form:</strong> your name, email, phone (optional), event date, number of guests, location, occasion and anything you write in your message.</li>
-<li><strong>Allergies or dietary needs</strong>, if you tell us about them.</li>
-<li><strong>Email, phone or WhatsApp:</strong> the details you share when you contact us.</li>
-<li><strong>Technical data:</strong> our hosting provider (Cloudflare) processes your IP address and browser and request details to deliver and protect the website. The form’s security check (Cloudflare Turnstile) processes browser/device signals to tell people from bots.</li>
-<li><strong>Your language preference</strong>, stored on your device (see <a href="#cookies">Cookies</a>).</li></ul>
-<h2>3. Why we use it and our legal basis</h2><ul>
-<li>Replying to your enquiry, preparing a quote and sending an automatic confirmation email — steps you ask us to take before entering into a contract (Art. 6(1)(b) GDPR).</li>
-<li>Allergies and dietary information — your explicit consent (Art. 9(2)(a) GDPR), which you can withdraw at any time.</li>
-<li>Keeping the website secure and preventing spam and abuse — our legitimate interests (Art. 6(1)(f)).</li>
-<li>Keeping records the law requires, such as invoices for bookings — legal obligation (Art. 6(1)(c)).</li></ul>
-<p>We don’t send marketing emails, we don’t sell data, and we don’t use automated decision-making or profiling.</p>
-<h2>4. Who receives your data</h2><p>Service providers acting on our behalf (processors):</p><ul>
-<li><strong>Cloudflare, Inc.</strong> — hosting, security, the Turnstile check and email forwarding.</li>
-<li><strong>Resend, Inc.</strong> — sending the enquiry and confirmation emails.</li>
-<li><strong>Google (Gmail)</strong> — the inbox where we receive and answer enquiries.</li>
-<li><strong>BunnyWay d.o.o. (Bunny Fonts, EU)</strong> — delivers the website’s fonts and receives your IP address when they load.</li></ul>
-<p>We don’t share your data with anyone else unless the law requires it.</p>
-<h2>5. International transfers</h2><p>Some providers (Cloudflare, Resend, Google) are based in the US and may process data outside the EEA/UK. Where they do, transfers rely on appropriate safeguards such as the EU–US Data Privacy Framework (and its UK extension) or the European Commission’s Standard Contractual Clauses.</p>
-<h2>6. How long we keep it</h2><ul>
-<li>Enquiries that don’t lead to a booking: deleted within 24 months of our last contact.</li>
-<li>Bookings: as long as needed to provide the service, and as long as Greek tax and accounting law requires.</li>
-<li>Allergy and dietary information: deleted after your event, unless you ask us to keep it for future bookings.</li>
-<li>Security logs: for the short period set by Cloudflare.</li></ul>
-<h2>7. Your rights</h2><p>Under the GDPR (and UK GDPR) you can ask to access, correct, delete, restrict or port your data, object to processing based on legitimate interests, and withdraw consent at any time. Email ${mail} — we reply within one month.</p>
-<p>You can complain to the Hellenic Data Protection Authority (Kifisias 1–3, 115 23 Athens, <a href="https://www.dpa.gr" rel="noopener" target="_blank">www.dpa.gr</a>), to the authority in the EU country where you live, or — in the UK — to the Information Commissioner’s Office (<a href="https://ico.org.uk" rel="noopener" target="_blank">ico.org.uk</a>).</p>
-<h2>8. Do you have to give us your data?</h2><p>We need your name and email to reply; everything else is optional.</p>
-<h2>9. Children</h2><p>Our services are for adults. We don’t knowingly collect children’s data.</p>
-<h2>10. Changes</h2><p>We may update this policy; the current version is always on this page.</p>`,
-    cookies:`<h1 id="sheet-title">Cookies &amp; storage</h1>${upd}
-<p>We don’t use advertising, analytics or tracking cookies — which is why there’s no cookie banner.</p>
-<h2>What is stored</h2><ul>
-<li><strong>Language preference</strong> (<code>ap-lang</code>, in your browser’s localStorage): remembers whether you chose English or Greek. It stays on your device and is never sent to us.</li>
-<li><strong>Cloudflare security:</strong> Cloudflare may set strictly necessary security cookies (for example to detect bots), and the Turnstile check runs when you use the form. These are used only for security.</li>
-<li><strong>Fonts:</strong> loaded from Bunny Fonts (EU), without cookies.</li></ul>
-<p>All of the above is strictly necessary for features you ask for, so no consent is required (Art. 5(3) ePrivacy Directive; Art. 4(5) Greek Law 3471/2006). You can clear it at any time in your browser settings.</p>`,
-    terms:`<h1 id="sheet-title">Terms of use &amp; bookings</h1>${upd}
-<h2>Information and quotes</h2><p>Information on this website is general. Menus and prices are quoted individually for each event.</p>
-<h2>Bookings</h2><p>Sending an enquiry is not a booking. A booking is confirmed only when we confirm it in writing and any agreed deposit has been paid. Specific terms — deposit, cancellation and final guest numbers — are set out in your quote.</p>
-<h2>Allergies and dietary needs</h2><p>Please tell us in advance. We take great care, but kitchens — including yours — may contain allergens. On request, we provide information on the 14 major allergens in each dish (Regulation (EU) 1169/2011).</p>
-<h2>Right of withdrawal</h2><p>Because our services are catering services for a specific date, the 14-day right of withdrawal for distance contracts does not apply (Art. 16(l) Directive 2011/83/EU, as implemented in Greek law). Cancellation terms are set out in your quote.</p>
-<h2>Intellectual property</h2><p>The content, photographs and logo on this website belong to Alexis Papadimitriou and may not be reproduced without permission.</p>
-<h2>Governing law</h2><p>Greek law applies. Consumers keep the protection given by the law of the country where they live.</p>`,
-    legal:`<h1 id="sheet-title">Legal notice</h1>${upd}
-<h2>Business details</h2><dl>${info}</dl>
-<h2>Hosting</h2><p>This website is hosted by Cloudflare, Inc.</p>
-<h2>Complaints and disputes</h2><p>If you have a complaint, please contact us first at ${mail}. Consumers can also contact the Greek Consumer Ombudsman (<a href="https://www.synigoroskatanaloti.gr" rel="noopener" target="_blank">www.synigoroskatanaloti.gr</a>).</p>`
-  };
-}
-const LEGAL_KEYS=['privacy','cookies','terms','legal'];
-const sheet=$('#sheet'), sheetBody=$('#sheet-body');
-let sheetKey='', sheetOpener=null;
-function openLegal(key,push=true){
-  if(!LEGAL_KEYS.includes(key)) return;
-  sheetKey=key;
-  sheetBody.innerHTML=legalPages(lang)[key];
-  if(sheet.hidden){ sheetOpener=document.activeElement; sheet.hidden=false; document.documentElement.classList.add('locked'); }
-  sheet.scrollTop=0;
-  if(push) try{history.pushState({legal:key},'','#'+key)}catch(_){}
-  $('#sheet-x').focus({preventScroll:true});
-}
-function closeLegal(fromPop=false){
-  if(sheet.hidden) return;
-  sheet.hidden=true; sheetKey=''; document.documentElement.classList.remove('locked');
-  if(!fromPop) try{history.replaceState(null,'',location.pathname+location.search)}catch(_){}
-  if(sheetOpener&&sheetOpener.focus) sheetOpener.focus({preventScroll:true});
-}
-$('#sheet-x').addEventListener('click',()=>closeLegal());
-addEventListener('keydown',e=>{if(e.key==='Escape'&&!sheet.hidden) closeLegal()});
-addEventListener('popstate',()=>{const k=location.hash.slice(1); if(LEGAL_KEYS.includes(k)) openLegal(k,false); else closeLegal(true)});
+/* legal pages open over the page through the curtain, and close back to the same spot (curtain.js) */
+const legal=CU.legalSheet({ lang:()=>lang, here:()=>I18N[lang]['tr.home'],
+  words:()=>{ const T=I18N[lang]; return {privacy:T['tr.privacy'],cookies:T['tr.cookies'],terms:T['tr.terms'],legal:T['tr.legal']}; } });
+const sheet=$('#sheet');
 
 /* ---- language ---- */
 let lang='en';
@@ -233,7 +77,7 @@ function setLang(l){
   $$('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===lang));
   if(typeof placeInd==='function') placeInd();
   buildStatement(); setStatus('','');
-  if(sheetKey) sheetBody.innerHTML=legalPages(lang)[sheetKey];
+  legal.refresh();
   if(tsWidget!==null) renderTurnstile();
   try{localStorage.setItem('ap-lang',lang)}catch(e){}
   layout(); tick();
@@ -244,35 +88,10 @@ function placeInd(){
   const b=$('.lang button[aria-pressed="true"]'); if(!b) return;
   ind.style.width=b.offsetWidth+'px'; ind.style.transform=`translateX(${b.offsetLeft-3}px)`;
 }
-/* ---- language switch: a liquid curtain sweeps up, the language name morphs letter by letter
+/* ---- language switch: the curtain sweeps up, the language name morphs letter by letter
         from one alphabet to the other, then the curtain lifts away and the new text cascades in ---- */
 const LNAME={en:'English',el:'Ελληνικά'};
-const GLYPHS='ΑΒΓΔΘΛΞΠΣΦΨΩαβγδεζηθλμξπσφψωAEGKMNRSWXZ';
-const lsw=document.createElement('div'); lsw.id='lswap'; lsw.setAttribute('aria-hidden','true');
-lsw.innerHTML='<div class="ls-panel"><i class="ls-bulge ls-top"></i><i class="ls-bulge ls-bot"></i>'+
-  '<div class="ls-inner"><span class="ls-ap">A<span>P</span></span><div class="ls-word"></div><i class="ls-rule"></i>'+
-  '<div class="ls-sub"><b data-l="en">English</b><em></em><b data-l="el">Ελληνικά</b></div></div></div>';
-document.body.appendChild(lsw);
-const LS={panel:lsw.querySelector('.ls-panel'),top:lsw.querySelector('.ls-top'),bot:lsw.querySelector('.ls-bot'),
-  inner:lsw.querySelector('.ls-inner'),word:lsw.querySelector('.ls-word'),rule:lsw.querySelector('.ls-rule'),
-  ap:lsw.querySelector('.ls-ap'),subs:[...lsw.querySelectorAll('.ls-sub b')]};
-const wait=ms=>new Promise(r=>setTimeout(r,ms));
-const EASE_IO='cubic-bezier(.76,0,.24,1)', EASE_OUT='cubic-bezier(.16,1,.3,1)';
-function scramble(el,from,to,dur){
-  return new Promise(res=>{
-    const L=Math.max(from.length,to.length), t0=performance.now(); let lastSwap=0, noise=[];
-    const step=now=>{
-      const t=clamp((now-t0)/dur);
-      if(now-lastSwap>45){ lastSwap=now; noise=[...Array(L)].map(()=>GLYPHS[(Math.random()*GLYPHS.length)|0]); }
-      let s='';
-      for(let i=0;i<L;i++){ const r=t*(L+5)-i*1.0;
-        s+= r>=5 ? (to[i]||'') : r>0 ? noise[i] : (from[i]||''); }
-      el.textContent=s;
-      if(t<1) requestAnimationFrame(step); else { el.textContent=to; res(); }
-    };
-    requestAnimationFrame(step);
-  });
-}
+const EASE_OUT='cubic-bezier(.16,1,.3,1)', wait=CU.wait;
 function cascadeIn(){
   // Only animate text that is actually visible right now, and only up to its current opacity —
   // so things the scroll scenes are keeping hidden (e.g. the hero tagline) never flash.
@@ -293,41 +112,10 @@ function cascadeIn(){
     [{opacity:0,transform:'translate3d(0,34px,0)',filter:'blur(8px)'},{opacity:o,transform:'none',filter:'blur(0)'}],
     {duration:850,delay:120+i*55,easing:EASE_OUT,fill:'backwards'}));
 }
-let langBusy=false;
-async function switchLang(l){
-  if(l===lang||langBusy) return;
-  if(RM){ setLang(l); return; }
-  langBusy=true; const from=lang;
+function switchLang(l){
+  if(l===lang||CU.busy) return;
   $$('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===l)); placeInd();
-  LS.word.textContent=LNAME[from];
-  LS.subs.forEach(b=>b.classList.toggle('on',b.dataset.l===l));
-  lsw.style.visibility='visible';
-  // 1. curtain sweeps up, its leading edge bulging then flattening like liquid
-  const inA=LS.panel.animate([{transform:'translate3d(0,100%,0)'},{transform:'translate3d(0,0,0)'}],{duration:700,easing:EASE_IO,fill:'forwards'});
-  LS.top.animate([{transform:'scaleY(1)'},{transform:'scaleY(1)',offset:.35},{transform:'scaleY(0)'}],{duration:700,easing:EASE_IO,fill:'forwards'});
-  LS.bot.animate([{transform:'scaleY(0)'},{transform:'scaleY(0)'}],{duration:10,fill:'forwards'});
-  LS.ap.animate([{opacity:0,transform:'translate3d(0,30px,0) scale(.9)'},{opacity:1,transform:'none'}],{duration:700,delay:300,easing:EASE_OUT,fill:'both'});
-  LS.word.animate([{opacity:0,transform:'translate3d(0,60px,0)',letterSpacing:'.3em'},{opacity:1,transform:'none',letterSpacing:'.02em'}],{duration:900,delay:320,easing:EASE_OUT,fill:'both'});
-  LS.rule.animate([{transform:'scaleX(0)'},{transform:'scaleX(1)'}],{duration:900,delay:450,easing:EASE_OUT,fill:'both'});
-  LS.subs[0].parentNode.animate([{opacity:0,transform:'translate3d(0,14px,0)'},{opacity:1,transform:'none'}],{duration:700,delay:520,easing:EASE_OUT,fill:'both'});
-  await inA.finished;
-  // 2. page swaps underneath while the name morphs between alphabets
-  const y=scrollY; setLang(l); if(Math.abs(scrollY-y)>1) scrollTo(0,y);
-  await wait(120);
-  await scramble(LS.word,LNAME[from],LNAME[l],620);
-  await wait(260);
-  // 3. curtain lifts away (its trailing edge curls), new text cascades in behind it
-  const out=[
-    LS.panel.animate([{transform:'translate3d(0,0,0)'},{transform:'translate3d(0,-100%,0)'}],{duration:800,easing:EASE_IO,fill:'forwards'}),
-    LS.bot.animate([{transform:'scaleY(0)'},{transform:'scaleY(1)',offset:.55},{transform:'scaleY(.2)'}],{duration:800,easing:EASE_IO,fill:'forwards'}),
-    LS.inner.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translate3d(0,-80px,0)'}],{duration:520,easing:'cubic-bezier(.5,0,.75,0)',fill:'forwards'})
-  ];
-  setTimeout(cascadeIn,230);
-  await out[0].finished;
-  lsw.style.visibility='hidden';
-  lsw.querySelectorAll('*').forEach(e=>e.getAnimations().forEach(an=>an.cancel()));
-  LS.panel.getAnimations().forEach(an=>an.cancel());
-  langBusy=false;
+  CU.swap({word:LNAME[lang],toWord:LNAME[l],from:LNAME[lang],to:LNAME[l],change:()=>setLang(l),onLift:cascadeIn});
 }
 $$('.lang button').forEach(b=>b.addEventListener('click',()=>switchLang(b.dataset.lang)));
 
@@ -341,7 +129,7 @@ if(C.box){
   C.cut=C.box.querySelector('.c-cut img'); C.line=C.box.querySelector('.c-line');
   C.front=C.box.querySelector('.c-word-front');
   C.words=[...C.box.querySelectorAll('.c-word span')];
-  C.cap=$('.c-cap'); C.rules=$$('.c-rule'); C.more=$('.c-more');
+  C.cap=$('.c-cap'); C.rules=$$('.c-rule'); C.badge=C.box.querySelector('.c-badge');
 }
 function renderChef(y){
   if(!C.box||!M.chef) return;
@@ -373,11 +161,11 @@ function renderChef(y){
   put('ccpO',C.cap,'opacity',cp.toFixed(3));
   put('ccpT',C.cap,'transform',`translate3d(0,${((1-cp)*12).toFixed(1)}px,0)`);
   const rs=easeOutQ(seg(p,.68,.9)).toFixed(4); C.rules.forEach((r,i)=>put('crT'+i,r,'transform',`scaleX(${rs})`));
-  // then the quiet invitation to his story settles in beneath his name
-  const mp=easeOutQ(seg(p,.72,.92));
-  put('cmO',C.more,'opacity',mp.toFixed(3));
-  put('cmT',C.more,'transform',`translate3d(0,${((1-mp)*10).toFixed(1)}px,0)`);
-  if(C.more.classList.contains('in')!==mp>.6) C.more.classList.toggle('in',mp>.6);
+  // the seal to his story rolls onto the arch once he has stepped out, settling with a soft overshoot
+  if(C.badge){ const bp=seg(p,.38,.6), bs=bp<1?.6+.4*(1-Math.pow(1-bp,3))*(1+.14*Math.sin(bp*Math.PI)):1;
+    put('cbgO',C.badge,'opacity',seg(bp,0,.5).toFixed(3));
+    put('cbgT',C.badge,'transform',`scale(${bs.toFixed(4)}) rotate(${((1-bp)*-60).toFixed(1)}deg)`);
+    if(C.badge.classList.contains('in')!==bp>=1) C.badge.classList.toggle('in',bp>=1); }
 }
 const easeOutQ=t=>1-Math.pow(1-t,3);
 
@@ -460,21 +248,6 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
   .vw-prev{left:16px;top:45%}.vw-next{right:16px;top:45%}
   @media(max-width:700px){.vw-prev,.vw-next{display:none}}
   .vw-count{position:absolute;top:max(26px,calc(env(safe-area-inset-top) + 22px));left:20px;font:500 11px var(--sans);letter-spacing:.25em;color:rgba(236,228,216,.6);opacity:0}
-  /* language curtain */
-  #lswap{position:fixed;inset:0;z-index:97;visibility:hidden;pointer-events:none;overflow:hidden}
-  .ls-panel{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,#353c2b,#1b2016 75%);transform:translate3d(0,100%,0);will-change:transform;display:flex;align-items:center;justify-content:center}
-  .ls-bulge{position:absolute;left:-25%;right:-25%;height:26vh;background:inherit;border-radius:50%;will-change:transform}
-  .ls-top{top:-13vh;background:#2a3022;transform-origin:50% 100%}
-  .ls-bot{bottom:-13vh;background:#1d2218;transform-origin:50% 0;transform:scaleY(0)}
-  .ls-inner{position:relative;display:flex;flex-direction:column;align-items:center;gap:18px;color:#ece4d8;text-align:center;padding:0 20px}
-  .ls-ap{font-family:'Cormorant Garamond','GFS Didot',Georgia,serif;font-size:40px;line-height:.8;color:#d6b679;display:flex;align-items:flex-end;opacity:0}
-  .ls-ap span{font-size:.7em;margin-left:-.36em;transform:translateY(.24em)}
-  .ls-word{font-family:'Cormorant Garamond','GFS Didot',Georgia,serif;font-style:italic;font-weight:300;font-size:clamp(58px,15vw,150px);line-height:1;color:#f1e7d6;min-height:1.1em;white-space:nowrap;opacity:0}
-  .ls-rule{display:block;width:min(260px,60vw);height:1px;background:#b8914f;transform:scaleX(0)}
-  .ls-sub{display:flex;align-items:center;gap:14px;font:500 11px 'Commissioner',system-ui,sans-serif;letter-spacing:.32em;text-transform:uppercase;opacity:0}
-  .ls-sub b{font-weight:500;color:rgba(236,228,216,.45);transition:color .5s}
-  .ls-sub b.on{color:#d6b679}
-  .ls-sub em{width:5px;height:5px;background:#b8914f;transform:rotate(45deg)}
   /* gallery — masonry columns that drift at different speeds */
   .gallery{columns:auto!important;display:flex;gap:14px;align-items:flex-start}
   @media(min-width:900px){.gallery{gap:22px}}
@@ -711,9 +484,9 @@ addEventListener('pageshow',e=>{ if(e.persisted) veil.classList.remove('on'); })
 document.addEventListener('click',e=>{
   const a=e.target.closest('a[href^="#"]'); if(!a)return;
   const h=a.getAttribute('href'), key=h.slice(1);
-  if(LEGAL_KEYS.includes(key)){ e.preventDefault(); openLegal(key, sheet.hidden); return; }
+  if(LEGAL_KEYS.includes(key)){ e.preventDefault(); legal.open(key, sheet.hidden); return; }
   if(h.length<2)return;
-  e.preventDefault(); if(!sheet.hidden) closeLegal();
+  e.preventDefault(); if(!sheet.hidden) legal.close();
   if(h==='#top'&&a.classList.contains('brand')) homecoming(a); else goTo(h);
   try{history.replaceState(null,'',h==='#top'?location.pathname+location.search:h)}catch(_){}
 });
@@ -2260,5 +2033,7 @@ const initHash=location.hash;
 const landLegal=LEGAL_KEYS.includes(initHash.slice(1));
 const landHash=!landLegal&&elForHash(initHash)?initHash:'';
 if(landHash){history.scrollRestoration='manual';goTo(landHash,true)}
-if(landLegal){try{history.replaceState(null,'',location.pathname+location.search)}catch(_){} openLegal(initHash.slice(1))}
-(document.fonts?document.fonts.ready:Promise.resolve()).then(()=>{layout();tick();if(landHash)goTo(landHash,true)});
+if(landLegal){try{history.replaceState(null,'',location.pathname+location.search)}catch(_){} legal.open(initHash.slice(1))}
+const arrived=CU.arrival();   // came from the About page through the curtain: it lifts once we're in place
+const fontsIn=(document.fonts?document.fonts.ready:Promise.resolve()).then(()=>{layout();tick();if(landHash)goTo(landHash,true)});
+if(arrived) Promise.race([fontsIn,wait(2500)]).then(()=>wait(200)).then(()=>{ if(landHash) goTo(landHash,true); CU.lift(cascadeIn); });

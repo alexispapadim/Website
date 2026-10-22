@@ -26,7 +26,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2320251a'/%3E%3Ctext x='32' y='43' font-family='Georgia,serif' font-size='30' fill='%23d6b679' text-anchor='middle'%3EAP%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
 <link href="https://fonts.bunny.net/css?family=commissioner:300,400,500|cormorant-garamond:300,300i,400,400i,500|gfs-didot:400|pinyon-script:400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/site.css?v=38">
+<link rel="stylesheet" href="/site.css?v=39">
 </head>
 <body class="about-page">
 
@@ -217,6 +217,14 @@
   <p data-i18n="ft">© 2026 Alexis Papadimitriou · Private Chef &amp; Catering</p>
 </footer>
 
-<script type="module" src="/about.js?v=38"></script>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+  <div class="sheet-bar">
+    <span class="sheet-brand">AP</span>
+    <button type="button" class="sheet-x" id="sheet-x" data-i18n-aria="lg.close" aria-label="Close">✕</button>
+  </div>
+  <article class="sheet-body" id="sheet-body"></article>
+</div>
+
+<script type="module" src="/about.js?v=39"></script>
 </body>
 </html>
