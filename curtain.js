@@ -4,7 +4,7 @@
    - moving between pages (the About page's buttons back to the menus or the enquiry form)
    - opening and closing the legal pages, which return you to exactly where you were
    ============================================================ */
-import { legalPages, LEGAL_KEYS } from './details.js?v=42';
+import { legalPages, LEGAL_KEYS } from './details.js?v=43';
 
 const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 export const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -46,9 +46,11 @@ function label(word, from, to){
   LS.subs[0].textContent = from; LS.subs[1].textContent = to;
   LS.subs[0].classList.remove('on'); LS.subs[1].classList.add('on');
 }
+const PARTS = () => [LS.panel, LS.top, LS.bot, LS.inner, LS.ap, LS.word, LS.rule, LS.sub];
 function reset(){
   el.style.visibility = 'hidden';
   el.querySelectorAll('*').forEach(e => e.getAnimations().forEach(an => an.cancel()));
+  PARTS().forEach(n => { n.style.transform = n.style.opacity = ''; });
   busy = false;
 }
 
@@ -65,24 +67,26 @@ export async function cover(word, from, to){
   LS.sub.animate([{ opacity: 0, transform: 'translate3d(0,14px,0)' }, { opacity: 1, transform: 'none' }], { duration: 700, delay: 520, easing: EASE_OUT, fill: 'both' });
   await inA.finished;
 }
-/* already closed: used when a page opens straight into the curtain (arriving from the other page) */
+/* already closed: used when a page opens straight into the curtain (arriving from the other page).
+   Set as plain styles, not animations, so it is in place in the very frame the cover from arrive.js is removed. */
 export function covered(word, from, to){
   busy = true; label(word, from, to);
-  for (const n of [LS.panel, LS.ap, LS.word, LS.sub]) n.animate([{ transform: 'none', opacity: 1 }], { duration: 1, fill: 'forwards' });
-  LS.top.animate([{ transform: 'scaleY(0)' }], { duration: 1, fill: 'forwards' });
-  LS.bot.animate([{ transform: 'scaleY(0)' }], { duration: 1, fill: 'forwards' });
-  LS.rule.animate([{ transform: 'scaleX(1)' }], { duration: 1, fill: 'forwards' });
+  for (const n of [LS.panel, LS.ap, LS.word, LS.sub]){ n.style.transform = 'none'; n.style.opacity = '1'; }
+  LS.top.style.transform = LS.bot.style.transform = 'scaleY(0)';
+  LS.rule.style.transform = 'scaleX(1)';
   el.style.visibility = 'visible';
+  document.documentElement.classList.add('curtain-in');
   document.documentElement.classList.remove('arriving');
 }
-/* 3. the curtain lifts away, its trailing edge curling; onLift runs as the page shows through */
+/* 3. the curtain lifts away, its trailing edge curling. onLift runs first, while the page is still
+      fully covered, so anything it hides to animate in is hidden before a single pixel shows through. */
 export async function lift(onLift){
+  if (onLift) onLift();
   const out = [
     LS.panel.animate([{ transform: 'translate3d(0,0,0)' }, { transform: 'translate3d(0,-100%,0)' }], { duration: 800, easing: EASE_IO, fill: 'forwards' }),
     LS.bot.animate([{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)', offset: .55 }, { transform: 'scaleY(.2)' }], { duration: 800, easing: EASE_IO, fill: 'forwards' }),
     LS.inner.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translate3d(0,-80px,0)' }], { duration: 520, easing: 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' })
   ];
-  if (onLift) setTimeout(onLift, 230);
   await out[0].finished;
   reset();
 }
@@ -112,7 +116,7 @@ export async function leaveTo(href, { word, from, to }){
 export function arrival(){
   let a = null;
   try { a = JSON.parse(sessionStorage.getItem(ARRIVE) || 'null'); sessionStorage.removeItem(ARRIVE); } catch (_) {}
-  if (!document.documentElement.classList.contains('arriving') || !a || Date.now() - a.t > 30000){
+  if (!document.documentElement.classList.contains('arriving') || !a || Date.now() - a.t > 30000 || performance.now() > 7000){
     document.documentElement.classList.remove('arriving'); return null;
   }
   covered(a.word, a.from, a.to);
@@ -128,14 +132,23 @@ export function legalSheet({ lang, here, words }){
   const root = document.documentElement;
   let key = '', opener = null, y = 0;
   const fill = () => { body.innerHTML = legalPages(lang())[key]; };
+  // the sheet has its own EN / ΕΛ pill (the page's language switch drives it); its gold marker follows the choice
+  const pill = sheet.querySelector('.lang'), mark = pill && document.createElement('span');
+  if (pill){ mark.className = 'lang-ind'; pill.prepend(mark); pill.addEventListener('click', () => placePill()); }
+  function placePill(instant){
+    const b = pill && pill.querySelector('button[aria-pressed="true"]'); if (!b || !b.offsetWidth) return;
+    if (instant) mark.style.transition = 'none';
+    mark.style.width = b.offsetWidth + 'px'; mark.style.transform = `translateX(${b.offsetLeft - 3}px)`;
+    if (instant) requestAnimationFrame(() => requestAnimationFrame(() => { mark.style.transition = ''; }));
+  }
   function show(k){
     key = k; fill();
     if (sheet.hidden){ opener = document.activeElement; y = scrollY; sheet.hidden = false; root.classList.add('locked'); }
-    sheet.scrollTop = 0;
+    sheet.scrollTop = 0; placePill(true);
     x.focus({ preventScroll: true });
   }
   function hide(){
-    sheet.hidden = true; key = ''; root.classList.remove('locked');
+    sheet.hidden = true; sheet.classList.remove('quiet'); key = ''; root.classList.remove('locked');
     if (Math.abs(scrollY - y) > 1) scrollTo(0, y);
     if (opener && opener.focus) opener.focus({ preventScroll: true });
   }
@@ -143,9 +156,9 @@ export function legalSheet({ lang, here, words }){
     if (!LEGAL_KEYS.includes(k)) return;
     if (push) try { history.pushState({ legal: k }, '', '#' + k); } catch (_) {}
     if (!sheet.hidden || RM || busy){ show(k); return; }
+    // the sheet's own fade-in stays off while it opens under the curtain (turning it back on would replay it)
     const w = words(); sheet.classList.add('quiet');
     await swap({ word: w[k], from: here(), to: w[k], change: () => show(k) });
-    sheet.classList.remove('quiet');
   }
   async function close(fromPop = false){
     if (sheet.hidden) return;
@@ -157,5 +170,5 @@ export function legalSheet({ lang, here, words }){
   x.addEventListener('click', () => close());
   addEventListener('keydown', e => { if (e.key === 'Escape' && !sheet.hidden) close(); });
   addEventListener('popstate', () => { const k = location.hash.slice(1); if (LEGAL_KEYS.includes(k)) open(k, false); else close(true); });
-  return { open, close, refresh(){ if (key) fill(); }, get key(){ return key; } };
+  return { open, close, refresh(){ if (key){ fill(); placePill(); } }, get key(){ return key; } };
 }

@@ -2,9 +2,9 @@
    ABOUT PAGE: language, header and the scroll effects for his story.
    The text itself is in i18n.js (ab.*, jy.*, j1–j12, jt.*, ap.*).
    ============================================================ */
-import { I18N } from './i18n.js?v=42';
-import { LEGAL_KEYS } from './details.js?v=42';
-import * as CU from './curtain.js?v=42';
+import { I18N } from './i18n.js?v=43';
+import { LEGAL_KEYS } from './details.js?v=43';
+import * as CU from './curtain.js?v=43';
 
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -113,7 +113,7 @@ $$('.ph-frame img').forEach(im => {
 
 /* ---- reveals start once the opening veil has lifted ---- */
 const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .18, rootMargin: '0px 0px -6% 0px' });
-setTimeout(() => $$('[data-reveal],[data-reveal-group],[data-ph],.jy-i').forEach(e => io.observe(e)), RM ? 0 : 650);
+const startReveals = () => $$('[data-reveal],[data-reveal-group],[data-ph],.jy-i').forEach(e => io.observe(e));
 
 /* ---- init ---- */
 let start = '';
@@ -124,6 +124,14 @@ if (!start) start = (navigator.language || '').toLowerCase().startsWith('el') ? 
 setLang(start);
 { const k = location.hash.slice(1); if (LEGAL_KEYS.includes(k)){ try { history.replaceState(null, '', location.pathname + location.search); } catch (_) {} legal.open(k); } }
 requestAnimationFrame(() => { placeInd(); requestAnimationFrame(() => { ind.style.transition = ''; }); });
-// the opening veil lifts once the headline font is in (or after a short wait), so the page never opens in a stand-in face
-Promise.race([document.fonts ? document.fonts.load('300 1em "Cormorant Garamond"') : 0, new Promise(r => setTimeout(r, 1500))]).catch(() => {})
-  .then(() => requestAnimationFrame(() => document.body.classList.add('loaded')));
+// the headline font, or a short wait: the page never opens in a stand-in face
+const fontIn = Promise.race([document.fonts ? document.fonts.load('300 1em "Cormorant Garamond"') : 0, new Promise(r => setTimeout(r, 1500))]).catch(() => {});
+// arriving from the home page through the curtain: it lifts once the font is in, and the reveals follow it;
+// otherwise the opening veil lifts on its own and the reveals start just after
+if (CU.arrival()){
+  document.body.classList.add('loaded');
+  fontIn.then(() => CU.wait(150)).then(() => CU.lift(() => setTimeout(startReveals, 250)));
+} else {
+  setTimeout(startReveals, RM ? 0 : 650);
+  fontIn.then(() => requestAnimationFrame(() => document.body.classList.add('loaded')));
+}

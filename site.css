@@ -259,6 +259,7 @@ footer p{margin-top:22px;font-size:12px;letter-spacing:.18em;text-transform:uppe
 .sheet-brand{font-family:var(--serif);font-size:24px;letter-spacing:-.04em}
 .sheet-x{width:44px;height:44px;border-radius:50%;border:1px solid rgba(32,37,26,.25);background:none;color:var(--olive);font-size:16px;cursor:pointer}
 .sheet-x:active{transform:scale(.94)}
+.sheet-act{display:flex;align-items:center;gap:12px}
 .sheet-body{max-width:760px;margin:0 auto;padding:36px var(--pad) calc(80px + env(safe-area-inset-bottom));font-size:16px;line-height:1.7}
 .sheet-body h1{font-family:var(--serif);font-weight:300;font-size:clamp(36px,6vw,58px);line-height:1.05;margin-bottom:8px}
 .sheet-body .upd{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:30px}
@@ -647,7 +648,7 @@ header{padding-top:max(12px,env(safe-area-inset-top))!important;padding-bottom:1
 @keyframes pgLift{to{clip-path:inset(0 0 100% 0)}}
 @keyframes pgRule{to{width:0}}
 @keyframes pgAp{to{opacity:0;transform:translateY(-10px)}}
-.rm .pg-veil{display:none}
+.rm .pg-veil,html.arriving .pg-veil,html.curtain-in .pg-veil{display:none}
 /* on a slow connection the veil stays closed until the page is ready, its gold rule running like a loader */
 body:not(.loaded) .pg-veil,body:not(.loaded) .pg-veil i,body:not(.loaded) .pg-veil .veil-ap{animation-play-state:paused}
 .pg-veil i{position:relative;overflow:hidden}
