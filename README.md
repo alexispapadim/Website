@@ -138,6 +138,7 @@ The settings now come from `wrangler.jsonc`.
 3. **Commit.** The gallery section appears automatically once there's at least one photo.
    - It shows as a two-column grid on phones and three columns on desktop.
    - Tapping a photo opens it full screen; swipe or use the arrows to browse.
+   - In the full-screen viewer visitors can zoom in: pinch or double-tap on a phone or tablet, click (or Ctrl + scroll / trackpad pinch) on a computer, then drag to look around.
 4. **Optional, for speed:** run `python3 tools/small-photos.py` (or ask Claude to) to make the phone-sized copy in `sm/`. The grid loads those copies, which are about three times lighter. Without one, the photo still shows; it just loads the full file.
 
 His portrait is shown in the chef scene using `alexis-cut.webp` (him, cut out) and `alexis-bg.jpg` (the backdrop). To change the portrait, send a new photo to be cut out again.

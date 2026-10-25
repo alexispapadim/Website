@@ -4,7 +4,7 @@
    - moving between pages (the About page's buttons back to the menus or the enquiry form)
    - opening and closing the legal pages, which return you to exactly where you were
    ============================================================ */
-import { legalPages, LEGAL_KEYS } from './details.js?v=53';
+import { legalPages, LEGAL_KEYS } from './details.js?v=54';
 
 const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 export const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -20,6 +20,13 @@ document.body.appendChild(el);
 const LS = { panel: el.querySelector('.ls-panel'), top: el.querySelector('.ls-top'), bot: el.querySelector('.ls-bot'),
   inner: el.querySelector('.ls-inner'), word: el.querySelector('.ls-word'), rule: el.querySelector('.ls-rule'),
   ap: el.querySelector('.ls-ap'), sub: el.querySelector('.ls-sub'), subs: [...el.querySelectorAll('.ls-sub b')] };
+
+/* the curtain's words are set in faces the page may not have used yet (the light italic, and the Greek
+   face for "Ελληνικά" on an English page); fetch them once the page has settled, so the first curtain
+   never shows a stand-in face that swaps mid-sweep */
+addEventListener('load', () => setTimeout(() => { if (!document.fonts) return;
+  for (const f of ['italic 300 1em "Cormorant Garamond","GFS Didot"', '500 1em "Commissioner"'])
+    document.fonts.load(f, 'English Ελληνικά ΑΒΓ').catch(() => {}); }, 1200));
 
 export let busy = false;
 const setWord = w => { LS.word.textContent = w; LS.word.classList.toggle('long', w.length > 9); };
