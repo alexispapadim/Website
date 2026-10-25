@@ -1024,9 +1024,22 @@ const MENU_RATIO=1055/1491;
   .mv{position:fixed;inset:0;z-index:120;display:flex;flex-direction:column;color:#f4eee5}
   .mv-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,#2a3022 0%,#14170f 72%);opacity:0;will-change:clip-path}
   .mv-top{position:relative;z-index:3;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:max(10px,calc(env(safe-area-inset-top) + 4px)) 14px 6px 20px;opacity:0}
-  .mv-t{display:flex;gap:14px;align-items:baseline;min-width:0}
-  .mv-season{font:italic 400 24px var(--serif);color:#d6b679}
-  .mv-count{font:500 11px var(--sans);letter-spacing:.25em;color:rgba(236,228,216,.6)}
+  /* the season tabs: a quiet row of names, the open one in gold with a hairline under it; on
+     phones the row scrolls sideways and fades at whichever edge has more */
+  .mv-tabs{flex:1;min-width:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;touch-action:pan-x;overscroll-behavior-x:contain;margin-left:-10px;
+    --fl:0px;--fr:0px;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--fl),#000 calc(100% - var(--fr)),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 var(--fl),#000 calc(100% - var(--fr)),transparent 100%)}
+  .mv-tabs.fl{--fl:28px}.mv-tabs.fr{--fr:28px}
+  .mv-tabs::-webkit-scrollbar{display:none}
+  .mv-tabs-in{position:relative;display:flex;width:max-content;gap:2px}
+  .mv-tab{all:unset;box-sizing:border-box;cursor:pointer;min-height:46px;padding:8px 10px;display:flex;align-items:center;white-space:nowrap;-webkit-tap-highlight-color:transparent;
+    font:italic 400 clamp(18px,4.6vw,24px)/1 var(--serif);color:rgba(236,228,216,.5);transition:color .45s ease}
+  .mv-tab.on{color:#d6b679}
+  @media(hover:hover){.mv-tab:not(.on):hover{color:rgba(236,228,216,.88)}}
+  .mv-tab:focus-visible{outline:2px solid #d6b679;outline-offset:-4px;border-radius:8px}
+  .mv-ink{position:absolute;left:0;bottom:7px;height:1px;width:0;background:#d6b679;pointer-events:none;transform-origin:0 50%;
+    box-shadow:0 0 8px rgba(214,182,121,.5);transition:transform .6s cubic-bezier(.16,1,.3,1),width .6s cubic-bezier(.16,1,.3,1)}
+  .mv-pg{display:flex;align-items:center;gap:12px;min-height:7px}
+  .mv-count{font:500 10px var(--sans);letter-spacing:.25em;color:rgba(236,228,216,.6)}
   .mv-x,.mv-arw{width:46px;height:46px;border-radius:50%;border:1px solid rgba(214,182,121,.5);background:rgba(32,37,26,.6);color:#d6b679;cursor:pointer;display:grid;place-items:center;font-size:16px;flex:none;transition:background .3s,opacity .3s}
   .mv-x:hover,.mv-arw:hover{background:rgba(214,182,121,.18)}
   .mv-x:focus-visible,.mv-arw:focus-visible,.mv-plan:focus-visible,.mv-dots button:focus-visible{outline:2px solid #d6b679;outline-offset:2px}
@@ -1588,29 +1601,51 @@ const growLen=file=>{ const S=GROWSEQ[file]; if(!S) return 3000; let t=0; S.fram
 function openMenu(card){
   if(menuV||viewer) return;
   cancelAnimationFrame(offAnim); offAnim=0;
-  const menus=card._menus, N=menus.length, key=card.dataset.season;
+  /* every season's menus sit side by side in one viewer, in the order of the cards, so a swipe
+     carries on from the last summer menu into autumn; the tabs at the top jump between seasons */
+  const groups=[], slides=[];
+  seasonCards().filter(c=>c._menus&&c._menus.length).forEach(c=>{
+    const g={card:c,key:c.dataset.season,first:slides.length,n:c._menus.length}; groups.push(g);
+    c._menus.forEach((m,j)=>slides.push({m,key:g.key,card:c,g,j})); });
+  const N=slides.length, start=(groups.find(g=>g.card===card)||groups[0]).first;
   const v=document.createElement('div'); v.className='mv'; v.setAttribute('role','dialog'); v.setAttribute('aria-modal','true');
-  v.setAttribute('aria-label',tr('sn.'+key));
   v.innerHTML=`<div class="mv-bg"></div>
-    <div class="mv-top"><div class="mv-t"><span class="mv-season"></span><span class="mv-count"></span></div><button type="button" class="mv-x" aria-label="${esc(tr('lg.close'))}">✕</button></div>
+    <div class="mv-top"><nav class="mv-tabs" aria-label="${esc(tr('mv.seasons'))}"><div class="mv-tabs-in">${groups.map(g=>`<button type="button" class="mv-tab"><span>${esc(tr('sn.'+g.key))}</span></button>`).join('')}<i class="mv-ink" aria-hidden="true"></i></div></nav><button type="button" class="mv-x" aria-label="${esc(tr('lg.close'))}">✕</button></div>
     <div class="mv-rail"></div>
-    ${N>1?'<button type="button" class="mv-arw mv-prev" aria-label="Previous">←</button><button type="button" class="mv-arw mv-next" aria-label="Next">→</button>':''}
-    <div class="mv-foot"><div class="mv-meta"><div class="mv-dots"></div><p class="mv-hint"></p></div><button type="button" class="mv-plan"><span></span><i aria-hidden="true">→</i></button></div>`;
+    ${N>1?`<button type="button" class="mv-arw mv-prev" aria-label="${esc(tr('mv.prev'))}">←</button><button type="button" class="mv-arw mv-next" aria-label="${esc(tr('mv.next'))}">→</button>`:''}
+    <div class="mv-foot"><div class="mv-meta"><div class="mv-pg"><div class="mv-dots"></div><span class="mv-count"></span></div><p class="mv-hint"></p></div><button type="button" class="mv-plan"><span></span><i aria-hidden="true">→</i></button></div>`;
   const rail=v.querySelector('.mv-rail'), bg=v.querySelector('.mv-bg'), top=v.querySelector('.mv-top'), foot=v.querySelector('.mv-foot');
-  const seasonEl=v.querySelector('.mv-season'), countEl=v.querySelector('.mv-count'), hintEl=v.querySelector('.mv-hint');
+  const countEl=v.querySelector('.mv-count'), hintEl=v.querySelector('.mv-hint'), tabsEl=v.querySelector('.mv-tabs'), inkEl=v.querySelector('.mv-ink');
   const dotsEl=v.querySelector('.mv-dots'), plan=v.querySelector('.mv-plan'), prev=v.querySelector('.mv-prev'), next=v.querySelector('.mv-next');
-  const slides=menus.map((m,k)=>{ const s=document.createElement('div'); s.className='mv-slide';
+  const tabs=[...v.querySelectorAll('.mv-tab')];
+  tabs.forEach((b,i)=>b.onclick=()=>{ if(slides[cur].g!==groups[i]) go(groups[i].first); });
+  slides.forEach((sl,k)=>{ const m=sl.m, s=document.createElement('div'); s.className='mv-slide';
     const p=document.createElement('div'); p.className='mv-page';
-    const paper=document.createElement('article'); paper.className='mp'; paper.setAttribute('aria-label',mTitle(m)); paper.innerHTML=menuHTML(m,key);
+    const paper=document.createElement('article'); paper.className='mp'; paper.setAttribute('aria-label',mTitle(m)); paper.innerHTML=menuHTML(m,sl.key);
     const art=paper.querySelector('.mp-art'), A=m.art&&okImg(m.art)?`url("/${m.art}")`:'';
     if(A){ art.style.webkitMaskImage=A; art.style.maskImage=A; if(!RM) art.style.visibility='hidden'; } else art.remove();
-    p.append(paper); s.append(p); rail.append(s); return {s,p,paper,art:A?art:null,seen:k===0}; });
-  const dots=N>1?menus.map((m,k)=>{ const b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label',mTitle(m)); b.onclick=()=>go(k); dotsEl.append(b); return b; }):[];
-  let cur=0;
-  const setUI=()=>{ seasonEl.textContent=tr('sn.'+key); countEl.textContent=N>1?`${cur+1} / ${N}`:'';
+    p.append(paper); s.append(p); rail.append(s); Object.assign(sl,{s,p,paper,art:A?art:null,seen:k===start}); });
+  let cur=start, dotsG=null, dots=[];
+  /* the gold hairline under the open season glides to it, and the row scrolls it into view on phones */
+  const ink=instant=>{ const b=tabs[groups.indexOf(slides[cur].g)]; if(!b) return; const t=b.firstChild;
+    if(instant) inkEl.style.transition='none';
+    inkEl.style.width=t.offsetWidth+'px'; inkEl.style.transform=`translateX(${t.offsetLeft}px)`;
+    if(instant){ inkEl.offsetWidth; inkEl.style.transition=''; }
+    const L=b.offsetLeft-(tabsEl.clientWidth-b.offsetWidth)/2;
+    if(tabsEl.scrollWidth>tabsEl.clientWidth+1) tabsEl.scrollTo({left:L,behavior:instant||RM?'auto':'smooth'}); };
+  const edges=()=>{ const o=tabsEl.scrollWidth>tabsEl.clientWidth+1;
+    tabsEl.classList.toggle('fl',o&&tabsEl.scrollLeft>2); tabsEl.classList.toggle('fr',o&&tabsEl.scrollLeft<tabsEl.scrollWidth-tabsEl.clientWidth-2); };
+  tabsEl.addEventListener('scroll',edges,{passive:true});
+  const setUI=instant=>{ const sl=slides[cur], g=sl.g;
+    v.setAttribute('aria-label',tr('sn.'+sl.key));
+    tabs.forEach((b,i)=>{ const on=groups[i]===g; b.classList.toggle('on',on); if(on) b.setAttribute('aria-current','true'); else b.removeAttribute('aria-current'); });
+    if(g!==dotsG){ dotsG=g; dotsEl.textContent='';
+      dots=g.n>1?slides.slice(g.first,g.first+g.n).map((x,j)=>{ const b=document.createElement('button'); b.type='button'; b.setAttribute('aria-label',mTitle(x.m)); b.onclick=()=>go(g.first+j); dotsEl.append(b); return b; }):[];
+      ink(instant); }
+    countEl.textContent=g.n>1?`${sl.j+1} / ${g.n}`:'';
     hintEl.textContent=N>1?tr('mv.swipe'):tr('mv.note'); hintEl.classList.toggle('solo',N<2); plan.querySelector('span').textContent=tr('mv.plan');
-    dots.forEach((d,k)=>d.classList.toggle('on',k===cur)); if(prev){ prev.disabled=cur===0; next.disabled=cur===N-1; }
-    slides.forEach((sl,k)=>sl.s.setAttribute('aria-hidden',String(k!==cur))); };
+    dots.forEach((d,k)=>d.classList.toggle('on',k===sl.j)); if(prev){ prev.disabled=cur===0; next.disabled=cur===N-1; }
+    slides.forEach((x,k)=>x.s.setAttribute('aria-hidden',String(k!==cur))); edges(); };
   /* paper size: on wide screens a full menu page that fits the height; on phones the full width,
      growing taller (and scrolling) so the text never gets small */
   const fit=()=>{ const w=rail.clientWidth, h=rail.clientHeight;
@@ -1618,12 +1653,16 @@ function openMenu(card){
     v.style.setProperty('--pw',pw.toFixed(1)+'px'); v.style.setProperty('--ph',(pw/MENU_RATIO).toFixed(1)+'px'); };
   /* paging: drag follows the finger, letting go settles on the nearest menu */
   let dragX=0, wheelT=null;
-  const place=(px,anim)=>{ const W=rail.clientWidth;
+  /* a jump of more than one menu (a season tab) slides only the two pages involved, the new one
+     arriving from the side it lies on, rather than racing past every menu in between */
+  const place=(px,anim,from)=>{ const W=rail.clientWidth, jump=from!=null&&Math.abs(from-cur)>1, dir=Math.sign(cur-from), o={duration:560,easing:'cubic-bezier(.16,1,.3,1)'};
     slides.forEach((sl,k)=>{ const x=(k-cur)*W+px, to=`translate3d(${x.toFixed(1)}px,0,0)`;
-      if(anim&&!RM) sl.s.animate([{transform:sl.s.style.transform||'none'},{transform:to}],{duration:560,easing:'cubic-bezier(.16,1,.3,1)'});
+      if(anim&&!RM){ if(!jump) sl.s.animate([{transform:sl.s.style.transform||'none'},{transform:to}],o);
+        else if(k===cur) sl.s.animate([{transform:`translate3d(${dir*W}px,0,0)`},{transform:to}],o);
+        else if(k===from) sl.s.animate([{transform:sl.s.style.transform||'none'},{transform:`translate3d(${-dir*W}px,0,0)`}],o); }
       sl.s.style.transform=to; }); };
-  function go(k){ k=clamp(k,0,N-1); const was=cur; cur=k; place(0,was!==k||dragX!==0); dragX=0; setUI();
-    const sl=slides[cur]; if(!sl.seen){ sl.seen=true; growArtAny(sl.paper,menus[cur].art,0); revealMenu(sl.paper,120); } }
+  function go(k){ k=clamp(k,0,N-1); const was=cur; cur=k; place(0,was!==k||dragX!==0,was); dragX=0; setUI();
+    const sl=slides[cur]; if(!sl.seen){ sl.seen=true; growArtAny(sl.paper,sl.m.art,0); revealMenu(sl.paper,120); } }
   let ds=null, dragged=false;
   rail.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse'&&e.button!==0) return;
     ds={id:e.pointerId,x:e.clientX,y:e.clientY,t:performance.now(),mode:''}; dragged=false; });
@@ -1669,18 +1708,19 @@ function openMenu(card){
   if(prev){ prev.onclick=()=>go(cur-1); next.onclick=()=>go(cur+1); }
   v.querySelector('.mv-x').onclick=()=>close();
   plan.onclick=()=>{
-    const msg=$('#f-msg'), txt=tr('mv.msg',{t:mTitle(menus[cur]),s:tr('sn.'+key)});
+    const msg=$('#f-msg'), txt=tr('mv.msg',{t:mTitle(slides[cur].m),s:tr('sn.'+slides[cur].key)});
     if(msg&&(!msg.value.trim()||msg.value===msg.dataset.auto)){ msg.value=txt; msg.dataset.auto=txt; }
     close(true,false,()=>goTo('#contact'));
   };
   function key2(e){ if(e.key==='Escape') close(); else if(e.key==='ArrowRight') go(cur+1); else if(e.key==='ArrowLeft') go(cur-1);
     else if(e.key==='Tab'){ const f=[...v.querySelectorAll('button:not([disabled])')].filter(b=>b.offsetParent); if(!f.length) return;
       const i=f.indexOf(document.activeElement); if(e.shiftKey&&i<=0){ e.preventDefault(); f[f.length-1].focus(); } else if(!e.shiftKey&&i===f.length-1){ e.preventDefault(); f[0].focus(); } } }
-  const onResize=()=>{ fit(); place(0,false); };
+  const onResize=()=>{ fit(); place(0,false); ink(true); edges(); };
   addEventListener('keydown',key2); addEventListener('resize',onResize);
 
   document.body.append(v); document.documentElement.classList.add('locked'); menuV={close};
-  fit(); place(0,false); setUI();
+  fit(); place(0,false); setUI(true);
+  const seasonEl=tabs[groups.indexOf(slides[cur].g)].querySelector('span');
   const cr=card.getBoundingClientRect(), E1='cubic-bezier(.2,.8,.2,1)';
   const cardClip=r=>`inset(${r.top.toFixed(1)}px ${(innerWidth-r.right).toFixed(1)}px ${(innerHeight-r.bottom).toFixed(1)}px ${r.left.toFixed(1)}px round 22px)`;
   /* the opening, choreographed like the rest of the site:
@@ -1696,6 +1736,7 @@ function openMenu(card){
     goldRing(v,cx,cy,r0,R,820,false); }
   [foot,prev,next].filter(Boolean).forEach(el=>el.animate([{opacity:0,transform:'translateY(14px)'},{opacity:1,transform:'none'}],{duration:RM?1:520,delay:RM?0:560,easing:'cubic-bezier(.16,1,.3,1)',fill:'forwards'}));
   top.animate([{opacity:0},{opacity:1}],{duration:RM?1:300,delay:RM?0:420,fill:'forwards'});
+  if(!RM) tabs.forEach((b,i)=>{ if(!b.contains(seasonEl)) b.animate([{opacity:0,transform:'translateY(-6px)'},{opacity:1,transform:'none'}],{duration:520,delay:620+Math.abs(i-groups.indexOf(slides[cur].g))*70,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'}); });
   if(!RM){
     // the season's name flies from the card to the top bar
     const h3=card.querySelector('h3'), hr=h3&&h3.getBoundingClientRect(), tr2=seasonEl.getBoundingClientRect();
@@ -1713,7 +1754,7 @@ function openMenu(card){
   // the opening: paper settles, the card's drawing lifts out and lands on it, then the menu is written in
   // the opening: the card opens out, a sheet of menu paper settles, the season's produce grows on it
   // from the ground or the branch, then the menu is written in
-  const S0=SEAS&&SEAS.find(s=>s.card===card), srcM=S0&&S0.mask, first=slides[0];
+  const S0=SEAS&&SEAS.find(s=>s.card===card), srcM=S0&&S0.mask, first=slides[start];
   if(RM) first.paper.animate([{opacity:0},{opacity:1}],{duration:1});
   else {
     // the card lifts, flies to the centre and turns over into the page
@@ -1740,7 +1781,7 @@ function openMenu(card){
   }
   if(srcM&&!RM) srcM.animate([{opacity:.6},{opacity:0}],{duration:260,fill:'forwards'}).finished.then(()=>srcM.getAnimations().forEach(x=>x.cancel()),()=>{});
   if(RM) revealMenu(first.paper,0);
-  else { growArtAny(first.paper,menus[0].art,620); revealMenu(first.paper,820); }
+  else { growArtAny(first.paper,first.m.art,620); revealMenu(first.paper,820); }
   v.querySelector('.mv-x').focus({preventScroll:true});
 
   /* closing: the text lifts away, then the page itself glides back down into its card, shrinking
@@ -1752,6 +1793,8 @@ function openMenu(card){
   function close(quiet,fromPull,then){
     const plan=!!then;
     if(!menuV) return; menuV=null;
+    // the page goes home to the card of the season now showing, which may not be the one tapped
+    card.style.visibility=''; card=slides[cur].card;
     v.querySelectorAll(':scope > .card').forEach(n=>n.remove());          // a stand-in still flying from the opening
     const sl=slides[cur], p=sl.paper; card.style.visibility='';
     slides.forEach(x=>x.paper.getAnimations().forEach(an=>{ if(an.effect&&an.effect.getKeyframes().some(k=>k.transform)) an.finish(); }));
