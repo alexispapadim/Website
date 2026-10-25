@@ -242,6 +242,7 @@ footer p{margin-top:22px;font-size:12px;letter-spacing:.18em;text-transform:uppe
 .ts-wrap:has(#ts:empty){display:none}
 .f.bad input,.f.bad select,.f.bad textarea{border-bottom-color:#a3402a}
 .f.bad label{color:#a3402a}
+label .opt{text-transform:none;letter-spacing:.04em;font-weight:400;opacity:.7}
 .notice{grid-column:span 2;font-size:12.5px;line-height:1.6;color:var(--leaf)}
 .notice a,.status a{color:inherit}
 .status small{display:block;font-size:.85em;opacity:.8}

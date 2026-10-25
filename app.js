@@ -1,8 +1,8 @@
-import { I18N } from './i18n.js?v=46';
-import * as GAL from './gallery.js?v=46';
-import * as SEA from './seasons.js?v=46';
-import { CONFIG, LEGAL_KEYS } from './details.js?v=46';
-import * as CU from './curtain.js?v=46';
+import { I18N } from './i18n.js?v=47';
+import * as GAL from './gallery.js?v=47';
+import * as SEA from './seasons.js?v=47';
+import { CONFIG, LEGAL_KEYS } from './details.js?v=47';
+import * as CU from './curtain.js?v=47';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
