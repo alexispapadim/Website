@@ -1,8 +1,8 @@
-import { I18N } from './i18n.js?v=52';
-import * as GAL from './gallery.js?v=52';
-import * as SEA from './seasons.js?v=52';
-import { CONFIG, LEGAL_KEYS } from './details.js?v=52';
-import * as CU from './curtain.js?v=52';
+import { I18N } from './i18n.js?v=53';
+import * as GAL from './gallery.js?v=53';
+import * as SEA from './seasons.js?v=53';
+import { CONFIG, LEGAL_KEYS } from './details.js?v=53';
+import * as CU from './curtain.js?v=53';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -1181,11 +1181,11 @@ const MENU_RATIO=1055/1491;
 /* the drawn produce for each season's card, and where on the card to frame it:
    fx/fy = point of the drawing to centre on (0–1), s = how large the drawing is relative to the card */
 const SEASON_ART={
-  summer:{img:'art-tomato.webp',fx:.6,fy:.58,s:1.3},
-  autumn:{img:'art-squash.webp',fx:.52,fy:.6,s:1.3},
-  winter:{img:'art-radicchio.webp',fx:.6,fy:.65,s:1.4},
+  summer:{img:'art-tomato.webp',fx:.55,fy:.5,s:1.05},
+  autumn:{img:'art-squash.webp',fx:.55,fy:.5,s:1.05},
+  winter:{img:'art-radicchio.webp',fx:.55,fy:.5,s:1.05},
   spring:{img:'art-spring.webp',fx:.30,fy:.42,s:1.5},
-  events:{img:'art-canape.webp',fx:.59,fy:.74,s:1.3}
+  events:{img:'art-canape.webp',fx:.52,fy:.5,s:1.15}
 };
 /* the drawings are only fetched once the menus come near, so they never hold up the top of the page */
 const nearMenus=(()=>{ const q=[]; let near=false;
@@ -1416,7 +1416,7 @@ function growArt(paper,file,delay=0){
    leaves unfurl outward from where they join the stem, and when the growth reaches a fruit's
    stalk the fruit buds, swells with a spring and sways on its stem. It finishes on the exact
    drawing, then hands over to the static image.                                                 */
-const GROWMAP={"art-tomato-basil.webp": {"map": "art-tomato-basil-grow.png", "fruits": [{"a": [0.854, 0.398], "t": 0.431}, {"a": [0.838, 0.683], "t": 0.647}]}, "art-scallops.webp": {"map": "art-scallops-grow.png", "fruits": [{"a": [0.188, 0.219], "t": 0.22}, {"a": [0.829, 0.581], "t": 0.325}, {"a": [0.781, 0.789], "t": 0.514}]}, "art-pumpkin.webp": {"map": "art-pumpkin-grow.png", "fruits": [{"a": [0.822, 0.662], "t": 0.388}, {"a": [0.664, 0.822], "t": 0.6}]}, "art-beetroot.webp": {"map": "art-beetroot-grow.png", "fruits": [{"a": [0.178, 0.795], "t": 0.467}, {"a": [0.346, 0.881], "t": 0.612}, {"a": [0.784, 0.792], "t": 0.706}, {"a": [0.893, 0.928], "t": 0.753}]}, "art-radicchio-menu.webp": {"map": "art-radicchio-menu-grow.png", "fruits": [{"a": [0.824, 0.55], "t": 0.435}, {"a": [0.383, 0.814], "t": 0.627}]}, "art-langoustine.webp": {"map": "art-langoustine-grow.png", "fruits": [{"a": [0.357, 0.693], "t": 0.047}, {"a": [0.709, 0.275], "t": 0.184}]}, "art-asparagus.webp": {"map": "art-asparagus-grow.png", "fruits": [{"a": [0.668, 0.691], "t": 0.361}]}, "art-courgette.webp": {"map": "art-courgette-grow.png", "fruits": [{"a": [0.722, 0.665], "t": 0.192}, {"a": [0.733, 0.838], "t": 0.322}]}, "art-canape.webp": {"map": "art-canape-grow.png", "fruits": []}, "art-sashimi.webp": {"map": "art-sashimi-grow.png", "fruits": []}};
+const GROWMAP={"art-tomato-basil.webp": {"map": "art-tomato-basil-grow.png", "fruits": []}, "art-scallops.webp": {"map": "art-scallops-grow.png", "fruits": []}, "art-pumpkin.webp": {"map": "art-pumpkin-grow.png", "fruits": []}, "art-beetroot.webp": {"map": "art-beetroot-grow.png", "fruits": []}, "art-radicchio-menu.webp": {"map": "art-radicchio-menu-grow.png", "fruits": []}, "art-langoustine.webp": {"map": "art-langoustine-grow.png", "fruits": []}, "art-asparagus.webp": {"map": "art-asparagus-grow.png", "fruits": []}, "art-courgette.webp": {"map": "art-courgette-grow.png", "fruits": []}, "art-canape.webp": {"map": "art-canape-grow.png", "fruits": []}, "art-sashimi.webp": {"map": "art-sashimi-grow.png", "fruits": []}};
 const GL_VS=`attribute vec2 p;varying vec2 uv;void main(){uv=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=vec4(p,0.,1.);}`;
 const GL_FS=`precision highp float;varying vec2 uv;
 uniform sampler2D art,tmap,lab;uniform float t,asp;uniform vec2 px;
