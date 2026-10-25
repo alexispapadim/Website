@@ -1,8 +1,8 @@
-import { I18N } from './i18n.js?v=51';
-import * as GAL from './gallery.js?v=51';
-import * as SEA from './seasons.js?v=51';
-import { CONFIG, LEGAL_KEYS } from './details.js?v=51';
-import * as CU from './curtain.js?v=51';
+import { I18N } from './i18n.js?v=52';
+import * as GAL from './gallery.js?v=52';
+import * as SEA from './seasons.js?v=52';
+import { CONFIG, LEGAL_KEYS } from './details.js?v=52';
+import * as CU from './curtain.js?v=52';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -492,6 +492,39 @@ async function homecoming(link){
   try{history.replaceState(null,'',location.pathname+location.search)}catch(_){}
   await wait(520);
   wrapEl.remove(); homeBusy=false;
+}
+/* the second half of the homecoming when it starts on the About page: the cream and the centred monogram
+   are already on screen (index.html .hc-in, shown by arrive.js); once the font is in, the monogram lands on
+   the opening monogram exactly as above. Returns the landing to run, or null if we didn't come that way. */
+function homeArrival(){
+  const root=document.documentElement, wrapEl=$('.hc-in');
+  let ok=false;
+  try{ const h=JSON.parse(sessionStorage.getItem('ap-home')||'null'); sessionStorage.removeItem('ap-home'); ok=!!h&&Date.now()-h.t<30000; }catch(_){}
+  if(!ok||RM||!wrapEl||!root.classList.contains('homing')||performance.now()>7000){ root.classList.remove('homing'); if(wrapEl) wrapEl.remove(); return null; }
+  homeBusy=true;
+  return async()=>{
+    const disc=wrapEl.querySelector('.hc-disc'), fly=wrapEl.querySelector('.hc-ap');
+    const target=document.querySelector('#mono .ap')||document.querySelector('#mono');
+    const tfs=parseFloat(getComputedStyle(target).fontSize)||120;
+    const s0=parseFloat(getComputedStyle(fly).fontSize)/tfs;
+    // swap the centring for the same numbers the landing animates from (nothing moves on screen)
+    Object.assign(fly.style,{fontSize:tfs+'px',left:'0px',top:'0px',transformOrigin:'0 0',transform:'none'});
+    const nat=fly.getBoundingClientRect();
+    const MID=`translate3d(${(innerWidth/2-nat.width*s0/2).toFixed(1)}px,${(innerHeight*.42-nat.height*s0/2).toFixed(1)}px,0) scale(${s0.toFixed(5)})`;
+    fly.style.transform=MID;
+    const b=document.querySelector('.boot'); if(b) b.remove();
+    await wait(60);
+    const t=target.getBoundingClientRect();
+    const land=fly.animate([{transform:MID},{transform:`translate3d(${t.left.toFixed(1)}px,${(t.bottom-nat.height).toFixed(1)}px,0) scale(1)`}],
+      {duration:760,easing:'cubic-bezier(.16,1,.3,1)',fill:'forwards'});
+    setTimeout(()=>document.body.classList.add('loaded'),260);    // olive branch grows, letters rise
+    await wait(380);
+    disc.animate([{opacity:1},{opacity:0}],{duration:700,easing:'ease',fill:'forwards'});
+    await land.finished;
+    fly.animate([{opacity:1},{opacity:0}],{duration:500,easing:'ease',fill:'forwards'});
+    await wait(520);
+    wrapEl.remove(); root.classList.remove('homing'); homeBusy=false;
+  };
 }
 // His story lives on its own page: the curtain closes over this page, and the About page opens out of it
 document.addEventListener('click',e=>{
@@ -2145,8 +2178,9 @@ if(!start) start=(navigator.language||'').toLowerCase().startsWith('el')?'el':'e
 setLang(start);
 requestAnimationFrame(()=>{placeInd(); requestAnimationFrame(()=>{ind.style.transition=''});});
 // the opening waits briefly for the monogram's font, so on a slow connection the letters never rise in a stand-in face
+const homing=homeArrival();   // came from the About page's logo: the cream is already over the page
 Promise.race([document.fonts?document.fonts.load('400 1em "Cormorant Garamond"'):0,new Promise(r=>setTimeout(r,1500))]).catch(()=>{})
-  .then(()=>requestAnimationFrame(()=>{ document.body.classList.add('loaded'); setTimeout(()=>{ const b=$('.boot'); if(b) b.remove(); },600); }));
+  .then(()=>requestAnimationFrame(()=>{ if(homing){ homing(); return; } document.body.classList.add('loaded'); setTimeout(()=>{ const b=$('.boot'); if(b) b.remove(); },600); }));
 const initHash=location.hash;
 const landLegal=LEGAL_KEYS.includes(initHash.slice(1));
 const landHash=!landLegal&&elForHash(initHash)?initHash:'';
