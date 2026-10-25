@@ -126,10 +126,6 @@ h2 em{font-style:italic;color:var(--gold)}
 #about .grid{display:grid;grid-template-columns:1fr;gap:48px;max-width:1200px;margin:0 auto;position:relative;z-index:1}
 @media(min-width:900px){#about .grid{grid-template-columns:1.1fr 1fr;align-items:end;gap:80px}}
 .lead{font-family:var(--serif);font-size:clamp(20px,2.3vw,27px);line-height:1.5;color:var(--olive-3)}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:56px;border-top:1px solid rgba(32,37,26,.18);padding-top:28px;max-width:1200px;margin-left:auto;margin-right:auto;position:relative;z-index:1}
-.stat b{display:block;font-family:var(--serif);font-weight:300;font-size:clamp(40px,6vw,76px);line-height:1;color:var(--olive)}
-.stat b sup{color:var(--gold);font-size:.45em;vertical-align:.9em;margin-left:2px}
-.stat span{display:block;margin-top:10px;font-size:clamp(11px,1.2vw,13px);letter-spacing:.14em;text-transform:uppercase;color:var(--leaf);line-height:1.5}
 .watermark{position:absolute;right:-.12em;top:50%;font-family:var(--serif);font-size:clamp(280px,48vw,720px);line-height:1;color:var(--olive);opacity:.045;pointer-events:none;will-change:transform;letter-spacing:-.08em}
 
 /* horizontal occasions */
@@ -400,7 +396,6 @@ html.locked{overflow:hidden;overscroll-behavior:none}
   #about .about-text h2{grid-column:1;grid-row:2}
   #about .about-text{align-items:start}
   #about .about-text .about-body{grid-column:2;grid-row:2;margin-top:.55em}
-  .stats{max-width:var(--wrap);margin-top:72px;padding-top:36px}
 
   /* occasions: line up with the other sections, roomier cards */
   #occasions .head{padding:0 var(--gut)}
@@ -433,8 +428,6 @@ html.locked{overflow:hidden;overscroll-behavior:none}
   .place{font-size:19px}
   .big{font-size:clamp(36px,3.2vw,56px);line-height:1.16;max-width:24ch}
   .lead{font-size:clamp(19px,1.45vw,24px);line-height:1.6;max-width:36ch}
-  .stat b{font-size:clamp(44px,3.8vw,64px)}
-  .stat span{font-size:12px}
   .watermark{font-size:clamp(300px,32vw,520px)}
   .card{width:clamp(300px,21vw,420px);min-height:min(50vh,460px)}
   .card h3{font-size:clamp(28px,2.2vw,40px)}
