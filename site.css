@@ -608,6 +608,13 @@ html.rm #veil{display:none}
 .hc-ring{position:absolute;border-radius:50%;border:1px solid #b8914f;transform:scale(0);will-change:transform,opacity}
 .hc-ap{position:absolute;display:flex;align-items:flex-end;font-family:'Cormorant Garamond','GFS Didot',Georgia,serif;line-height:.8;color:#20251a;white-space:nowrap;-webkit-font-smoothing:antialiased;backface-visibility:hidden}
 .hc-ap span{font-size:.7em;margin-left:-.36em;transform:translateY(.24em)}
+/* arriving from the About page's logo: the page opens already under the cream, the monogram waiting in the
+   middle exactly where the About page left it (and shows itself anyway after a few seconds if the scripts never arrive) */
+.hc-in{display:none;--hc-fs:26px}
+html.homing .hc-in{display:block;animation:arriveSafe 0s linear 8s forwards}
+.hc-in .hc-disc{inset:0;border-radius:0;transform:none}
+.hc-in .hc-ap{left:50%;top:42%;font-size:calc(var(--hc-fs) * 3.6);transform:translate(-50%,-50%)}
+@media(min-width:1600px){.hc-in{--hc-fs:30px}}
 /* frosted menu bar once you scroll, so it stays readable over photos and text */
 header::before{content:"";position:absolute;inset:0;z-index:-1;opacity:0;pointer-events:none;
   background:rgba(240,233,222,.8);-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);
