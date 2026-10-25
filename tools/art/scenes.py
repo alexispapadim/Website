@@ -214,8 +214,8 @@ def add_scallop_open(sc, at, size, R, t0=0.0, t1=1.0, seed=1, fruit=0):
 def add_palmate(sc, at, size, R, t0=0.0, t1=0.5, seed=0, tone=.2, lobes=5, depth=.45, cup=.22):
     lf = palmate_leaf(lobes=lobes, depth=depth, cup=cup, notch=.45, wave=.07, seed=seed)
     k = len(sc.items) + 1
-    sc.add(Surface(place(lf, R, at, size), hatch=[dict(along='u', n=int(size * .2), m=900),
-                                                  dict(along='v', n=int(size * .4), m=200, cross=True, lo=.62)],
+    sc.add(Surface(place(lf, R, at, size), hatch=[dict(along='v', n=int(size * .55), m=500),
+                                                  dict(along='u', n=int(size * .12), m=900, cross=True, lo=.7)],
                    tone=tone, wmax=3.0, stipple=int(size * 8), t=lambda u, v: t0 + (t1 - t0) * v))
     for c in lf.veins:
         u0 = (c / lf.amax + 1) / 2
@@ -319,7 +319,8 @@ def add_pumpkin(sc, at, size, R, t0=0.0, t1=1.0, fruit=0, seed=0, ribs=10):
     k = len(sc.items) + 1
     sc.add(Surface(place(pk, R, at, size), hatch=[dict(along='v', n=int(size * 1.3), m=700),
                                                   dict(along='u', n=int(size * .55), m=900, cross=True, lo=.7)],
-                   tone=.12, wmax=3.6, stipple=int(size * 30), t=lambda u, v: t0 + (t1 - t0) * (.3 + .7 * v), fruit=fruit))
+                   tone=.12, wmax=3.6, stipple=int(size * 30), t=lambda u, v: t0 + (t1 - t0) * (.3 + .7 * v), fruit=fruit,
+                   shade=lambda u, v, p, n: .4 * (1 - np.abs(np.cos(ribs * math.pi * u))) ** 4))
     # the creases between the ribs
     for j in range(ribs):
         u0 = (j + .5) / ribs

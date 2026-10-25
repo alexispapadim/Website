@@ -2,9 +2,9 @@
    ABOUT PAGE: language, header and the scroll effects for his story.
    The text itself is in i18n.js (ab.*, j1–j12, jt.*, ap.*).
    ============================================================ */
-import { I18N } from './i18n.js?v=51';
-import { LEGAL_KEYS } from './details.js?v=51';
-import * as CU from './curtain.js?v=51';
+import { I18N } from './i18n.js?v=52';
+import { LEGAL_KEYS } from './details.js?v=52';
+import * as CU from './curtain.js?v=52';
 
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));

@@ -18,6 +18,14 @@ SS = 2                                    # everything is drawn at twice the siz
 LIGHT = np.array([-0.55, -0.75, 0.62]); LIGHT /= np.linalg.norm(LIGHT)
 RNG = np.random.default_rng(7)
 
+# The house style, set by the wild asparagus drawing: hairline outlines, fine lines that never swell
+# into heavy blacks, light shading and only a little stipple, so each drawing reads as delicate
+# pen work rather than a dark print.
+# the house hand: pen strokes rather than a banknote engraving. Hatch lines are cut into short tapered
+# strokes, each a little off-angle, and dropped out in the light so lit areas stay paper.
+STYLE = dict(wmax=1.9, tone=0.75, stipple=0.4, outline='hairline', curve=0.85, jitter=1.25, cross=0.1,
+             shadow=0.6, density=0.6, stroke=(14, 46), gap=(2, 9), tilt=0.06, drop=0.9, lift=0.08)
+
 
 def unit(a):
     n = np.linalg.norm(a, axis=-1, keepdims=True)
@@ -67,12 +75,12 @@ class Surface:
     """
     def __init__(self, fn, hatch=None, tone=0.0, gain=1.0, grid=(260, 260), uv=((0, 1), (0, 1)),
                  cross=0.62, stipple=0.0, outline=1.0, t=None, wmax=3.2, thresh=0.13, mask=None,
-                 shade=None, closed_u=False, fruit=0, jitter=0.7, rim=0.45, two_sided=True):
+                 shade=None, closed_u=False, fruit=0, jitter=0.7 * STYLE['jitter'], rim=0.45, two_sided=True):
         self.fn, self.hatch = fn, hatch if hatch is not None else [dict(along='u', n=60)]
-        self.tone, self.gain, self.grid, self.uv = tone, gain, grid, uv
-        self.cross, self.stipple, self.outline = cross, stipple, outline
+        self.tone, self.gain, self.grid, self.uv = tone * STYLE['tone'], gain, grid, uv
+        self.cross, self.stipple, self.outline = cross + STYLE['cross'], stipple * STYLE['stipple'], outline
         self.t = t or (lambda u, v: np.zeros_like(u))
-        self.wmax, self.thresh, self.mask, self.shade = wmax, thresh, mask, shade
+        self.wmax, self.thresh, self.mask, self.shade = min(wmax, STYLE['wmax']), thresh, mask, shade
         self.closed_u, self.fruit, self.jitter, self.rim = closed_u, fruit, jitter, rim
 
     def pts(self, u, v):
@@ -176,8 +184,9 @@ class Scene:
 
     def hatch_family(self, ctx, k, s, fam, cross=False):
         along = fam.get('along', 'u')
-        n = fam.get('n', 60)
+        n = max(3, int(round(fam.get('n', 60) * STYLE['density'])))
         m = fam.get('m', 500)
+        rs = np.random.default_rng(k * 977 + (13 if cross else 0) + int(n))
         off = fam.get('offset', 0.0)
         c = (np.arange(n) + 0.5 + off) / n
         t = np.linspace(0, 1, m)
@@ -195,7 +204,7 @@ class Scene:
         vis = self.visible(k, p) & inside
         if s.mask is not None:
             vis &= s.mask(u, v)
-        lo = fam.get('lo', s.cross if cross else s.thresh)
+        lo = fam.get('lo', s.cross if cross else s.thresh) + STYLE['lift']
         wmax = s.wmax * SS / 2 * fam.get('w', 0.6 if cross else 1.0)
         nz = Noise1(seed=k * 31 + (7 if cross else 0))
         for i in range(n):
@@ -211,14 +220,31 @@ class Scene:
                 continue
             wd = np.clip((dd - lo) / (1 - lo + 1e-6), 0, 1) ** 0.85 * wmax
             wd = wd * (0.85 + 0.3 * (nz(np.linspace(0, 20, m) + i * 3.1) * 0.5 + 0.5))
-            # split into runs, taper the ends a little like a burin entering and leaving
+            # cut the line into short pen strokes: gaps between them, a stroke more likely to be
+            # left out the lighter its patch, each one swung a touch off the line and tapered
+            sl = np.r_[0, np.cumsum(np.linalg.norm(np.diff(P, axis=0), axis=1))] / SS
+            cut = np.zeros(m, bool); keep = np.ones(m, bool)
+            pos = rs.uniform(0, STYLE['stroke'][1])
+            while pos < sl[-1]:
+                a = np.searchsorted(sl, pos); pos += rs.uniform(*STYLE['stroke'])
+                b = np.searchsorted(sl, pos); g = rs.uniform(*STYLE['gap']); pos += g
+                c = np.searchsorted(sl, pos)
+                cut[b:c] = True
+                lit = np.clip((dd[a:b].mean() - lo) / (0.55 - lo + 1e-6), 0, 1) if b > a else 1
+                if rs.random() < STYLE['drop'] * (1 - lit) ** 1.5:
+                    keep[a:b] = False
+            on = on & ~cut & keep
             edges = np.flatnonzero(np.diff(np.r_[0, on.astype(int), 0]))
             for a, b in zip(edges[::2], edges[1::2]):
                 if b - a < 3:
                     continue
                 L = b - a
-                taper = np.minimum(1, np.minimum(np.arange(L) + 1, L - np.arange(L)) / 6)
-                self.stroke_run(ctx, P[a:b], wd[a:b] * taper)
+                Q = P[a:b]
+                mid = Q[L // 2]; ang = rs.normal(0, STYLE['tilt'])
+                ca, sa = math.cos(ang), math.sin(ang)
+                Q = (Q - mid) @ np.array([[ca, sa], [-sa, ca]]) + mid
+                taper = np.minimum(1, np.minimum(np.arange(L) + 1, L - np.arange(L)) / max(3, L / 3))
+                self.stroke_run(ctx, Q, wd[a:b] * taper)
 
     def draw_stipple(self, ctx, k, s):
         if s.stipple <= 0:
@@ -243,7 +269,7 @@ class Scene:
             p, n = s.normal(u, v)
             vis = scene.visible(k, p, tol=6)
             d = s.darkness(u, v, p, n)
-            wd = np.broadcast_to(np.asarray(width(d) if callable(width) else width, float), u.shape) * SS / 2
+            wd = np.broadcast_to(np.asarray(width(d) if callable(width) else width, float), u.shape) * SS / 2 * STYLE['curve']
             P = p[:, :2] * SS
             if clear and vis.mean() > .5:
                 # a closed shape that knocks out the shading behind it (a pale seed in dark flesh)
@@ -281,7 +307,7 @@ class Scene:
             wt[ID == k] = s.outline
         e &= wt > 0
         dark = np.clip(D, 0, 1)
-        light = wt < 0.9                                  # fine parts (antennae, legs) keep a hairline
+        light = (wt < 0.9) | (STYLE['outline'] == 'hairline')   # fine parts (antennae, legs) keep a hairline
         thin = ndimage.binary_dilation(e, iterations=1)
         mid = ndimage.binary_dilation(e & (dark > 0.45) & ~light, iterations=2)
         thick = ndimage.binary_dilation(e & (dark > 0.8) & ~light, iterations=3)
@@ -291,6 +317,7 @@ class Scene:
 
     def ground_shadow(self, ctx):
         for (cx, cy, rx, ry, st) in self.shadows:
+            st = st * STYLE['shadow']
             gap = 2.6 * SS
             ys = np.arange((cy - ry) * SS, (cy + ry) * SS, gap)
             nz = Noise1(seed=int(cx))
