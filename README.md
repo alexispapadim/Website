@@ -21,7 +21,7 @@ The QR code on his business card brings people here to send an enquiry.
 | `alexis-cut.webp` | His portrait cut out of the background (for the chef scene) |
 | `alexis-bg.jpg` | The studio backdrop behind him in the chef scene |
 | `alexis-turbot.webp`, `alexis-prime-cut.webp` | Kitchen photos of him in the About and Journey sections |
-| `art-*.webp` | The hand-drawn art behind each menu and on its card in "A menu for every season" (`art-events.webp`: glasses, grapevine and olive sprig for Events) |
+| `art-*.webp` | The engraved produce drawings in "A menu for every season": one for each card and one behind each menu (`art-*-grow.png` is the order each menu drawing draws itself in). The artichoke (`art-spring.webp`) is hand-drawn; the rest are drawn by `tools/art/scenes.py` (`python3 tools/art/scenes.py [name]` redraws them; needs numpy, scipy, pillow and pycairo) |
 | `robots.txt`, `sitemap.xml` | Tell search engines what to index |
 | `og.JPG`, `apple-touch-icon.PNG` | The image shown when the link is shared, and the phone home-screen icon |
 | `worker.js` | The enquiry backend (`/api/enquiry`), plus the pre-rendered Greek page at `/el/` |
