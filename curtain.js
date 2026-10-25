@@ -4,7 +4,7 @@
    - moving between pages (the About page's buttons back to the menus or the enquiry form)
    - opening and closing the legal pages, which return you to exactly where you were
    ============================================================ */
-import { legalPages, LEGAL_KEYS } from './details.js?v=45';
+import { legalPages, LEGAL_KEYS } from './details.js?v=46';
 
 const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 export const wait = ms => new Promise(r => setTimeout(r, ms));
