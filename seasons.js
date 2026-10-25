@@ -11,7 +11,8 @@
    - OR between two dishes shows "or" (a choice for the guest).
    - course('Heading', 'Greek heading', ...dishes). Use '' for a
      course without a heading (plated menus).
-   - art = the hand-drawn produce behind the menu (art-*.webp).
+   - art = the drawn produce behind the menu (art-*.webp, drawn by
+     tools/art/scenes.py).
    The season names and Alexis's notes are in i18n.js (sn.*).
    ============================================================ */
 const d = (en, el) => {
@@ -23,7 +24,7 @@ const course = (en, el, ...dishes) => ({ en, el, dishes });
 
 export const SEASONS = {
   summer: { menus: [
-    { art: 'art-summer.webp', en: 'An Aegean Evening', el: 'Ένα βράδυ στο Αιγαίο', courses: [
+    { art: 'art-tomato-basil.webp', en: 'An Aegean Evening', el: 'Ένα βράδυ στο Αιγαίο', courses: [
       course('Antipasti to share', 'Ορεκτικά για μοίρασμα',
         d('Tomato and watercress salad | tomato consommé dressing', 'Σαλάτα ντομάτας και κάρδαμου | ντρέσινγκ από κονσομέ ντομάτας'),
         d('Fried artichokes | lemon aioli', 'Τηγανητές αγκινάρες | αϊόλι λεμονιού'),
@@ -38,7 +39,7 @@ export const SEASONS = {
         d('Ajo blanco ice cream | fig leaf oil', 'Παγωτό ajo blanco | λάδι από φύλλα συκιάς'), OR,
         d('Toasted fig leaf panna cotta | Modena balsamic figs', 'Πανακότα με καβουρδισμένα φύλλα συκιάς | σύκα με βαλσάμικο Μόντενας')),
     ]},
-    { art: 'art-summer-2.webp', en: 'A Summer Supper', el: 'Ένα καλοκαιρινό δείπνο', courses: [
+    { art: 'art-scallops.webp', en: 'A Summer Supper', el: 'Ένα καλοκαιρινό δείπνο', courses: [
       course('', '', d('Tuna | cucumber gazpacho', 'Τόνος | γκασπάτσο αγγουριού')),
       course('', '', d('Seared scallops | lemon, marjoram butter and golden garlic', 'Σοταρισμένα χτένια | λεμόνι, βούτυρο μαντζουράνας και χρυσαφένιο σκόρδο')),
       course('', '', d('Grilled chateaubriand | chanterelle mushroom jus and rosemary potatoes', 'Σατομπριάν στη σχάρα | ζωμός από κανθαρέλες και πατάτες με δεντρολίβανο')),
@@ -48,7 +49,7 @@ export const SEASONS = {
     ]},
   ]},
   autumn: { menus: [
-    { art: 'art-autumn.webp', en: 'The Harvest Table', el: 'Το τραπέζι της σοδειάς', courses: [
+    { art: 'art-pumpkin.webp', en: 'The Harvest Table', el: 'Το τραπέζι της σοδειάς', courses: [
       course('Antipasti', 'Ορεκτικά',
         d('Bitter leaf salad | pear, candied walnuts and salted ricotta', 'Σαλάτα πικρών φύλλων | αχλάδι, καραμελωμένα καρύδια και αλατισμένη ρικότα'),
         d('Chicken liver crostini | confit garlic and grilled fig', 'Κροστίνι με συκωτάκια κοτόπουλου | σκόρδο κονφί και ψητό σύκο'),
@@ -63,7 +64,7 @@ export const SEASONS = {
         d('Chianti-poached pear | vanilla custard and biscotti crumb', 'Αχλάδι ποσέ σε Κιάντι | κρέμα βανίλιας και τρίμμα μπισκότου'), OR,
         d('Tarte Tatin', 'Τάρτα Τατέν')),
     ]},
-    { art: 'art-autumn.webp', en: 'An Autumn Supper', el: 'Ένα φθινοπωρινό δείπνο', courses: [
+    { art: 'art-beetroot.webp', en: 'An Autumn Supper', el: 'Ένα φθινοπωρινό δείπνο', courses: [
       course('', '',
         d('Miso-glazed carrots | labneh, dill oil and cashews', 'Καρότα γλασαρισμένα με μίσο | λαμπνέ, λάδι άνηθου και κάσιους'), OR,
         d('Salt-baked beetroot carpaccio | lemongrass dressing, pickled shallots and orange', 'Καρπάτσιο παντζαριού ψημένου στο αλάτι | ντρέσινγκ λεμονόχορτου, τουρσί εσαλότ και πορτοκάλι')),
@@ -73,7 +74,7 @@ export const SEASONS = {
     ]},
   ]},
   winter: { menus: [
-    { art: 'art-winter.webp', en: 'A Winter Gathering', el: 'Ένα χειμωνιάτικο τραπέζι', courses: [
+    { art: 'art-radicchio-menu.webp', en: 'A Winter Gathering', el: 'Ένα χειμωνιάτικο τραπέζι', courses: [
       course('Antipasti', 'Ορεκτικά',
         d('Bluefin tuna tartare | capers, orange and pine nuts', 'Ταρτάρ τόνου | κάπαρη, πορτοκάλι και κουκουνάρι'),
         d('Porchetta or ox tongue tonnato', 'Πορκέτα ή μοσχαρίσια γλώσσα tonnato'),
@@ -88,7 +89,7 @@ export const SEASONS = {
         d('Almond cake', 'Κέικ αμυγδάλου'), OR,
         d('Tiramisu', 'Τιραμισού')),
     ]},
-    { art: 'art-winter.webp', en: 'A Winter Feast', el: 'Μια χειμωνιάτικη γιορτή', courses: [
+    { art: 'art-langoustine.webp', en: 'A Winter Feast', el: 'Μια χειμωνιάτικη γιορτή', courses: [
       course('Antipasti', 'Ορεκτικά',
         d('Puntarelle alla Romana', 'Πουνταρέλε αλα ρομάνα'),
         d('Pommes dauphine | black garlic and prosciutto culatello', 'Πομ ντοφίν | μαύρο σκόρδο και προσούτο κουλατέλο'),
@@ -105,7 +106,7 @@ export const SEASONS = {
     ]},
   ]},
   spring: { menus: [
-    { art: 'art-spring.webp', en: 'The Spring Table', el: 'Το ανοιξιάτικο τραπέζι', courses: [
+    { art: 'art-asparagus.webp', en: 'The Spring Table', el: 'Το ανοιξιάτικο τραπέζι', courses: [
       course('Antipasti', 'Ορεκτικά',
         d('Bitter leaf salad of broad beans and peas | lemon and pecorino', 'Σαλάτα πικρών φύλλων με κουκιά και αρακά | λεμόνι και πεκορίνο'), OR,
         d('Purple sprouting broccoli | bagna cauda and shaved walnuts', 'Μωβ μπροκολίνι | bagna cauda και ξυσμένα καρύδια'),
@@ -120,7 +121,7 @@ export const SEASONS = {
         d('Blood orange sorbetto', 'Σορμπέ σαγκουίνι'),
         d('Toasted vanilla affogato', 'Affogato με καβουρδισμένη βανίλια')),
     ]},
-    { art: 'art-spring.webp', en: 'A Spring Lunch', el: 'Ένα ανοιξιάτικο γεύμα', courses: [
+    { art: 'art-courgette.webp', en: 'A Spring Lunch', el: 'Ένα ανοιξιάτικο γεύμα', courses: [
       course('', '', d('Cold almond soup | cherries and extra virgin olive oil', 'Κρύα σούπα αμυγδάλου | κεράσια και εξαιρετικό παρθένο ελαιόλαδο')),
       course('', '', d('Pea crostini | chilli, lemon and Parmigiano with a lardo di Colonnata blanquette', 'Κροστίνι αρακά | τσίλι, λεμόνι και παρμιτζάνο με μπλανκέτ από lardo di Colonnata')),
       course('', '',
@@ -130,7 +131,7 @@ export const SEASONS = {
     ]},
   ]},
   events: { menus: [
-    { art: 'art-events.webp', en: 'Canapés', el: 'Καναπεδάκια', courses: [
+    { art: 'art-canape.webp', en: 'Canapés', el: 'Καναπεδάκια', courses: [
       course('', '',
         d('Lemon, ricotta and pea tart', 'Ταρτάκι λεμονιού, ρικότας και αρακά'),
         d('Courgette tart | bell pepper ragù and basil', 'Ταρτάκι κολοκυθιού | ραγού πιπεριάς και βασιλικός'),
@@ -141,7 +142,7 @@ export const SEASONS = {
         d('Lemon tart', 'Ταρτάκι λεμονιού'),
         d('Fig leaf custard tart', 'Ταρτάκι κρέμας με φύλλο συκιάς')),
     ]},
-    { art: 'art-events.webp', en: 'A Japanese Supper', el: 'Ένα ιαπωνικό δείπνο', courses: [
+    { art: 'art-sashimi.webp', en: 'A Japanese Supper', el: 'Ένα ιαπωνικό δείπνο', courses: [
       course('From past catering events', 'Από προηγούμενες εκδηλώσεις catering',
         d('Miso soup | tofu and spring onion', 'Σούπα μίσο | τόφου και φρέσκο κρεμμυδάκι'),
         d('Japanese Nobu salad', 'Ιαπωνική σαλάτα Nobu'),
