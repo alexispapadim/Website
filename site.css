@@ -450,10 +450,7 @@ html.locked{overflow:hidden;overscroll-behavior:none}
 
 /* ---------- the journey ---------- */
 #journey{background:linear-gradient(180deg,var(--paper),var(--cream) 60%,var(--paper));overflow:hidden}
-.jy-head{max-width:1200px;margin:0 auto}
-.jy-quote{margin:28px 0 0;max-width:40ch;font:italic 400 clamp(19px,2.2vw,26px)/1.5 var(--serif);color:var(--olive-3);border-left:1px solid var(--gold);padding-left:22px}
-.jy-quote cite{display:block;margin-top:10px;font:500 10.5px var(--sans);font-style:normal;letter-spacing:.24em;text-transform:uppercase;color:var(--gold)}
-.jy-list{list-style:none;position:relative;max-width:1100px;margin:clamp(56px,9vh,96px) auto 0;padding:0 0 0 34px}
+.jy-list{list-style:none;position:relative;max-width:1100px;margin:0 auto;padding:0 0 0 34px}
 .jy-line{position:absolute;left:5px;top:8px;bottom:8px;width:1px;background:rgba(32,37,26,.14)}
 .jy-line i{position:absolute;inset:0;background:var(--gold);transform-origin:top;transform:scaleY(0)}
 .rm .jy-line i{transform:none}
@@ -481,7 +478,6 @@ html.locked{overflow:hidden;overscroll-behavior:none}
 .jy-chips span{display:block;margin-top:4px;font-size:13px;line-height:1.5;color:var(--leaf)}
 @media(min-width:760px){.jy-chips{grid-template-columns:1fr 1fr}}
 @media(min-width:1024px){
-  .jy-head{max-width:var(--wrap)}
   .jy-list{padding:0}
   .jy-line{left:50%}
   .jy-i{width:50%;box-sizing:border-box;padding-right:56px;text-align:right}
@@ -500,7 +496,7 @@ html.locked{overflow:hidden;overscroll-behavior:none}
 .jy-i[data-reveal].in{opacity:1;transform:none}
 .rm .jy-i[data-reveal]{opacity:1;transform:none}
 
-/* ---------- photos in the story (about + journey) ----------
+/* ---------- photos in the story (a pair in the about section) ----------
    The frame wipes open from the bottom while the photo settles from a slow zoom,
    then the gold outline slides out behind it and the caption rule draws in.
    While scrolling, the photo drifts inside its frame (parallax, set in app.js). */
@@ -525,7 +521,7 @@ html.locked{overflow:hidden;overscroll-behavior:none}
 .ph-rule{display:block;width:40px;height:1px;background:var(--gold);transform-origin:left;transform:scaleX(0);transition:transform 1s cubic-bezier(.16,1,.3,1) 1.25s}
 .ph.in figcaption{opacity:1;transform:none}.ph.in .ph-rule{transform:none}
 .rm .ph-frame{clip-path:none}.rm .ph-zoom{transform:none}.rm .ph::before{opacity:.75;transform:translate(14px,14px)}.rm .ph figcaption{opacity:1;transform:none}.rm .ph-rule{transform:none}
-/* phones: the journey photo sits off-centre to the right, a counterweight to the about photo */
+/* phones: the second photo sits off-centre to the right, a counterweight to the first */
 .ph-j{width:min(74%,340px);margin-left:auto;margin-right:16px}
 .ph-j figcaption{justify-content:flex-end}
 .ph-j figcaption .ph-rule{order:1}
@@ -534,19 +530,16 @@ html.locked{overflow:hidden;overscroll-behavior:none}
   #about .about-text{display:grid;grid-template-columns:1.25fr .75fr;column-gap:44px;align-items:start}
   #about .about-text .eyebrow,#about .about-text h2{grid-column:1/-1}
   #about .about-text .about-body{grid-column:1}
-  .ph-a{grid-column:2;margin-top:34px;width:calc(100% - 14px)}
-  .jy-head{display:grid;grid-template-columns:1.25fr .75fr;grid-template-rows:1fr auto auto auto 1fr;column-gap:44px}
-  .jy-head>:not(.ph){grid-column:1}
-  .jy-head>.eyebrow{grid-row:2}.jy-head>h2{grid-row:3}.jy-head>.jy-quote{grid-row:4}
-  .ph-j{grid-column:2;grid-row:1/-1;width:calc(100% - 14px);margin:0}
+  .ph-a{grid-column:2;grid-row:3;margin-top:34px;width:calc(100% - 14px)}
+  /* second photo zig-zags back under the words */
+  .ph-j{grid-column:1;grid-row:4;width:min(62%,340px);margin:56px 0 0}
+  .ph-j figcaption{justify-content:flex-start}.ph-j figcaption .ph-rule{order:0}
 }
 @media(min-width:1024px){
   #about .about-text .about-body{grid-row:2/span 2}
-  .ph-a{grid-column:1;grid-row:3;margin-top:clamp(56px,7vh,84px);width:min(calc(100% - 14px),440px)}
-  .jy-head{display:grid;grid-template-columns:1fr minmax(0,400px);grid-template-rows:1fr auto auto auto 1fr;column-gap:clamp(56px,7vw,120px)}
-  .jy-head>:not(.ph){grid-column:1}
-  .jy-head>.eyebrow{grid-row:2}.jy-head>h2{grid-row:3}.jy-head>.jy-quote{grid-row:4}
-  .ph-j{grid-column:2;grid-row:1/-1;width:calc(100% - 14px);margin:0 14px 0 0;justify-self:end}
+  .ph-a{grid-column:1;grid-row:3/span 2;margin-top:clamp(56px,7vh,84px);width:min(calc(100% - 14px),440px)}
+  /* second photo under the words, starting lower than the first so the pair staggers */
+  .ph-j{grid-column:2;grid-row:4;justify-self:end;margin:clamp(64px,9vh,104px) 14px 0 0;width:min(calc(100% - 28px),380px)}
 }
 
 /* ---------- large monitors ---------- */
