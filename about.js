@@ -2,9 +2,9 @@
    ABOUT PAGE: language, header and the scroll effects for his story.
    The text itself is in i18n.js (ab.*, j1–j12, jt.*, ap.*).
    ============================================================ */
-import { I18N } from './i18n.js?v=46';
-import { LEGAL_KEYS } from './details.js?v=46';
-import * as CU from './curtain.js?v=46';
+import { I18N } from './i18n.js?v=47';
+import { LEGAL_KEYS } from './details.js?v=47';
+import * as CU from './curtain.js?v=47';
 
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -56,7 +56,8 @@ $$('.lang button').forEach(b => b.addEventListener('click', () => switchLang(b.d
 const T = k => I18N[lang][k];
 const legal = CU.legalSheet({ lang: () => lang, here: () => T('tr.story'),
   words: () => ({ privacy: T('tr.privacy'), cookies: T('tr.cookies'), terms: T('tr.terms'), legal: T('tr.legal') }) });
-const DEST = { '': 'tr.home', '#contact': 'tr.dinner', '#occasions': 'tr.menus' };
+// the AP logo is a plain link: the home page's own opening (the monogram and olive branch) is its arrival
+const DEST = { '#contact': 'tr.dinner', '#occasions': 'tr.menus' };
 document.addEventListener('click', e => {
   const a = e.target.closest('a[data-home]');
   if (!a || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;

@@ -1,8 +1,8 @@
-import { I18N } from './i18n.js?v=46';
-import * as GAL from './gallery.js?v=46';
-import * as SEA from './seasons.js?v=46';
-import { CONFIG, LEGAL_KEYS } from './details.js?v=46';
-import * as CU from './curtain.js?v=46';
+import { I18N } from './i18n.js?v=47';
+import * as GAL from './gallery.js?v=47';
+import * as SEA from './seasons.js?v=47';
+import { CONFIG, LEGAL_KEYS } from './details.js?v=47';
+import * as CU from './curtain.js?v=47';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -206,24 +206,27 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
       linear-gradient(160deg,#20251a,#171a12);
     box-shadow:inset 0 0 0 1px rgba(214,182,121,.16),inset 0 1px 0 rgba(255,255,255,.04),0 40px 80px -40px rgba(0,0,0,.6)}
   @media(min-width:900px){.gallery.csheet{--n:3}}
-  .sh-item{margin:0!important;min-width:0;will-change:opacity;flex:0 0 auto;width:calc((100% - (var(--n) - 1) * var(--cg)) / var(--n))}
+  .sh-item{margin:0!important;min-width:0;flex:0 0 auto;width:calc((100% - (var(--n) - 1) * var(--cg)) / var(--n))}
   .sh-frame{all:unset;display:block;width:100%;aspect-ratio:4/5;position:relative;overflow:hidden;border-radius:2px;cursor:zoom-in;background:#0d0f0a;
     box-shadow:0 0 0 1px rgba(236,228,216,.07),0 22px 40px -26px rgba(0,0,0,.85);-webkit-mask-image:-webkit-radial-gradient(white,black)}
   .sh-frame:focus-visible{outline:2px solid #d6b679;outline-offset:4px}
-  .sh-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;will-change:transform}
+  .sh-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
   .sh-bw{filter:grayscale(1) contrast(.92) brightness(.5) sepia(.18)}
   /* still loading (slow connection): a soft band of warm light drifts across the empty frame, then the photo fades in */
   .sh-frame img{transition:opacity .9s ease}
   .sh-frame.ld img{opacity:0}
-  .sh-frame::before,.vw-slide.ld img{background:linear-gradient(100deg,transparent 35%,rgba(214,182,121,.09) 50%,transparent 65%) 0 0/300% 100% no-repeat,#12140e}
-  .sh-frame::before{content:"";position:absolute;inset:0;opacity:0;transition:opacity .6s ease}
+  /* the band moves with transform only, so phones run it on the GPU instead of repainting every frame */
+  .sh-frame.ld{background:#12140e}
+  .vw-slide.ld img{background:linear-gradient(100deg,transparent 35%,rgba(214,182,121,.09) 50%,transparent 65%) 0 0/300% 100% no-repeat,#12140e}
+  .sh-frame::before{content:"";position:absolute;inset:0;opacity:0;transition:opacity .6s ease;background:linear-gradient(100deg,transparent 5%,rgba(214,182,121,.09) 50%,transparent 95%);transform:translate3d(-100%,0,0)}
   .sh-frame.ld::before{opacity:1;animation:shLight 1.9s cubic-bezier(.45,0,.55,1) infinite}
-  .vw-slide.ld img{animation:shLight 1.9s cubic-bezier(.45,0,.55,1) infinite}
-  @keyframes shLight{from{background-position:100% 0,0 0}to{background-position:0 0,0 0}}
+  .vw-slide.ld img{animation:vwLight 1.9s cubic-bezier(.45,0,.55,1) infinite}
+  @keyframes shLight{from{transform:translate3d(-100%,0,0)}to{transform:translate3d(100%,0,0)}}
+  @keyframes vwLight{from{background-position:100% 0,0 0}to{background-position:0 0,0 0}}
   .rm .sh-frame.ld::before,.rm .vw-slide.ld img{animation:none}
-  .sh-col{clip-path:inset(0 0 100% 0);will-change:transform,clip-path}
+  .sh-col{clip-path:inset(0 0 100% 0)}
   .rm .sh-col{clip-path:none}
-  .sh-lamp{position:absolute;left:-10%;right:-10%;top:-12%;height:24%;pointer-events:none;opacity:0;will-change:transform,opacity;
+  .sh-lamp{position:absolute;left:-10%;right:-10%;top:-12%;height:24%;pointer-events:none;opacity:0;
     background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(255,226,170,.55),rgba(255,200,120,.18) 45%,transparent 72%);
     box-shadow:0 0 0 0 transparent}
   .sh-lamp::after{content:"";position:absolute;left:10%;right:10%;top:50%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,232,190,.9),transparent)}
@@ -798,6 +801,10 @@ function renderGallery3D(y){
     put('gl2'+i,it.lamp,'transform',`translate3d(0,${(e*100/.24).toFixed(1)}%,0)`);
     put('go'+i,it.el,'opacity',(.35+.65*seg(t,0,.3)).toFixed(3));
     put('gk'+i,it.cap,'opacity',seg(t,.45,.95).toFixed(3));
+    // only a frame that is developing gets its own GPU layers; settled or unseen frames give them back,
+    // which keeps phones from running out of graphics memory (blank flashes while scrolling)
+    const wc=t>0&&t<1?'transform':'auto';
+    put('gw'+i,it.img,'willChange',wc); put('gwb'+i,it.bw,'willChange',wc); put('gwl'+i,it.lamp,'willChange',wc);
     put('gt'+i,it.cap,'transform',`translate3d(0,${((1-seg(t,.45,.95))*10).toFixed(1)}px,0)`);
   });
 }

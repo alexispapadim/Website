@@ -76,8 +76,10 @@ header.scrolled .brand small{opacity:.8;transform:none}
 .ap{display:flex;align-items:flex-end;font-family:var(--serif);font-weight:400;line-height:.8;color:var(--olive)}
 .ap .p{font-size:.7em;margin-left:-.36em;transform:translateY(.24em)}
 .hint{position:absolute;bottom:calc(28px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);font:400 10px var(--sans);letter-spacing:.4em;text-transform:uppercase;color:var(--leaf);display:flex;flex-direction:column;align-items:center;gap:12px}
-.hint i{width:1px;height:42px;background:linear-gradient(var(--gold),transparent);animation:drip 2.2s ease-in-out infinite}
-@keyframes drip{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+/* the drip slides down a clipped track with transform only, so it runs on the GPU and never repaints */
+.hint i{width:1px;height:42px;overflow:hidden;position:relative}
+.hint i::after{content:"";position:absolute;inset:0;background:linear-gradient(var(--gold),transparent);transform:translate3d(0,-100%,0);animation:drip 2.2s ease-in-out infinite}
+@keyframes drip{0%{transform:translate3d(0,-100%,0)}50%{transform:none}100%{transform:translate3d(0,100%,0)}}
 
 .back{position:absolute;inset:0;color:var(--cream);overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 var(--pad);}
 .back .n{will-change:transform,opacity;opacity:0;position:relative}
@@ -307,7 +309,7 @@ html.locked{overflow:hidden;overscroll-behavior:none}
 .lightbox[hidden]{display:none}
 @keyframes lbIn{from{opacity:0}}
 .lb-fig{margin:0;max-width:min(92vw,1100px);text-align:center}
-.lb-fig img{max-width:100%;max-height:78svh;max-height:78vh;border-radius:12px;display:block;margin:0 auto;transition:opacity .25s ease,transform .35s cubic-bezier(.16,1,.3,1)}
+.lb-fig img{max-width:100%;max-height:78vh;max-height:78svh;border-radius:12px;display:block;margin:0 auto;transition:opacity .25s ease,transform .35s cubic-bezier(.16,1,.3,1)}
 .lb-fig img.swap{opacity:0;transform:scale(.97)}
 .lb-fig figcaption{margin-top:16px;font-family:var(--serif);font-style:italic;font-size:19px;color:#ece4d8}
 .lb-x,.lb-nav{position:absolute;width:46px;height:46px;border-radius:50%;border:1px solid rgba(214,182,121,.45);background:rgba(32,37,26,.6);color:#d6b679;font-size:17px;cursor:pointer;display:grid;place-items:center}
@@ -338,7 +340,9 @@ html.locked{overflow:hidden;overscroll-behavior:none}
 /* a gold halo breathes out from the rim now and then, so the eye finds it */
 .c-halo{position:absolute;inset:-1px;border-radius:50%;border:1px solid rgba(184,145,79,.7);pointer-events:none;opacity:0}
 .c-badge.in .c-halo{animation:cHalo 3.4s cubic-bezier(.16,1,.3,1) .4s infinite}
-.c-ring{position:absolute;inset:0;width:100%;height:100%;animation:cSpin 32s linear infinite;overflow:visible}
+/* the ring of words turns on an HTML wrapper: spinning the SVG itself made Chrome lay out the page every frame */
+.c-spin{position:absolute;inset:0;animation:cSpin 32s linear infinite;will-change:transform}
+.c-ring{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .c-ring text{font-family:var(--serif);font-weight:500;font-size:9.6px;letter-spacing:.24em;text-transform:uppercase;fill:currentColor}
 .c-dot{position:relative;width:30%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;overflow:hidden;color:#d6b679;transition:background .45s ease,color .45s ease,transform .6s cubic-bezier(.16,1,.3,1)}
 .c-dot svg{width:44%;height:44%;display:block;overflow:visible}
@@ -354,11 +358,11 @@ html.locked{overflow:hidden;overscroll-behavior:none}
   .c-link:hover .c-dot{background:#d6b679;color:#20251a;transform:scale(1.08)}
   .c-link:hover .c-arr{transform:translate(160%,-160%)}
   .c-link:hover .c-arr-2{transform:none}
-  .c-link:hover .c-ring{animation-duration:10s}
+  .c-link:hover .c-spin{animation-duration:10s}
   .c-link:hover .c-badge{box-shadow:inset 0 0 0 1px rgba(214,182,121,.85),inset 0 0 0 4px #20251a,inset 0 0 0 4.6px rgba(214,182,121,.35),0 28px 48px -18px rgba(20,16,10,.7),0 4px 10px -4px rgba(20,16,10,.35)}
 }
 .c-link:active .c-dot{transform:scale(.94)}
-.rm .c-badge{opacity:1;transform:none}.rm .c-ring,.rm .c-halo{animation:none}
+.rm .c-badge{opacity:1;transform:none}.rm .c-spin,.rm .c-halo,.rm .hint i::after{animation:none}
 .c-line{position:absolute;left:0;right:0;bottom:0;height:70%;border:1px solid var(--gold);border-radius:999px 999px 18px 18px;will-change:transform,opacity;opacity:0}
 .c-cut{position:absolute;inset:0;clip-path:inset(-60% -60% 1px -60%);pointer-events:none}
 .c-cut img{position:absolute;inset:0;width:100%;height:100%;transform-origin:50% 100%;will-change:transform;filter:drop-shadow(0 -2px 22px rgba(20,16,10,.22))}
@@ -510,10 +514,10 @@ html.locked{overflow:hidden;overscroll-behavior:none}
 .ph-zoom img{transition:opacity .9s ease}
 /* slow connection: until the photo arrives, a soft band of light drifts across its frame */
 .ph-frame::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .6s ease;
-  background:linear-gradient(100deg,transparent 35%,rgba(255,255,255,.38) 50%,transparent 65%) 0 0/300% 100% no-repeat}
+  background:linear-gradient(100deg,transparent 5%,rgba(255,255,255,.38) 50%,transparent 95%);transform:translate3d(-100%,0,0)}
 .ph-frame.ld::after{opacity:1;animation:skLight 1.9s cubic-bezier(.45,0,.55,1) infinite}
 .ph-frame.ld img{opacity:0}
-@keyframes skLight{from{background-position:100% 0}to{background-position:0 0}}
+@keyframes skLight{from{transform:translate3d(-100%,0,0)}to{transform:translate3d(100%,0,0)}}
 .rm .ph-frame.ld::after{animation:none}
 .ph img{position:absolute;left:0;top:-9%;width:100%;height:118%;object-fit:cover;display:block;will-change:transform}
 .ph-a img{object-position:50% 35%}
