@@ -4,12 +4,16 @@
    - moving between pages (the About page's buttons back to the menus or the enquiry form)
    - opening and closing the legal pages, which return you to exactly where you were
    ============================================================ */
-import { legalPages, LEGAL_KEYS } from './details.js?v=54';
+import { legalPages, LEGAL_KEYS } from './details.js?v=55';
 
 const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 export const wait = ms => new Promise(r => setTimeout(r, ms));
 const EASE_IO = 'cubic-bezier(.76,0,.24,1)', EASE_OUT = 'cubic-bezier(.16,1,.3,1)';
-const GLYPHS = 'ΑΒΓΔΘΛΞΠΣΦΨΩαβγδεζηθλμξπσφψωAEGKMNRSWXZ';
+/* the letters that flicker while a word morphs: Greek and Latin when the word changes alphabet (English ⇄
+   Ελληνικά), but only its own alphabet otherwise. The Greek letters come from a second, heavier upright
+   face, so mixing them into "Privacy → Home" looked like a glitch rather than a morph. */
+const GLYPHS = { el: 'ΑΒΓΔΘΛΞΠΣΦΨΩαβγδεζηθλμξπσφψω', en: 'abcdeghkmnorsuvwxzAEGKMNRSWXZ' };
+const isGreek = w => /[\u0370-\u03ff\u1f00-\u1fff]/.test(w);
 const ARRIVE = 'ap-arrive';
 
 const el = document.createElement('div'); el.id = 'lswap'; el.setAttribute('aria-hidden', 'true');
@@ -36,9 +40,10 @@ export function scramble(to, dur = 620){
   LS.word.classList.toggle('long', Math.max(from.length, to.length) > 9);
   return new Promise(res => {
     const L = Math.max(from.length, to.length), t0 = performance.now(); let lastSwap = 0, noise = [];
+    const gf = isGreek(from), gt = isGreek(to), set = gf && gt ? GLYPHS.el : !gf && !gt ? GLYPHS.en : GLYPHS.el + GLYPHS.en;
     const step = now => {
       const t = Math.min(1, (now - t0) / dur);
-      if (now - lastSwap > 45){ lastSwap = now; noise = [...Array(L)].map(() => GLYPHS[(Math.random() * GLYPHS.length) | 0]); }
+      if (now - lastSwap > 45){ lastSwap = now; noise = [...Array(L)].map(() => set[(Math.random() * set.length) | 0]); }
       let s = '';
       for (let i = 0; i < L; i++){ const r = t * (L + 5) - i; s += r >= 5 ? (to[i] || '') : r > 0 ? noise[i] : (from[i] || ''); }
       LS.word.textContent = s;
