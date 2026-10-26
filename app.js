@@ -1,8 +1,8 @@
-import { I18N } from './i18n.js?v=53';
-import * as GAL from './gallery.js?v=53';
-import * as SEA from './seasons.js?v=53';
-import { CONFIG, LEGAL_KEYS } from './details.js?v=53';
-import * as CU from './curtain.js?v=53';
+import { I18N } from './i18n.js?v=54';
+import * as GAL from './gallery.js?v=54';
+import * as SEA from './seasons.js?v=54';
+import { CONFIG, LEGAL_KEYS } from './details.js?v=54';
+import * as CU from './curtain.js?v=54';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -114,7 +114,7 @@ function cascadeIn(base=0){
   // and with the curtain already lifting that would let the old text show for a moment
   vis.forEach(({el,o},i)=>{ const prev=el.style.opacity; el.style.opacity='0';
     const an=el.animate(
-      [{opacity:0,transform:'translate3d(0,34px,0)',filter:'blur(8px)'},{opacity:o,transform:'none',filter:'blur(0)'}],
+      [{opacity:0,transform:'translate3d(0,34px,0)'},{opacity:o,transform:'none'}],
       {duration:850,delay:base+120+i*55,easing:EASE_OUT,fill:'backwards'});
     an.ready.then(()=>{ if(el.style.opacity==='0') el.style.opacity=prev; }); });
 }
@@ -145,7 +145,9 @@ function renderChef(y){
   const lift=easeIO(seg(p,.04,.62));                            // he rises out of the arch
   const grow=easeOutQ(seg(p,0,.32)), settle=easeIO(seg(p,.42,.86));
   // whole scene entrance
-  put('cbT',C.box,'transform',`translate3d(0,${((1-enter)*70).toFixed(1)}px,0)`);
+  // once he has stepped out, the scene drifts slowly upwards until it lets go, so a slow scroll never feels stuck
+  const cd=-easeIO(seg(p,.55,1))*M.vh*.06;
+  put('cbT',C.box,'transform',`translate3d(0,${((1-enter)*70+cd).toFixed(1)}px,0)`);
   put('cbO',C.box,'opacity',seg(enter,.15,.7).toFixed(3));
   // arch: grows in, then quietly recedes as he steps forward
   const as=(.9+.1*grow-.06*settle).toFixed(4);
@@ -165,7 +167,7 @@ function renderChef(y){
   // caption
   const cp=easeOutQ(seg(p,.62,.82));
   put('ccpO',C.cap,'opacity',cp.toFixed(3));
-  put('ccpT',C.cap,'transform',`translate3d(0,${((1-cp)*12).toFixed(1)}px,0)`);
+  put('ccpT',C.cap,'transform',`translate3d(0,${((1-cp)*12+cd).toFixed(1)}px,0)`);
   const rs=easeOutQ(seg(p,.68,.9)).toFixed(4); C.rules.forEach((r,i)=>put('crT'+i,r,'transform',`scaleX(${rs})`));
   // the seal to his story rolls onto the arch once he has stepped out, settling with a soft overshoot
   if(C.badge){ const bp=seg(p,.38,.6), bs=bp<1?.6+.4*(1-Math.pow(1-bp,3))*(1+.14*Math.sin(bp*Math.PI)):1;
@@ -254,6 +256,13 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
   .vw-ui{position:relative;display:grid;justify-items:center;gap:16px;margin-top:18px;opacity:0;padding:0 16px;text-align:center;max-width:100%}
   .vw-cap{display:grid;gap:2px}
   .vw-cap .g-t{color:#f4eee5;font-size:clamp(22px,3vw,30px)}.vw-cap .g-p{color:rgba(236,228,216,.6)}
+  .vw-zh{margin:-6px 0 0;font:500 9.5px var(--sans);letter-spacing:.2em;text-transform:uppercase;color:rgba(214,182,121,.62)}
+  .vw-slide img{cursor:zoom-in;transform-origin:50% 50%}
+  .vw.zoomed .vw-slide img{cursor:grab;border-radius:0;box-shadow:none}
+  .vw.zoomed .vw-slide{z-index:2}
+  /* zoomed in: the caption, thumbnails and arrows step aside (important beats their opening animations) */
+  .vw-ui,.vw-prev,.vw-next,.vw-count{transition:opacity .35s ease}
+  .vw.zoomed .vw-ui,.vw.zoomed .vw-prev,.vw.zoomed .vw-next,.vw.zoomed .vw-count{opacity:0!important;pointer-events:none}
   .vw-thumbs{display:flex;gap:8px;overflow-x:auto;max-width:min(92vw,620px);padding:5px 4px;scrollbar-width:none}
   .vw-thumbs::-webkit-scrollbar{display:none}
   .vw-thumbs button{all:unset;cursor:pointer;width:42px;height:52px;border-radius:4px;overflow:hidden;opacity:.4;flex:none;transition:opacity .35s ease,transform .35s cubic-bezier(.16,1,.3,1),box-shadow .35s ease}
@@ -288,6 +297,7 @@ const hero=$('#hero'), mono=$('#mono'), back=$('#back'), hint=$('#hint'), rules=
 let disc=$('#disc');
 if(!disc){ disc=document.createElement('div'); disc.id='disc'; disc.className='disc'; back.prepend(disc); }
 const stmt=$('#statement'), occ=$('#occasions'), hw=$('#hw'), track=$('#track'), bar=$('#bar');
+const stmtParts=$$('#statement .stage > *');
 const steps=$('#steps'), pline=$('#pline'), wm=$('#wm'), about=$('#about'), hdr=$('#hdr');
 const themed=$$('[data-theme]');
 const docTop=el=>el.getBoundingClientRect().top+scrollY;
@@ -567,12 +577,22 @@ function render(y,realY){
     put('mono',mono,'transform',`scale(${(1+z*1.6).toFixed(4)})`);
     put('monoO',mono,'opacity',(1-seg(p,.18,.45)).toFixed(3));
     const rs=`scaleX(${(1-ease(seg(p,0,.28))).toFixed(4)})`; rules.forEach((r,i)=>put('rule'+i,r,'transform',rs));
-    put('disc',disc,'transform',`scale(${ease(seg(p,.12,.58)).toFixed(4)})`);
-    names.forEach((n,i)=>{const t=ease(seg(p,.45+i*.06,.7+i*.06));put('nO'+i,n,'opacity',t.toFixed(3));put('nT'+i,n,'transform',`translate3d(0,${((1-t)*48).toFixed(1)}px,0)`)});
+    put('disc',disc,'transform',`scale(${easeIO(seg(p,.1,.56)).toFixed(4)})`);
+    // the name rises in while the disc is still opening, and then keeps drifting gently upwards until
+    // the scene lets go, so a slow scroll on a phone always moves something on screen
+    const hd=-seg(p,.4,1)*M.vh*.05;
+    names.forEach((n,i)=>{const t=ease(seg(p,.36+i*.06,.62+i*.06));put('nO'+i,n,'opacity',t.toFixed(3));put('nT'+i,n,'transform',`translate3d(0,${((1-t)*48+hd).toFixed(1)}px,0)`)});
     put('hint',hint,'opacity',(1-seg(p,0,.06)).toFixed(3));
   }
-  const lit=(RM?1:seg(pin(M.stmt,y),.08,.82))*words.length;
-  for(let i=0;i<words.length;i++) put('w'+wGen+'_'+i,words[i],'opacity',(.14+.86*clamp(lit-i)).toFixed(3));
+  /* the statement: each word rises a touch as it lights, the words being lit right now glow gold
+     (fading back to cream behind the edge), and the whole text drifts slowly up while it is pinned,
+     so every bit of scrolling visibly moves something */
+  const sp=RM?1:pin(M.stmt,y), lit=(RM?1:seg(sp,.04,.86))*words.length;
+  for(let i=0;i<words.length;i++){ const t=clamp(lit-i), k='w'+wGen+'_'+i;
+    put(k,words[i],'opacity',(.14+.86*t).toFixed(3));
+    if(!RM){ put(k+'t',words[i],'transform',`translate3d(0,${((1-ease(t))*.14).toFixed(3)}em,0)`);
+      const edge=t>0&&t<1; if(last[k+'e']!==edge){ last[k+'e']=edge; words[i].classList.toggle('edge',edge); } } }
+  if(!RM){ const dr=`translate3d(0,${((.5-sp)*M.vh*.07).toFixed(1)}px,0)`; stmtParts.forEach((el,i)=>put('sd'+i,el,'transform',dr)); }
   if(!RM&&!(sw&&sw.mode==='h')) applyCards(y);
   if(!RM){
     put('pline',pline,'transform',`scaleY(${clamp((y+M.vh*.62-M.steps.top)/M.steps.h).toFixed(4)})`);
@@ -628,7 +648,9 @@ addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{
 },120)});
 addEventListener('load',()=>{measure();tick()});
 
-const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.18,rootMargin:'0px 0px -6% 0px'});
+// reveals start as soon as an element's top edge is a little way onto the screen (not once a share of it
+// is showing), so a slow scroll never passes over empty space waiting for a tall block to appear
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:0,rootMargin:'0px 0px -9% 0px'});
 $$('[data-reveal],[data-reveal-group],[data-ph]').forEach(e=>io.observe(e));
 
 /* ===================== form ===================== */
@@ -855,7 +877,7 @@ function openViewer(set,i,fromImg){
   const closeL=I18N[lang]['lg.close']||'Close';
   v.innerHTML=`<div class="vw-bg"></div><div class="vw-count"></div><button type="button" class="vw-btn vw-x" aria-label="${esc(closeL)}">✕</button>
     <button type="button" class="vw-btn vw-prev" aria-label="Previous">←</button><button type="button" class="vw-btn vw-next" aria-label="Next">→</button>
-    <div class="vw-stage"></div><div class="vw-ui"><div class="vw-cap"><span class="g-n"></span><span class="g-t"></span><span class="g-p"></span></div><div class="vw-thumbs"></div></div>`;
+    <div class="vw-stage"></div><div class="vw-ui"><div class="vw-cap"><span class="g-n"></span><span class="g-t"></span><span class="g-p"></span></div><p class="vw-zh">${esc(tr(matchMedia('(pointer:coarse)').matches?'g.zoomT':'g.zoomC'))}</p><div class="vw-thumbs"></div></div>`;
   document.body.append(v); document.documentElement.classList.add('locked');
   const stage=v.querySelector('.vw-stage'), bg=v.querySelector('.vw-bg'), ui=v.querySelector('.vw-ui'), cnt=v.querySelector('.vw-count');
   const capN=v.querySelector('.vw-cap .g-n'), capT=v.querySelector('.vw-cap .g-t'), capP=v.querySelector('.vw-cap .g-p');
@@ -882,7 +904,7 @@ function openViewer(set,i,fromImg){
     if(!first&&!RM) [capN,capT,capP].forEach((el,k)=>el.animate([{opacity:0,transform:'translateY(12px)'},{opacity:1,transform:'none'}],{duration:600,delay:k*60,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'})); };
   const update=anim=>{ place(anim); setCapV(); cnt.textContent=`${cur+1} / ${N}`;
     th.forEach((b,k)=>b.classList.toggle('on',k===cur)); try{ th[cur].scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'}); }catch(_){} };
-  const go=k=>{ cur=clamp(k,0,N-1); drag=0; update(!RM); };
+  const go=k=>{ if(k!==cur) unzoom(false); cur=clamp(k,0,N-1); drag=0; update(!RM); };
   update(false); fitImgs();              // sized once the caption is in, so the photo never changes size as it sharpens
   viewer={close};
   const target=slides[cur].querySelector('img');
@@ -896,11 +918,12 @@ function openViewer(set,i,fromImg){
   (target.complete&&target.naturalWidth)?flyIn():target.addEventListener('load',flyIn,{once:true});
   function close(){
     if(!viewer) return; viewer=null;
+    const zoomed=Z.z>1.01;
     const img=slides[cur].querySelector('img'), back=live[cur]&&live[cur].img, b=img.getBoundingClientRect();
     [ui,cnt,...btns].forEach(el=>el.animate([{opacity:1},{opacity:0}],{duration:180,fill:'forwards'}));
     bg.animate([{opacity:1},{opacity:0}],{duration:RM?1:440,fill:'forwards'});
     const a=back&&back.getBoundingClientRect();
-    if(!RM&&a&&a.width&&a.bottom>0&&a.top<innerHeight)
+    if(!RM&&!zoomed&&a&&a.width&&a.bottom>0&&a.top<innerHeight)
       img.animate([{transform:'none'},{transform:`translate(${a.left+a.width/2-(b.left+b.width/2)}px,${a.top+a.height/2-(b.top+b.height/2)}px) scale(${a.width/b.width},${a.height/b.height})`}],{duration:500,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'});
     else img.animate([{opacity:1},{opacity:0}],{duration:RM?1:280,fill:'forwards'});
     setTimeout(()=>{ v.remove(); document.documentElement.classList.remove('locked'); removeEventListener('keydown',key); removeEventListener('resize',rs);
@@ -909,17 +932,71 @@ function openViewer(set,i,fromImg){
   v.querySelector('.vw-x').onclick=close;
   v.querySelector('.vw-prev').onclick=()=>go(cur-1); v.querySelector('.vw-next').onclick=()=>go(cur+1);
   bg.onclick=close;
-  function key(e){ if(e.key==='Escape') close(); else if(e.key==='ArrowRight') go(cur+1); else if(e.key==='ArrowLeft') go(cur-1); }
-  function rs(){ W=stage.clientWidth; fitImgs(); place(false); }
+  function key(e){ if(viewer&&viewer.zoomKey&&viewer.zoomKey(e)) return; if(e.key==='Escape'){ if(Z.z>1.01) unzoom(); else close(); } else if(e.key==='ArrowRight') go(cur+1); else if(e.key==='ArrowLeft') go(cur-1); }
+  function rs(){ W=stage.clientWidth; fitImgs(); unzoom(false); place(false); }
   addEventListener('keydown',key); addEventListener('resize',rs);
-  let sx=null, sy0=0, t0=0;
-  stage.addEventListener('pointerdown',e=>{ sx=e.clientX; sy0=e.clientY; t0=performance.now(); try{stage.setPointerCapture(e.pointerId)}catch(_){} });
-  stage.addEventListener('pointermove',e=>{ if(sx===null) return; drag=e.clientX-sx; if((cur===0&&drag>0)||(cur===N-1&&drag<0)) drag*=.35; place(false); });
-  const up=e=>{ if(sx===null) return; const dx=e.clientX-sx, dy=e.clientY-sy0, fast=Math.abs(dx)/Math.max(1,performance.now()-t0)>.5; sx=null;
-    if(Math.abs(dx)<6&&Math.abs(dy)<6){ drag=0; place(true); return; }
+  /* ---- zoom: pinch with two fingers, double-tap (or click, with a mouse) to zoom in on that spot, drag
+     to look around, double-tap again to step back. Ctrl + scroll (a trackpad pinch) zooms on desktop.
+     While zoomed, the caption and thumbnails step aside and swiping moves around the photo instead
+     of changing it. The full-size photo is already swapped in by then (see want). ---- */
+  const ZMAX=4, Z={z:1,x:0,y:0};
+  const zImg=()=>slides[cur].firstChild;
+  const zCentre=()=>{ const r=stage.getBoundingClientRect(); return {x:r.left+r.width/2,y:r.top+r.height/2}; };
+  /* how far the photo may move: its edges never come inside the screen's edges (a side smaller than
+     the screen stays centred) */
+  const zBound=(z,x,y)=>{ const im=zImg(), c=zCentre(), w=im.offsetWidth*z/2, h=im.offsetHeight*z/2;
+    const bx=w>innerWidth/2?[innerWidth-c.x-w,w-c.x]:[0,0], by=h>innerHeight/2?[innerHeight-c.y-h,h-c.y]:[0,0];
+    return {x:clamp(x,bx[0],bx[1]),y:clamp(y,by[0],by[1])}; };
+  const zApply=anim=>{ const im=zImg(), on=Z.z>1.01;
+    im.style.transition=anim&&!RM?'transform .5s cubic-bezier(.16,1,.3,1)':'none';
+    im.style.transform=on||Math.abs(Z.x)+Math.abs(Z.y)>.5?`translate3d(${Z.x.toFixed(1)}px,${Z.y.toFixed(1)}px,0) scale(${Z.z.toFixed(4)})`:'';
+    im.style.willChange=on?'transform':'';
+    v.classList.toggle('zoomed',on); };
+  // zoom to z keeping the point (px,py) of the photo under the finger / pointer
+  const zoomAt=(z,px,py,anim)=>{ const c=zCentre(), k=z/Z.z;
+    const b=zBound(z,(px-c.x)-k*(px-c.x-Z.x),(py-c.y)-k*(py-c.y-Z.y)); Object.assign(Z,{z,x:b.x,y:b.y}); zApply(anim); };
+  function unzoom(anim=true){ if(Z.z===1&&!Z.x&&!Z.y) return; Object.assign(Z,{z:1,x:0,y:0}); zApply(anim); }
+  const settle=()=>{ if(Z.z<1.05){ unzoom(); return; } const z=Math.min(ZMAX,Z.z), b=zBound(z,Z.x,Z.y); Object.assign(Z,{z,x:b.x,y:b.y}); zApply(true); };
+  const toggleZoom=(px,py)=>{ if(Z.z>1.01) unzoom(); else zoomAt(2.5,px,py,true); };
+  const onPhoto=(x,y)=>{ const r=zImg().getBoundingClientRect(); return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom; };
+  const pts=new Map(); let gst=null, lastTap=null;
+  const two=()=>{ const [a,b]=[...pts.values()]; return {d:Math.hypot(a.x-b.x,a.y-b.y)||1,x:(a.x+b.x)/2,y:(a.y+b.y)/2}; };
+  stage.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse'&&e.button!==0) return;
+    pts.set(e.pointerId,{x:e.clientX,y:e.clientY}); try{stage.setPointerCapture(e.pointerId)}catch(_){}
+    if(pts.size===2){ if(drag){ drag=0; place(true); } const m=two(); gst={type:'pinch',z0:Z.z,x0:Z.x,y0:Z.y,d0:m.d,m0:m}; return; }
+    if(pts.size>2) return;
+    gst={type:Z.z>1.01?'pan':'swipe',sx:e.clientX,sy:e.clientY,t0:performance.now(),x0:Z.x,y0:Z.y,moved:false}; });
+  stage.addEventListener('pointermove',e=>{ if(!pts.has(e.pointerId)||!gst) return; pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(gst.type==='pinch'){ if(pts.size<2) return; const m=two(), c=zCentre();
+      let z=gst.z0*m.d/gst.d0; if(z>ZMAX) z=ZMAX+(z-ZMAX)*.25; if(z<1) z=1-(1-z)*.4;       // soft limits
+      const k=z/gst.z0; Z.z=z; Z.x=(m.x-c.x)-k*(gst.m0.x-c.x-gst.x0); Z.y=(m.y-c.y)-k*(gst.m0.y-c.y-gst.y0); zApply(false); return; }
+    const dx=e.clientX-gst.sx, dy=e.clientY-gst.sy; if(Math.abs(dx)>6||Math.abs(dy)>6) gst.moved=true;
+    if(gst.type==='pan'){ const b=zBound(Z.z,gst.x0+dx,gst.y0+dy), rx=gst.x0+dx-b.x, ry=gst.y0+dy-b.y;
+      Z.x=b.x+rx*.3; Z.y=b.y+ry*.3; zApply(false); return; }                                   // pulls a little past the edge
+    drag=dx; if((cur===0&&drag>0)||(cur===N-1&&drag<0)) drag*=.35; place(false); });
+  const up=e=>{ if(!pts.has(e.pointerId)) return; pts.delete(e.pointerId); const g=gst; if(!g) return;
+    if(g.type==='pinch'){ if(pts.size===1){ const [p]=[...pts.values()]; gst={type:'pan',sx:p.x,sy:p.y,x0:Z.x,y0:Z.y,moved:true}; }
+      else gst=null; settle(); return; }
+    if(pts.size) return; gst=null;
+    if(g.type==='pan'){ if(g.moved){ settle(); return; } }
+    const dx=e.clientX-g.sx, dy=e.clientY-g.sy;
+    if(g.type==='pan'||(Math.abs(dx)<6&&Math.abs(dy)<6)){                                    // a tap
+      if(g.type==='swipe'){ drag=0; place(true); }
+      if(e.type==='pointercancel') return;
+      const now=performance.now();
+      if(e.pointerType==='mouse'){ if(Z.z>1.01||onPhoto(e.clientX,e.clientY)) toggleZoom(e.clientX,e.clientY); return; }
+      if(lastTap&&now-lastTap.t<320&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<34){ lastTap=null; toggleZoom(e.clientX,e.clientY); }
+      else lastTap={t:now,x:e.clientX,y:e.clientY};
+      return; }
+    const fast=Math.abs(dx)/Math.max(1,performance.now()-g.t0)>.5;
     if(dy>110&&Math.abs(dy)>Math.abs(dx)*1.3){ drag=0; return close(); }
     go(cur+((dx<-W*.18||(fast&&dx<-30))?1:(dx>W*.18||(fast&&dx>30))?-1:0)); };
   stage.addEventListener('pointerup',up); stage.addEventListener('pointercancel',up);
+  stage.addEventListener('wheel',e=>{ e.preventDefault();
+    if(e.ctrlKey){ zoomAt(clamp(Z.z*Math.exp(-e.deltaY*.01),1,ZMAX),e.clientX,e.clientY,false); clearTimeout(stage._zt); stage._zt=setTimeout(settle,180); }
+    else if(Z.z>1.01){ const b=zBound(Z.z,Z.x-e.deltaX,Z.y-e.deltaY); Z.x=b.x; Z.y=b.y; zApply(false); } },{passive:false});
+  viewer.zoomKey=e=>{ const c=zCentre(); if(e.key==='+'||e.key==='='){ zoomAt(Math.min(ZMAX,Z.z*1.5),c.x,c.y,true); return true; }
+    if(e.key==='-'||e.key==='_'){ const z=Z.z/1.5; if(z<1.05) unzoom(); else zoomAt(z,c.x,c.y,true); return true; } return false; };
   v.querySelector('.vw-x').focus({preventScroll:true});
 }
 
@@ -954,6 +1031,7 @@ const MENU_RATIO=1055/1491;
     -webkit-mask-image:linear-gradient(180deg,#000 55%,transparent 100%);mask-image:linear-gradient(180deg,#000 55%,transparent 100%);transition:opacity .6s ease,transform .8s cubic-bezier(.16,1,.3,1)}
   .s-mask{position:absolute;display:block;aspect-ratio:900/1272;background:#d6b679;opacity:.6;transition:opacity .6s ease,background-color .6s ease;will-change:transform,clip-path;
     -webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+  .s-mask:not(.ready){visibility:hidden}
   .card.season > .num{position:absolute;top:clamp(20px,2.6vw,30px);left:clamp(22px,2.4vw,30px);z-index:2}
   .card.season > .s-rule{position:absolute;top:calc(clamp(20px,2.6vw,30px) + 34px);left:clamp(22px,2.4vw,30px);z-index:2}
   .s-sprig{position:absolute;left:50%;top:44%;width:34%;transform:translate(-50%,-50%);color:#d6b679;opacity:.5}.s-sprig svg{width:100%;height:auto;display:block}
@@ -1079,7 +1157,8 @@ const MENU_RATIO=1055/1491;
   .mv-arw{position:absolute;top:46%;z-index:4;opacity:0}.mv-prev{left:18px}.mv-next{right:18px}.mv-arw:disabled{opacity:.25!important;cursor:default}
   @media(max-width:760px){.mv-arw{display:none}}
   .mv-rail{position:relative;z-index:2;flex:1;min-height:0;overflow:hidden;touch-action:pan-y}
-  .mv-slide{position:absolute;inset:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;scrollbar-width:none;will-change:transform}
+  .mv-slide{position:absolute;inset:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;scrollbar-width:none}
+  .mv-slide.far{visibility:hidden;content-visibility:hidden}     /* not even laid out until it comes next to the open menu */
   .mv-slide::-webkit-scrollbar{display:none}
   .mv-page{display:flex;min-height:100%;box-sizing:border-box;padding:6px 12px 14px}
   /* the paper */
@@ -1194,6 +1273,10 @@ const nearMenus=(()=>{ const q=[]; let near=false;
   if(!sec||!('IntersectionObserver' in window)) setTimeout(go,2500);
   else { const io=new IntersectionObserver(es=>{ if(es.some(e=>e.isIntersecting)){ io.disconnect(); go(); } },{rootMargin:'1200px 0px'}); io.observe(sec); }
   return f=>near?f():q.push(f); })();
+/* the menus' typefaces are fetched as the menus come near, in both alphabets, so a menu never opens in a
+   stand-in face that then swaps mid-animation (the medium weight and the Greek face are used nowhere else) */
+nearMenus(()=>{ if(!document.fonts) return; const F='"Cormorant Garamond","GFS Didot"';
+  ['400 1em','italic 400 1em','500 1em'].forEach(w=>{ document.fonts.load(`${w} ${F}`,'Menu Μενού').catch(()=>{}); }); });
 var SEAS=null;                          // set once the cards are built (render may run before that)
 function buildSeasons(){
   SEAS=seasonCards().map((card,i)=>{
@@ -1201,7 +1284,10 @@ function buildSeasons(){
     const menus=S&&Array.isArray(S.menus)?S.menus.filter(m=>m&&Array.isArray(m.courses)):[];
     card._menus=menus;
     const mask=card.querySelector('.s-mask');
-    if(mask&&A) nearMenus(()=>{ const u=`url("/${A.img}")`; mask.style.webkitMaskImage=u; mask.style.maskImage=u; });
+    // the drawing is put on the card only once it has arrived and decoded: a mask still downloading can
+    // show the card's plain gold fill for a moment in Safari
+    if(mask&&A) nearMenus(()=>{ const u=`url("/${A.img}")`, set=()=>{ mask.style.webkitMaskImage=u; mask.style.maskImage=u; mask.classList.add('ready'); };
+      const im=new Image(); im.src='/'+A.img; (im.decode?im.decode():Promise.reject()).then(set,set); });
     else if(mask&&!card.querySelector('.s-sprig')){ mask.style.display='none'; const sp=document.createElement('div'); sp.className='s-sprig'; sp.innerHTML=SPRIG; mask.after(sp); }
     card.classList.toggle('no-menu',!menus.length);
     card.querySelector('.s-cta').hidden=!menus.length;
@@ -1240,7 +1326,9 @@ function renderSeasons(){
       put('si'+i,s.mask,'transform',`translate3d(${(drift*-30).toFixed(1)}px,${((1-e)*30).toFixed(1)}px,0) scale(${(1.12-.12*e).toFixed(4)})`);
     }
     if(s.rule) put('sr'+i,s.rule,'transform',`scaleX(${e.toFixed(3)})`);
-    s.parts.forEach((el,k)=>{ if(!el) return; const t=ease(seg(d,.25+k*.09,.68+k*.09));
+    // the words come in with the drawing rather than after it (they used to finish only as the card
+    // arrived, so a slow scroll showed empty cards and the button never quite reached full strength)
+    s.parts.forEach((el,k)=>{ if(!el) return; const t=ease(seg(d,.1+k*.05,.48+k*.05));
       put('so'+i+'_'+k,el,'opacity',t.toFixed(3)); put('st'+i+'_'+k,el,'transform',`translate3d(0,${((1-t)*22).toFixed(1)}px,0)`); });
   });
 }
@@ -1358,10 +1446,14 @@ function menuHTML(m,key){
   h+=`<p class="mp-f mp-a">${esc(tr('mn.f1'))}<br>${esc(tr('mn.f2'))}</p><p class="mp-ch mp-a">${esc(tr('mn.charity'))}</p><p class="mp-url mp-a">papadimitriou.uk</p></div>`;
   return h;
 }
-function revealMenu(paper,delay=0){   // the text settles onto the page line by line
+function revealMenu(paper,delay=0){   // the text settles onto the page: the heading line by line, then course by course
   if(RM) return;
-  [...paper.querySelectorAll('.mp-a')].forEach((el,k)=>{
-    const d=delay+k*20, EZ='cubic-bezier(.16,1,.3,1)';
+  /* a block per course rather than every line on its own: a long menu used to start some fifty
+     animations at once (each its own layer, halo included), which made phones stutter just as the
+     page opened */
+  const parts=[...paper.querySelectorAll('.mp-in > .mp-a, .mp-c')];
+  parts.forEach((el,k)=>{
+    const d=delay+k*55, EZ='cubic-bezier(.16,1,.3,1)';
     if(el.classList.contains('mp-orn')){
       el.animate([{opacity:0},{opacity:1}],{duration:360,delay:d,fill:'backwards'});
       el.animate([{transform:'scaleX(.2)'},{transform:'none'}],{duration:560,delay:d,easing:EZ,fill:'backwards'});
@@ -1456,6 +1548,14 @@ void main(){
   }
   gl_FragColor=vec4(col*al,al);
 }`;
+/* the first WebGL page of a visit is slow to start (the browser sets up its graphics and compiles the
+   shader), which held up the first menu for a moment just as it opened. Do that once, quietly, while
+   the menus are coming near, so the real one starts at once. */
+nearMenus(()=>{ if(RM||SLOW) return; const idle=window.requestIdleCallback||(f=>setTimeout(f,400));
+  idle(()=>{ try{ const gl=document.createElement('canvas').getContext('webgl'); if(!gl) return;
+    const pr=gl.createProgram(); [[gl.VERTEX_SHADER,GL_VS],[gl.FRAGMENT_SHADER,GL_FS]].forEach(([t,src])=>{ const sh=gl.createShader(t); gl.shaderSource(sh,src); gl.compileShader(sh); gl.attachShader(pr,sh); });
+    gl.linkProgram(pr); gl.getProgramParameter(pr,gl.LINK_STATUS);
+    const x=gl.getExtension('WEBGL_lose_context'); x&&x.loseContext(); }catch(_){} },{timeout:3000}); });
 const imgCache={};
 function loadImg(src){ if(!imgCache[src]){ const im=new Image(); im.decoding='async'; im.src=src; const p=(im.decode?im.decode():new Promise((r,j)=>{im.onload=r;im.onerror=j;})).then(()=>im,e=>{ delete imgCache[src]; throw e; }); p.catch(()=>{}); imgCache[src]=p; } return imgCache[src]; }
 function growArtGL(paper,file,delay=0,quick=false){
@@ -1633,7 +1733,7 @@ function openMenu(card){
   const dotsEl=v.querySelector('.mv-dots'), plan=v.querySelector('.mv-plan'), prev=v.querySelector('.mv-prev'), next=v.querySelector('.mv-next');
   const tabs=[...v.querySelectorAll('.mv-tab')];
   tabs.forEach((b,i)=>b.onclick=()=>{ if(slides[cur].g!==groups[i]) go(groups[i].first); });
-  slides.forEach((sl,k)=>{ const m=sl.m, s=document.createElement('div'); s.className='mv-slide';
+  slides.forEach((sl,k)=>{ const m=sl.m, s=document.createElement('div'); s.className='mv-slide'+(Math.abs(k-start)>1?' far':'');
     const p=document.createElement('div'); p.className='mv-page';
     const paper=document.createElement('article'); paper.className='mp'; paper.setAttribute('aria-label',mTitle(m)); paper.innerHTML=menuHTML(m,sl.key);
     const art=paper.querySelector('.mp-art'), A=m.art&&okImg(m.art)?`url("/${m.art}")`:'';
@@ -1674,9 +1774,19 @@ function openMenu(card){
       if(anim&&!RM){ if(!jump) sl.s.animate([{transform:sl.s.style.transform||'none'},{transform:to}],o);
         else if(k===cur) sl.s.animate([{transform:`translate3d(${dir*W}px,0,0)`},{transform:to}],o);
         else if(k===from) sl.s.animate([{transform:sl.s.style.transform||'none'},{transform:`translate3d(${-dir*W}px,0,0)`}],o); }
-      sl.s.style.transform=to; }); };
+      sl.s.style.transform=to; });
+    prune(jump&&anim?from:-1); };
+  /* only the open menu and the ones either side of it are drawn: every page is a tall layer, and a
+     dozen of them at once ran phones out of graphics memory (pages flashing blank mid-swipe). A page
+     sliding away after a tab jump stays drawn until it has gone. */
+  let pruneT=0;
+  const prune=keep=>{ clearTimeout(pruneT);
+    slides.forEach((sl,k)=>sl.s.classList.toggle('far',Math.abs(k-cur)>1&&k!==keep));
+    if(keep>=0) pruneT=setTimeout(()=>prune(-1),600); };
+  /* a menu you swipe to is already written out on its page (you saw it while dragging), so only its
+     drawing grows in as it arrives; the text never blinks out and back in */
   function go(k){ k=clamp(k,0,N-1); const was=cur; cur=k; place(0,was!==k||dragX!==0,was); dragX=0; setUI();
-    const sl=slides[cur]; if(!sl.seen){ sl.seen=true; growArtAny(sl.paper,sl.m.art,0); revealMenu(sl.paper,120); } }
+    const sl=slides[cur]; if(!sl.seen){ sl.seen=true; growArtAny(sl.paper,sl.m.art,0); } }
   let ds=null, dragged=false;
   rail.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse'&&e.button!==0) return;
     ds={id:e.pointerId,x:e.clientX,y:e.clientY,t:performance.now(),mode:''}; dragged=false; });

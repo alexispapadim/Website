@@ -2,9 +2,9 @@
    ABOUT PAGE: language, header and the scroll effects for his story.
    The text itself is in i18n.js (ab.*, j1–j12, jt.*, ap.*).
    ============================================================ */
-import { I18N } from './i18n.js?v=53';
-import { LEGAL_KEYS } from './details.js?v=53';
-import * as CU from './curtain.js?v=53';
+import { I18N } from './i18n.js?v=54';
+import { LEGAL_KEYS } from './details.js?v=54';
+import * as CU from './curtain.js?v=54';
 
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -148,7 +148,7 @@ $$('.ph-frame img').forEach(im => {
 });
 
 /* ---- reveals start once the opening veil has lifted ---- */
-const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .18, rootMargin: '0px 0px -6% 0px' });
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0, rootMargin: '0px 0px -9% 0px' });
 const startReveals = () => $$('[data-reveal],[data-reveal-group],[data-ph],.jy-i').forEach(e => io.observe(e));
 
 /* ---- init ---- */
