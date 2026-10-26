@@ -1,8 +1,8 @@
-import { I18N } from './i18n.js?v=54';
-import * as GAL from './gallery.js?v=54';
-import * as SEA from './seasons.js?v=54';
-import { CONFIG, LEGAL_KEYS } from './details.js?v=54';
-import * as CU from './curtain.js?v=54';
+import { I18N } from './i18n.js?v=55';
+import * as GAL from './gallery.js?v=55';
+import * as SEA from './seasons.js?v=55';
+import { CONFIG, LEGAL_KEYS } from './details.js?v=55';
+import * as CU from './curtain.js?v=55';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -722,7 +722,10 @@ form.addEventListener('submit',async e=>{
     const res=await fetch(CONFIG.api,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),credentials:'same-origin',cache:'no-store'});
     const j=await res.json().catch(()=>({}));
     if(res.ok&&j.ok){
-      form.reset(); setStatus('ok','s.ok');
+      const occ=form.elements.occasion, loc=form.elements.location;
+      SENT.d={date:data.event_date, guests:data.guests, occ:occ.selectedOptions[0]&&occ.selectedOptions[0].dataset.i18n, loc:loc.selectedOptions[0]&&loc.selectedOptions[0].dataset.i18n};
+      SENT.mail=data.email;
+      form.reset(); setStatus('ok','s.ok'); SENT.show();
       busy=true; setTimeout(()=>{busy=false;send.disabled=false},15000);
       return;
     }
@@ -739,6 +742,64 @@ form.addEventListener('submit',async e=>{
   }
 });
 
+
+/* The thank-you: once an enquiry is in, the form folds away and the card closes up around a gold
+   seal. The ring draws itself, the AP monogram is pressed in like wax, an olive sprig grows either
+   side and a soft gold ripple leaves it; then the words rise one after another. The card's height
+   eases from the long form down to the note, and the page glides so the whole note is in view.     */
+const SENT=(function(){
+  const box=$('#sent'), list=$('#sent-d'), mail=$('#sent-mail'), head=$('#sent-h'), again=$('#sent-again');
+  const st={d:null, mail:'', show, hide, render};
+  const fmtDate=iso=>{ try{ const [y,m,d]=iso.split('-').map(Number);
+    return new Intl.DateTimeFormat(lang==='el'?'el-GR':'en-GB',{day:'numeric',month:'long',year:'numeric'}).format(new Date(y,m-1,d)); }catch(_){ return iso; } };
+  function render(){
+    if(!st.d) return;
+    const t=I18N[lang], d=st.d, items=[];
+    if(d.occ&&t[d.occ]) items.push(t[d.occ]);
+    if(d.date) items.push(fmtDate(d.date));
+    if(d.guests!=='') items.push(d.guests===1?t['ok.g1']:t['ok.gn'].replace('{n}',d.guests));
+    if(d.loc&&t[d.loc]) items.push(t[d.loc]);
+    list.replaceChildren(...items.map(x=>{const li=document.createElement('li'); li.textContent=x; return li}));
+    mail.textContent=st.mail;
+  }
+  // the card's height moves from what it was to what it is now; the page follows so the card is in view
+  function morph(apply,dur){
+    const h0=form.offsetHeight; apply(); const h1=form.offsetHeight;
+    const r=form.getBoundingClientRect(), vh=innerHeight, top=scrollY+r.top;
+    const fit=h1<vh-120 ? top-(vh-h1)/2 : top-90;
+    const go=()=>{ if(r.top<70||r.top+h1>vh-20) smoothTo(Math.max(0,fit),dur); };
+    if(RM||!form.animate){ go(); return; }
+    // a card that grows needs its new height before the page can scroll down to it
+    if(h1<=h0) go();
+    form.style.overflow='hidden';
+    form.animate([{height:h0+'px'},{height:h1+'px'}],{duration:dur,easing:'cubic-bezier(.65,0,.35,1)'})
+      .finished.catch(()=>{}).then(()=>{ form.style.overflow=''; if(h1>h0) go(); });
+  }
+  function smoothTo(y,dur){
+    if(RM){ scrollTo(0,y); return; }
+    const y0=scrollY, dy=y-y0, t0=performance.now(), ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+    const step=now=>{ const k=Math.min(1,(now-t0)/dur); scrollTo(0,y0+dy*ease(k)); if(k<1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+  function show(){
+    render();
+    const finish=()=>{
+      morph(()=>{ form.classList.remove('leaving'); form.classList.add('done'); box.hidden=false; },RM?0:750);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>box.classList.add('play')));
+      try{ head.focus({preventScroll:true}); }catch(_){ head.focus(); }
+    };
+    if(RM){ finish(); return; }
+    form.classList.add('leaving'); setTimeout(finish,420);
+  }
+  function hide(){
+    morph(()=>{ box.classList.remove('play'); box.hidden=true; form.classList.remove('done'); },RM?0:650);
+    if(!RM){ form.classList.add('back'); setTimeout(()=>form.classList.remove('back'),1100); }
+    setStatus('','');
+    const first=$('#f-name'); if(first) try{ first.focus({preventScroll:true}); }catch(_){}
+  }
+  again.addEventListener('click',hide);
+  return st;
+})();
 
 /* ===================== food gallery ===================== */
 const kitchen=$('#kitchen'), galleryEl=$('#gallery'), lb=$('#lightbox'), lbImg=$('#lb-img'), lbCap=$('#lb-cap'), lbCount=$('#lb-count');
@@ -2277,7 +2338,7 @@ const PHONE=(function phone(){
       return k==='GR'?d.length===10:k==='GB'?/^0?\d{9,10}$/.test(d)&&d.replace(/^0/,'').length>=9:d.length>=7&&d.length<=15; }
   };
 })();
-function langExtras(){ refreshSeasons(); dpLabel(false); if(dp) dpClose(false); if(typeof CS!=='undefined') CS.forEach(o=>{ csClose(o,false); o.label(false); }); }
+function langExtras(){ SENT.render(); refreshSeasons(); dpLabel(false); if(dp) dpClose(false); if(typeof CS!=='undefined') CS.forEach(o=>{ csClose(o,false); o.label(false); }); }
 
 /* ---- init ---- */
 let start='';
