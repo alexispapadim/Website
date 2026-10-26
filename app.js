@@ -1,8 +1,8 @@
-import { I18N } from './i18n.js?v=54';
-import * as GAL from './gallery.js?v=54';
-import * as SEA from './seasons.js?v=54';
-import { CONFIG, LEGAL_KEYS } from './details.js?v=54';
-import * as CU from './curtain.js?v=54';
+import { I18N } from './i18n.js?v=55';
+import * as GAL from './gallery.js?v=55';
+import * as SEA from './seasons.js?v=55';
+import { CONFIG, LEGAL_KEYS } from './details.js?v=55';
+import * as CU from './curtain.js?v=55';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -57,7 +57,7 @@ function buildStatement(){
   $('#tap').classList.remove('gone');
 }
 function setLang(l){
-  lang=I18N[l]?l:'en';
+  lang=l==='el'?'el':'en';   // only our two languages: ?lang=constructor must not pick an object key
   document.documentElement.lang=lang;
   document.title=I18N[lang].title;
   const md=document.querySelector('meta[name="description"]'); if(md) md.setAttribute('content',I18N[lang]['meta.desc']);
