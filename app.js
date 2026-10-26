@@ -1,8 +1,8 @@
-import { I18N } from './i18n.js?v=54';
-import * as GAL from './gallery.js?v=54';
-import * as SEA from './seasons.js?v=54';
-import { CONFIG, LEGAL_KEYS } from './details.js?v=54';
-import * as CU from './curtain.js?v=54';
+import { I18N } from './i18n.js?v=55';
+import * as GAL from './gallery.js?v=55';
+import * as SEA from './seasons.js?v=55';
+import { CONFIG, LEGAL_KEYS } from './details.js?v=55';
+import * as CU from './curtain.js?v=55';
 const GALLERY=GAL.GALLERY||[], PRODUCE=GAL.PRODUCE||[];
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -1415,7 +1415,7 @@ function cardFace(card,cr,pr,host,dir,dur,delay,E){
   const sx=pr.width/cr.width, sy=pr.height/cr.height, persp=`perspective(${Math.round(Math.max(pr.width,pr.height)*2.4)}px)`;
   const T=(g,ry,rz,lift)=>{ const kx=1+(sx-1)*g, ky=1+(sy-1)*g, k=lift*(1-Math.abs(g-.5)*2);
     return `${persp} translate3d(${(dx*g).toFixed(1)}px,${(dy*g-k*40).toFixed(1)}px,${(k*120).toFixed(1)}px) rotateY(${ry}deg) rotateZ(${rz}deg) scale(${kx.toFixed(4)},${ky.toFixed(4)})`; };
-  let keys=[{transform:T(0,0,0,0),opacity:1,offset:0},{transform:T(.32,-62,-2.5,1),opacity:1,offset:.36},{transform:T(.48,-90,-1.5,1),opacity:1,offset:.5},{transform:T(.48,-90,-1.5,1),opacity:0,offset:.5001},{transform:T(.48,-90,-1.5,1),opacity:0,offset:1}];
+  let keys=[{transform:T(0,0,0,0),opacity:1,offset:0},{transform:T(.32,-62,-2.5,1),opacity:1,offset:.36},{transform:T(.48,-90,-1.5,1),opacity:1,offset:.5},{transform:T(.48,-90,-1.5,1),opacity:1,visibility:'hidden',offset:.5001},{transform:T(.48,-90,-1.5,1),opacity:1,visibility:'hidden',offset:1}];
   if(dir==='close') keys=keys.slice().reverse().map(k=>({...k,offset:1-k.offset}));
   f.animate(keys,{duration:dur,delay,easing:E,fill:'both'}).finished.then(()=>f.remove(),()=>f.remove());
   return f;
@@ -1770,12 +1770,14 @@ function openMenu(card){
   /* a jump of more than one menu (a season tab) slides only the two pages involved, the new one
      arriving from the side it lies on, rather than racing past every menu in between */
   const place=(px,anim,from)=>{ const W=rail.clientWidth, jump=from!=null&&Math.abs(from-cur)>1, dir=Math.sign(cur-from), o={duration:560,easing:'cubic-bezier(.16,1,.3,1)'};
+    /* un-hide the arriving page and let it lay out before its slide starts: Safari skipped the
+       animation of a page that was still hidden when it began, so the tab jump just cut */
+    prune(jump&&anim?from:-1); if(jump&&anim&&!RM) void slides[cur].s.offsetWidth;
     slides.forEach((sl,k)=>{ const x=(k-cur)*W+px, to=`translate3d(${x.toFixed(1)}px,0,0)`;
       if(anim&&!RM){ if(!jump) sl.s.animate([{transform:sl.s.style.transform||'none'},{transform:to}],o);
         else if(k===cur) sl.s.animate([{transform:`translate3d(${dir*W}px,0,0)`},{transform:to}],o);
         else if(k===from) sl.s.animate([{transform:sl.s.style.transform||'none'},{transform:`translate3d(${-dir*W}px,0,0)`}],o); }
-      sl.s.style.transform=to; });
-    prune(jump&&anim?from:-1); };
+      sl.s.style.transform=to; }); };
   /* only the open menu and the ones either side of it are drawn: every page is a tall layer, and a
      dozen of them at once ran phones out of graphics memory (pages flashing blank mid-swipe). A page
      sliding away after a tab jump stays drawn until it has gone. */
@@ -1887,7 +1889,9 @@ function openMenu(card){
     const EF='cubic-bezier(.55,0,.2,1)';
     p.animate(flipKeys(cr,pr,'card'),{duration:1050,delay:30,easing:EF,fill:'backwards'})
       .finished.then(()=>{ p.style.willChange=''; },()=>{});
-    p.animate([{opacity:0,offset:0},{opacity:0,offset:.5},{opacity:1,offset:.5001},{opacity:1,offset:1}],{duration:1050,delay:30,easing:EF,fill:'backwards'});
+    // hidden until it turns edge-on. visibility, not opacity: Chrome's compositor smears a 0→1 opacity
+    // step over the first half, and the paper's cream wash glowed through the turning card
+    p.animate([{visibility:'hidden',offset:0},{visibility:'hidden',offset:.5},{visibility:'visible',offset:.5001},{visibility:'visible',offset:1}],{duration:1050,delay:30,easing:EF,fill:'backwards'});
     cardFace(card,cr,pr,v,'open',1050,30,EF);
     card.style.visibility='hidden'; setTimeout(()=>{ if(menuV) card.style.visibility=''; },1100);
     // the page's contents fade up as it opens, so the seed is there the moment the page is
@@ -1948,7 +1952,7 @@ function openMenu(card){
     const keys=flipKeys(a,base,'page',{dx:now.left+now.width/2-(base.left+base.width/2),dy:now.top+now.height/2-(base.top+base.height/2),k:ks,rx});
     const D=900, E='cubic-bezier(.55,0,.2,1)';
     const fly=p.animate(keys,{duration:D,delay:90,easing:E,fill:'both'});
-    p.animate([{opacity:1,offset:0},{opacity:1,offset:.4999},{opacity:0,offset:.5},{opacity:0,offset:1}],{duration:D,delay:90,easing:E,fill:'both'});
+    p.animate([{visibility:'visible',offset:0},{visibility:'visible',offset:.4999},{visibility:'hidden',offset:.5},{visibility:'hidden',offset:1}],{duration:D,delay:90,easing:E,fill:'both'});
     const face=cardFace(card,a,base,v,'close',D,90,E); card.style.visibility='hidden';
     // 3) the backdrop collapses into the card, a gold ring closing in with it
     const cx=a.left+a.width/2, cy=a.top+a.height/2, R=Math.hypot(Math.max(cx,innerWidth-cx),Math.max(cy,innerHeight-cy))+20, r0=Math.min(a.width,a.height)*.42;
