@@ -117,8 +117,8 @@ async function handleEnquiry(request, env, ctx, url) {
 
   const declared = Number(request.headers.get('Content-Length') || 0);
   if (declared > MAX_BODY) return json({ ok: false, error: 'invalid' }, 413);
-  const raw = await request.text();
-  if (raw.length > MAX_BODY) return json({ ok: false, error: 'invalid' }, 413);
+  const raw = await readCapped(request, MAX_BODY);
+  if (raw === null) return json({ ok: false, error: 'invalid' }, 413);
 
   let body;
   try { body = JSON.parse(raw); } catch { return json({ ok: false, error: 'invalid' }, 400); }
@@ -223,9 +223,10 @@ async function verifyTurnstile(env, token, ip, allowedOrigins) {
     if (!r.ok) return false;
     const d = await r.json();
     if (d.success !== true) return false;
-    // Token must have been issued on our own site.
+    // Token must have been issued by our own enquiry widget, on our own site.
+    if (d.action && d.action !== 'enquiry') return false;
     const hosts = allowedOrigins.map(o => { try { return new URL(o).hostname; } catch { return ''; } });
-    return !d.hostname || hosts.includes(d.hostname);
+    return hosts.includes(d.hostname);
   } catch (err) {
     console.error('turnstile: verify failed', err && err.message);
     return false;
@@ -251,6 +252,9 @@ async function sha256(s) {
 }
 
 /* ---------------- email ---------------- */
+
+/* An address may legally contain ? # & %, which would start a subject, cc or body inside a mailto: link. */
+const mailtoAddr = e => String(e).replace(/[%?#&]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -278,7 +282,7 @@ function ownerEmail(env, d) {
   // Buttons — every URL is built only from validated values.
   const replySubject = isEl ? 'Το αίτημά σας — Alexis Papadimitriou' : 'Your enquiry — Alexis Papadimitriou';
   const replyBody = isEl ? `Αγαπητέ/ή ${first},\n\n` : `Dear ${first || d.name},\n\n`;
-  const mailto = `mailto:${d.email}?subject=${encodeURIComponent(replySubject)}&body=${encodeURIComponent(replyBody)}`;
+  const mailto = `mailto:${mailtoAddr(d.email)}?subject=${encodeURIComponent(replySubject)}&body=${encodeURIComponent(replyBody)}`;
   const digits = d.phone.replace(/\D/g, '');
   const intl = d.phone.trim().startsWith('+') || d.phone.trim().startsWith('00');
   const buttons = [['Reply by email', mailto, true]];
@@ -341,7 +345,7 @@ function ownerEmail(env, d) {
 
     <tr><td style="padding:24px 32px 4px">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-        ${contactRow('Email', d.email, 'mailto:' + d.email)}
+        ${contactRow('Email', d.email, 'mailto:' + mailtoAddr(d.email))}
         ${d.phone ? contactRow('Phone', d.phone, digits.length >= 8 ? `tel:${intl ? '+' + digits.replace(/^00/, '') : digits}` : '') : ''}
       </table>
     </td></tr>
@@ -454,6 +458,25 @@ function isDev(env, url) {
   return env.DEV === '1' && (url.hostname === 'localhost' || url.hostname === '127.0.0.1');
 }
 
+// Reads the body but stops as soon as it passes max bytes (a request without Content-Length could be any size).
+async function readCapped(request, max) {
+  if (!request.body) return '';
+  const reader = request.body.getReader();
+  const parts = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > max) { try { await reader.cancel(); } catch {} return null; }
+    parts.push(value);
+  }
+  const buf = new Uint8Array(size);
+  let at = 0;
+  for (const p of parts) { buf.set(p, at); at += p.byteLength; }
+  return new TextDecoder().decode(buf);
+}
+
 function json(obj, status = 200, extra = {}) {
   return new Response(JSON.stringify(obj), {
     status,
@@ -461,6 +484,8 @@ function json(obj, status = 200, extra = {}) {
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-store',
       'X-Content-Type-Options': 'nosniff',
+      'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'",
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
       ...extra
     }
   });
